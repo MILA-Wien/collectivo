@@ -48,7 +48,7 @@ jobs:
       - name: Install requirements
         # coverage is for code coverarge
         run: |
-          pip install -r requirements.dev.txt
+          pip install -r requirements.txt
           pip install coverage
 
       - name: Run Tests
