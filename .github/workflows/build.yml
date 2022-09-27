@@ -1,6 +1,7 @@
 name: Build Docker Container after Django Test
 
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
