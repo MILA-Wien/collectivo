@@ -86,4 +86,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: docker-compose build && docker-compose up -d && docker-compose run --rm app sh -c "python manage.py test"
+        run: docker-compose build app && docker-compose up -d db && docker-compose run --rm app sh -c "python manage.py test"
