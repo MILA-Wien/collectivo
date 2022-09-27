@@ -107,5 +107,5 @@ jobs:
         uses: actions/checkout@v2
       - name: Build container image
         run: |
-          docker build -t mila/mach-mit-backend:pr-${GITHUB_REF#refs/heads/} .
-          docker push mila/mach-mit-backend:pr-${GITHUB_REF#refs/heads/}
+          docker build -t milawien/mach-mit-backend:pr-${GITHUB_REF#refs/heads/} .
+          docker push milawien/mach-mit-backend:pr-${GITHUB_REF#refs/heads/}
