@@ -69,6 +69,9 @@ jobs:
           coverage run manage.py test
       - name: Run Lint Checks
         run: |
+          cp .bandit app/.bandit
+          cp .flake8 app/.flake8
+          cd app
           flake8
 
   test-docker:
