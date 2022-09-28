@@ -1,6 +1,5 @@
-"""Urls contains the url patterns for the core app."""
+"""Url patterns of the core app."""
 from django.urls import path
-
 from core import views
 
 

@@ -30,14 +30,24 @@ ALLOWED_HOSTS = ['*',"0.0.0.0","127.0.0.1", "localhost", "testserver"]
 # Application definition
 
 INSTALLED_APPS = [
+
+    # Default django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Built-in apps
     'core',
     'user',
+    'extensions',
+
+    # Extensions
+    # 'extensions.tests.test_extension',
+
+    # External API Apps
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
