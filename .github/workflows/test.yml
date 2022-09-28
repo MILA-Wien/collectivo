@@ -40,7 +40,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -90,11 +90,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Test
         run: docker-compose up -d db && docker-compose build app && docker-compose run --rm app sh -c "python manage.py test"
 
-  container_builder:
+  publish-backend:
     runs-on: ubuntu-latest
     needs: [test-docker]
     steps:
@@ -104,8 +104,29 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build container image
         run: |
           docker build -t milawien/mach-mit-backend:pr-${GITHUB_REF#refs/heads/} .
           docker push milawien/mach-mit-backend:pr-${GITHUB_REF#refs/heads/}
+
+  build-collectivo-ux:
+    runs-on: ubuntu-latest
+    needs: [test-docker]
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get repository
+        run: |
+          git config --global url.https://github.com/.insteadOf git://github.com/
+          git clone https://github.com/MILA-Wien/machmit.git
+      - name: Build container image
+        run: |
+          cd machmit
+          docker build -t milawien/mach-mit:pr-${GITHUB_REF#refs/heads/} .
+          docker push milawien/mach-mit:pr-${GITHUB_REF#refs/heads/}
