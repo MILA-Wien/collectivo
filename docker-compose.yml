@@ -4,8 +4,7 @@ services:
   app:
     build:
       context: .
-      args:
-        - DEV=true
+    container_name: machmit-backend
     ports:
       - "8000:8000"
     volumes:
@@ -24,12 +23,20 @@ services:
 
   db:
     image: postgres:13-alpine
+    container_name: machmit-db
     volumes:
-      - dev-db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
 
+  collectivo-ux:
+    build: https://github.com/MILA-Wien/machmit.git#main
+    container_name: machmit
+    restart: always
+    ports:
+      - "8001:80"
+
 volumes:
-  dev-db-data:
+  db-data:

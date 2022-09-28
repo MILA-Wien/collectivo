@@ -4,3 +4,6 @@ exclude =
     __pycache__,
     manage.py,
     settings.py,
+
+[bandit]
+exclude = tests

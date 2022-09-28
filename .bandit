@@ -1,2 +1,2 @@
 [bandit]
-exclude = app/user/tests
+exclude = user/tests

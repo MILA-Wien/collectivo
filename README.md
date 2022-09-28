@@ -13,6 +13,7 @@ Requirements for the development environment that is used in our team:
 
 To run and test the app with docker:
 
+- To build a development server, run: `docker compose build`
 - To run a development server, run: `docker compose up -d`
 - To perform tests and linting, run: `docker compose run --rm app sh -c "python manage.py test && flake8"`
 
