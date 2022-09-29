@@ -6,77 +6,9 @@ on:
   push:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  test-python:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    # Add in environment variables for postgres testing
-    env:
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_HOST: localhost # default host value for the database
-      DB_NAME: djtesting
-      POSTGRES_PORT: 5432
-      DJANGO_SECRET_KEY: test-key-not-good
-    services:
-      # start a postgres service container
-      postgres_main:
-        image: postgres:12
-        env:
-          POSTGRES_USER: ${{ env.DB_USER }}
-          POSTGRES_PASSWORD: ${{ env.DB_PASS }}
-          POSTGRES_DB: ${{ env.DB_NAME }}
-        ports:
-          - 5432:5432
-        # wait until postgres is ready
-        options:
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    strategy:
-      # test against these python versions
-      matrix:
-        python-version: ["3.9", "3.10"]
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install requirements
-        # coverage is for code coverarge
-        run: |
-          pip install -r requirements.txt
-          pip install coverage
-
-      - name: Run Tests
-        # Step specific environment variables
-        env:
-          DEBUG: "0"
-          DJANGO_SECRET_KEY: ${{ env.DJANGO_SECRET_KEY }}
-          # Set the database url to the postgres service container
-          DB_USERNAME: ${{ env.DB_USER }}
-          DB_PASSWORD: ${{ env.DB_PASS }}
-          DB_HOST: ${{ env.DB_HOST }}
-          DB_DATABASE: ${{ env.DB_NAME }}
-          DB_PORT: ${{ env.POSTGRES_PORT }}
-          TEST_DATABASE_PREFIX: ${{ env.DB_NAME }}
-        run: |
-          cd collectivo
-          python manage.py migrate
-          coverage run manage.py test
-      - name: Run Lint Checks
-        run: |
-          cd collectivo
-          flake8
 
   test-docker:
     name: Test docker environement
-    needs: [test-python]
     runs-on: ubuntu-20.04
     steps:
       - name: Check Credentials
