@@ -20,6 +20,8 @@ from drf_spectacular.views import (
 )
 from django.contrib import admin
 from django.urls import path, include
+from extensions.extension_manager import extension_manager
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,3 +34,9 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='api-schema'),
          name='api-docs'),
 ]
+
+
+for extension in extension_manager.extensions.keys():
+    urlpatterns.append(
+        path(f'api/{extension}/', include(f'{extension}.urls'))
+    )

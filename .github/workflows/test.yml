@@ -3,7 +3,7 @@ name: MachMit Kern Backend
 # Controls when the workflow will run
 on:
   workflow_call:
-  push: 
+  push:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test-python:
@@ -29,9 +29,9 @@ jobs:
           - 5432:5432
         # wait until postgres is ready
         options:
-          --health-cmd pg_isready 
-          --health-interval 10s 
-          --health-timeout 5s 
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 5
     strategy:
       # test against these python versions
@@ -92,7 +92,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Test
-        run: docker-compose up -d db && docker-compose build app && docker-compose run --rm app sh -c "python manage.py test"
+        run: docker-compose up -d db && docker-compose build app && docker-compose run --rm app sh -c "python manage.py test && flake8"
 
   publish-backend:
     runs-on: ubuntu-latest

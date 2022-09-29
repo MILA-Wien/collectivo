@@ -1,15 +1,16 @@
 version: "3.9"
 
 services:
-  app:
+
+  collectivo:
     build:
       context: .
-    container_name: machmit-backend
+    container_name: collectivo
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
-    command: >  # Waits for database to be ready
+      - ./collectivo:/collectivo
+    command: >  # Wait for database to be ready
       sh -c "while ! nc -z db 5432; do sleep 1; done &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
@@ -23,7 +24,7 @@ services:
 
   db:
     image: postgres:13-alpine
-    container_name: machmit-db
+    container_name: collectivo-db
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -32,8 +33,8 @@ services:
       - POSTGRES_PASSWORD=changeme
 
   collectivo-ux:
-    build: https://github.com/MILA-Wien/machmit.git#main
-    container_name: machmit
+    build: https://github.com/MILA-Wien/collectivo-ux.git#main
+    container_name: collectivo-ux
     restart: always
     ports:
       - "8001:80"

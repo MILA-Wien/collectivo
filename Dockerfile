@@ -3,16 +3,16 @@ LABEL maintainer="Joël Foramitti"
 
 ENV PYTHONUNBUFFERED 1
 
-RUN  apk add --update --no-cache postgresql-client  && \
+RUN apk add --update --no-cache postgresql-client && \
     apk add --update --no-cache --virtual .tmp-build-deps \
     build-base postgresql-dev musl-dev
 
 COPY ./requirements.txt /tmp/requirements.txt
-COPY ./app /app
-COPY ./.bandit /app/.bandit
-COPY ./.flake8 /app/.flake8
+COPY ./collectivo /collectivo
+COPY ./.bandit /collectivo/.bandit
+COPY ./.flake8 /collectivo/.flake8
 
-WORKDIR /app
+WORKDIR /collectivo
 EXPOSE 8000
 
 RUN python -m venv /py && \
@@ -21,6 +21,12 @@ RUN python -m venv /py && \
     rm -rf /tmp
 
 #Clean up
-RUN apk del .tmp-build-deps &&
+RUN apk del .tmp-build-deps &&\
+    adduser --uid 1000\
+    --disabled-password \
+    --no-create-home \
+    django-user
 
 ENV PATH="/py/bin:$PATH"
+
+USER django-user
