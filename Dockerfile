@@ -9,8 +9,6 @@ RUN apk add --update --no-cache postgresql-client && \
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./collectivo /collectivo
-COPY ./.bandit /collectivo/.bandit
-COPY ./.flake8 /collectivo/.flake8
 
 WORKDIR /collectivo
 EXPOSE 8000
