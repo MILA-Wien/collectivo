@@ -2,7 +2,7 @@
 from django.urls import path
 from extensions import views
 
-app_name = 'test_extension'
+app_name = 'extensions.tests.test_extension'
 
 
 urlpatterns = [
