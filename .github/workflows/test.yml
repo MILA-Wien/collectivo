@@ -71,8 +71,6 @@ jobs:
           coverage run manage.py test
       - name: Run Lint Checks
         run: |
-          cp .bandit collectivo/.bandit
-          cp .flake8 collectivo/.flake8
           cd collectivo
           flake8
 
