@@ -66,14 +66,14 @@ jobs:
             DB_PORT: ${{ env.POSTGRES_PORT }}
             TEST_DATABASE_PREFIX: ${{ env.DB_NAME }}
           run: |
-            cd app
+            cd collectivo
             python manage.py migrate
             coverage run manage.py test
         - name: Run Lint Checks
           run: |
-            cp .bandit app/.bandit
-            cp .flake8 app/.flake8
-            cd app
+            cp .bandit collectivo/.bandit
+            cp .flake8 collectivo/.flake8
+            cd collectivo
             flake8
 
   test-docker:
