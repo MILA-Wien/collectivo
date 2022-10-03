@@ -66,13 +66,13 @@ jobs:
           DB_PORT: ${{ env.POSTGRES_PORT }}
           TEST_DATABASE_PREFIX: ${{ env.DB_NAME }}
         run: |
-          cp -a collectivo collectivo-test-app/collectivo
+          cp -a collectivo collectivo-test-app
           cd collectivo-test-app
           python manage.py migrate
           coverage run manage.py test
       - name: Run Lint Checks
         run: |
-          cp -a collectivo collectivo-test-app/collectivo
+          cp -a collectivo collectivo-test-app
           cd collectivo-test-app
           flake8
 
