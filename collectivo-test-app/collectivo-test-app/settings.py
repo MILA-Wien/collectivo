@@ -36,8 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
-    'user',
+
+    'collectivo',
+    'collectivo.user',
+
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
@@ -68,7 +70,7 @@ CORS_ALLOW_HEADERS = [
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 
-ROOT_URLCONF = 'app.urls'
+ROOT_URLCONF = 'collectivo-test-app.urls'
 
 TEMPLATES = [
     {
@@ -86,7 +88,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'app.wsgi.application'
+WSGI_APPLICATION = 'collectivo-test-app.wsgi.application'
 
 
 # Database
@@ -145,6 +147,8 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Settings for collectivo
 
 AUTH_USER_MODEL = 'user.User'
 

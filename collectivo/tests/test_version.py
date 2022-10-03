@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from rest_framework.test import APIClient
 
-from core.version import __version__
+from collectivo.version import __version__
 
 
 class PublicCoreApiTests(TestCase):
@@ -17,5 +17,5 @@ class PublicCoreApiTests(TestCase):
 
     def testGetVersion(self):
         """Test getting current version is correct."""
-        res = self.client.get(reverse('core:version'))
+        res = self.client.get(reverse('collectivo:version'))
         self.assertEqual(res.data['version'], __version__)

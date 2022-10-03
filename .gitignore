@@ -1,3 +1,6 @@
+# Automatic copy of collectivo into collectivo-test-app
+collectivo-test-app/collectivo
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

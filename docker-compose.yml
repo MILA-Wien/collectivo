@@ -1,29 +1,39 @@
 version: "3.9"
 
 services:
-  app:
+
+  # A sample django project that has installed collectivo.
+  collectivo:
+    container_name: collectivo-test-app
     build:
       context: .
-    container_name: machmit-backend
     ports:
       - "8000:8000"
+    # Synchronize source code inside and outside the docker container.
+    # The collectivo app is placed inside the test app (see Dockerfile).
     volumes:
-      - ./app:/app
-    command: >  # Waits for database to be ready
+      - ./collectivo-test-app:/collectivo-test-app
+      - ./collectivo:/collectivo-test-app/collectivo
+    # Wait for database to be ready (this command will work only on linux),
+    # migrate the database changes and start a development server.
+    command: >
       sh -c "while ! nc -z db 5432; do sleep 1; done &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
+    # Environment variables to connect django with the database.
     environment:
       - DB_HOST=db
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+    # Start the django server after the database.
     depends_on:
       - db
 
+  # A PostgreSQL database.
   db:
+    container_name: collectivo-db
     image: postgres:13-alpine
-    container_name: machmit-db
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -31,9 +41,10 @@ services:
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
 
+  # A frontend web application.
   collectivo-ux:
-    build: https://github.com/MILA-Wien/machmit.git#main
-    container_name: machmit
+    container_name: collectivo-ux
+    build: https://github.com/MILA-Wien/collectivo-ux.git#main
     restart: always
     ports:
       - "8001:80"

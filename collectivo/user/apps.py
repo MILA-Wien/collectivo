@@ -1,10 +1,9 @@
-"""Configuration of the user app."""
-
+"""Configuration file of the user app."""
 from django.apps import AppConfig
 
 
 class UserConfig(AppConfig):
-    """Configuration of the user app."""
+    """Configuration class of the user app."""
 
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'user'
+    name = 'collectivo.user'

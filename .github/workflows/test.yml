@@ -3,7 +3,7 @@ name: MachMit Kern Backend
 # Controls when the workflow will run
 on:
   workflow_call:
-  push: 
+  push:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test-python:
@@ -29,9 +29,9 @@ jobs:
           - 5432:5432
         # wait until postgres is ready
         options:
-          --health-cmd pg_isready 
-          --health-interval 10s 
-          --health-timeout 5s 
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 5
     strategy:
       # test against these python versions
@@ -66,14 +66,14 @@ jobs:
           DB_PORT: ${{ env.POSTGRES_PORT }}
           TEST_DATABASE_PREFIX: ${{ env.DB_NAME }}
         run: |
-          cd app
+          cd collectivo-test-app
+          cp -a collectivo collectivo-test-app/collectivo
           python manage.py migrate
           coverage run manage.py test
       - name: Run Lint Checks
         run: |
-          cp .bandit app/.bandit
-          cp .flake8 app/.flake8
-          cd app
+          cd collectivo-test-app
+          cp -a collectivo collectivo-test-app/collectivo
           flake8
 
   test-docker:
@@ -92,7 +92,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Test
-        run: docker-compose up -d db && docker-compose build app && docker-compose run --rm app sh -c "python manage.py test"
+        run: docker-compose up -d db && docker-compose build collectivo-test-app && docker-compose run --rm collectivo-test-app sh -c "python manage.py test"
 
   publish-backend:
     runs-on: ubuntu-latest
@@ -124,9 +124,9 @@ jobs:
       - name: Get repository
         run: |
           git config --global url.https://github.com/.insteadOf git://github.com/
-          git clone https://github.com/MILA-Wien/machmit.git
+          git clone https://github.com/MILA-Wien/collectivo-ux.git
       - name: Build container image
         run: |
-          cd machmit
+          cd collectivo-ux
           docker build -t milawien/mach-mit:pr-${GITHUB_REF#refs/heads/} .
           docker push milawien/mach-mit:pr-${GITHUB_REF#refs/heads/}

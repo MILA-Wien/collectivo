@@ -1,8 +1,8 @@
-"""Views of the core module."""
+"""Views of the collectivo app."""
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from core.version import __version__
+from collectivo.version import __version__
 
 
 class GetVersion(APIView):
