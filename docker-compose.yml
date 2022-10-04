@@ -29,6 +29,7 @@ services:
     # Start the django server after the database.
     depends_on:
       - db
+      - keycloak
 
   # A PostgreSQL database.
   db:
@@ -48,6 +49,19 @@ services:
     restart: always
     ports:
       - "8001:80"
+
+  # Keycloak for authentication.   
+  keycloak:
+    image: "quay.io/keycloak/keycloak:19.0.1"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: /var/keycloak/collectivo-realm.json
+      VIRTUAL_HOST: keycloak.local
+      VIRTUAL_PORT: 8080
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+    command: start-dev --import-realm
 
 volumes:
   db-data:
