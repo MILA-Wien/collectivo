@@ -92,7 +92,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Test
-        run: docker-compose up -d db && docker-compose build collectivo-test-app && docker-compose run --rm collectivo-test-app sh -c "python manage.py test"
+        run: |
+          docker-compose up -d db
+          docker-compose build collectivo
+          docker-compose run --rm collectivo sh -c "python manage.py test && flake8"
 
   publish-backend:
     runs-on: ubuntu-latest
