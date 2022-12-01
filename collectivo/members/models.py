@@ -82,7 +82,14 @@ class Member(models.Model):
     date_birth = models.DateField(null=True)
     address_street = models.CharField(max_length=255, null=True)
     address_number = models.CharField(max_length=255, null=True)
-    address_is_home = models.BooleanField(null=True)
+    address_is_home = models.CharField(
+        max_length=20,
+        null=True,
+        choices=[
+            ('Yes', 'Yes'),
+            ('No', 'No'),
+        ]
+    )
     address_co = models.CharField(max_length=255, null=True)
     address_stair = models.CharField(max_length=255, null=True)
     address_door = models.CharField(max_length=255, null=True)
