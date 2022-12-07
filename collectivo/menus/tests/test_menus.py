@@ -97,6 +97,20 @@ class AdminMenusApiTests(TestCase):
         exists = MenuItem.objects.filter(item_id='my_menu_item').exists()
         self.assertTrue(exists)
 
+    def test_menu_item_order(self):
+        """Test that menu items are returned in correct order."""
+        for order in [3, 1, 2]:
+            payload = {**self.menu_item, 'order': order, 'item_id': order}
+            res = self.client.post(ITEMS_URL, payload)
+
+        res = self.client.get(ITEMS_URL)
+        print([i['item_id'] for i in res.data])
+        ids = [
+            item['item_id'] for item in res.data
+            if item['item_id'] in '123'
+        ]
+        self.assertEqual(ids, ['1', '2', '3'])
+
     def test_menu_item_correct_role(self):
         """Test menuitem should appear for user with correct role."""
         payload = {**self.menu_item, 'required_role': 'test_role'}

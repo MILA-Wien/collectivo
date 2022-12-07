@@ -20,6 +20,7 @@ def post_migrate_callback(sender, **kwargs):
         menu_id='main_menu',
         label='Do nothing',
         extension=sender.name,
+        order=1000,
     )
 
     register_menuitem(
@@ -28,7 +29,8 @@ def post_migrate_callback(sender, **kwargs):
         label='Open test webcomponent',
         extension=sender.name,
         action='component',
-        component_name='HelloSingle2'
+        component_name='HelloSingle2',
+        order=1000,
     )
 
     register_menuitem(
@@ -37,7 +39,8 @@ def post_migrate_callback(sender, **kwargs):
         label='Open test iframe',
         extension=sender.name,
         action='link',
-        link_source='http://example.com'
+        link_source='http://example.com',
+        order=1000,
     )
 
     populate_keycloak_with_test_data()

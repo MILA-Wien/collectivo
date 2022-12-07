@@ -108,5 +108,5 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         queryset = models.MenuItem.objects.filter(
             Q(required_role__in=user_roles) |
             Q(required_role=None)
-        )
+        ).order_by('order')
         return queryset

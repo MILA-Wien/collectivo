@@ -71,11 +71,11 @@ def populate_keycloak_with_test_data():
 
     # Assign superuser role to superusers
     for user in superusers:
-        role = 'superuser'
-        user_id = auth_manager.get_user_id(user['email'])
-        role_id = auth_manager.get_realm_role(role)['id']
-        auth_manager.assign_realm_roles(
-            user_id, {'id': role_id, 'name': role})
+        for role in ['superuser', 'members_admin']:
+            user_id = auth_manager.get_user_id(user['email'])
+            role_id = auth_manager.get_realm_role(role)['id']
+            auth_manager.assign_realm_roles(
+                user_id, {'id': role_id, 'name': role})
 
     # Make members into members
     # This automatically adds them to the group 'members'

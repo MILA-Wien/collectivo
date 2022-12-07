@@ -18,7 +18,8 @@ def post_migrate_callback(sender, **kwargs):
         label='Log out',
         extension=name,
         action='component',
-        component_name='logout'
+        component_name='logout',
+        order=99
     )
     create_groups_and_roles()
 

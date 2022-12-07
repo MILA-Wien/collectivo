@@ -24,6 +24,7 @@ def post_migrate_callback(sender, **kwargs):
         extension=name,
         action='component',
         component_name='dashboard',
+        order=0,
     )
 
 
