@@ -102,9 +102,7 @@ class AdminMenusApiTests(TestCase):
         for order in [3, 1, 2]:
             payload = {**self.menu_item, 'order': order, 'item_id': order}
             res = self.client.post(ITEMS_URL, payload)
-
         res = self.client.get(ITEMS_URL)
-        print([i['item_id'] for i in res.data])
         ids = [
             item['item_id'] for item in res.data
             if item['item_id'] in '123'
