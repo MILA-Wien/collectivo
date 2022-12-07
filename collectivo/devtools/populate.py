@@ -1,7 +1,8 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 from collectivo.utils import get_auth_manager, register_viewset
-from collectivo.members.views import MembersAdminViewSet
+from collectivo.members.views import MembersViewSet
+from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
 
@@ -29,7 +30,7 @@ members = [
         "enabled": True,
         "firstName": f"Test Member {str(i).zfill(2)}",
         "lastName": "Example",
-        "emailVerified": True
+        "emailVerified": True,
     }
     for i in range(1, N_TEST_MEMBERS+1)
 ] + superusers
@@ -63,6 +64,7 @@ def populate_keycloak_with_test_data():
         try:
             user_id = auth_manager.get_user_id(user['email'])
             auth_manager.delete_user(user_id)
+            Member.objects.filter(email=user['email']).delete()
         except (KeycloakGetError, KeycloakDeleteError):
             pass
         user_id = auth_manager.create_user(user)
@@ -71,7 +73,8 @@ def populate_keycloak_with_test_data():
 
     # Assign superuser role to superusers
     for user in superusers:
-        for role in ['superuser', 'members_admin']:
+        roles = ('superuser', 'members_admin', 'shifts_admin')
+        for role in roles:
             user_id = auth_manager.get_user_id(user['email'])
             role_id = auth_manager.get_realm_role(role)['id']
             auth_manager.assign_realm_roles(
@@ -80,7 +83,7 @@ def populate_keycloak_with_test_data():
     # Make members into members
     # This automatically adds them to the group 'members'
     for member in members:
-        user_id = auth_manager.get_user_id(member['username'])
+        user_id = auth_manager.get_user_id(member['email'])
         payload = {
             'user_id': user_id,
 
@@ -89,8 +92,10 @@ def populate_keycloak_with_test_data():
 
             'first_name': member['firstName'],
             'last_name': member['lastName'],
+
+            'membership_type': 'active',
         }
         register_viewset(
-            MembersAdminViewSet,
+            MembersViewSet,
             payload=payload
         )

@@ -9,15 +9,15 @@ app_name = 'collectivo.members'
 
 admin_router = DefaultRouter()
 admin_router.register(
-    'members', views.MembersAdminViewSet, basename='member')
+    'members', views.MembersViewSet, basename='member')
 admin_router.register(
-    'summary', views.MembersAdminSummaryView, basename='summary')
+    'summary', views.MembersSummaryViewSet, basename='summary')
 
 me_router = DirectDetailRouter()
 me_router.register(
-    'register', views.MemberRegisterView, basename='register')
+    'register', views.MemberRegisterViewSet, basename='register')
 me_router.register(
-    'profile', views.MemberViewSet, basename='profile')
+    'profile', views.MemberProfileViewSet, basename='profile')
 
 urlpatterns = [
     path('api/members/', include(admin_router.urls)),

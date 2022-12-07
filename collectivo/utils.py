@@ -78,8 +78,10 @@ def request(viewset: ViewSet, command='create', payload=None,
 
 
 def register_viewset(
-        viewset, pk=None, payload=None, userinfo=None) -> Response:
+        viewset, pk=None, payload=None, userinfo=None,
+        allow_bad_response=False) -> Response:
     """Register a viewset."""
+    # TODO Improve logic
     get = None
     if pk is not None and hasattr(viewset, 'retrieve'):
         get = request(viewset, 'retrieve', payload, userinfo, pk=pk)
@@ -87,8 +89,10 @@ def register_viewset(
         response = request(viewset, 'update', payload, userinfo, pk=pk)
     else:
         response = request(viewset, 'create', payload, userinfo)
-    if response.status_code not in [200, 201]:
+    if response.status_code not in [200, 201] and not allow_bad_response:
         response.render()
-        logger.debug(
-            f"Could not register viewset '{viewset}': {response.content}")
+        logger.warning(
+            f"Could not register viewset '{viewset}'. "
+            f"{response.status_code}: {response.content}"
+        )
     return response

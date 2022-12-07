@@ -234,7 +234,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '[%(levelname)s %(asctime)s %(pathname)s@%(lineno)s]: %(message)s'
+            'format': '\n\x1b[33;20m[%(levelname)s %(asctime)s %(pathname)s@%(lineno)s]:\x1b[0m %(message)s'
         },
         'simple': {
             'format': '[%(levelname)s %(asctime)s]: %(message)s'
@@ -254,7 +254,6 @@ LOGGING = {
         },
     },
 }
-
 
 # Settings for collectivo
 

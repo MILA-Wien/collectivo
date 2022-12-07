@@ -5,18 +5,46 @@ from rest_framework.test import APIClient
 from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
 from collectivo.utils import get_auth_manager
+from django.utils.timezone import localdate
 from ..models import Member
 
 
 MEMBERS_URL = reverse('collectivo:collectivo.members:member-list')
+MEMBER_URL_LABEL = 'collectivo:collectivo.members:member-detail'
 PROFILE_URL = reverse('collectivo:collectivo.members:profile')
 REGISTER_URL = reverse('collectivo:collectivo.members:register')
+REGISTRATION_SCHEMA_URL = reverse(
+    'collectivo:collectivo.members:register-schema')
+PROFILE_SCHEMA_URL = reverse('collectivo:collectivo.members:profile-schema')
 
 TEST_MEMBER = {
     'first_name': 'firstname',
     'last_name': 'lastname',
+    'gender': 'diverse',
+    'address_street': 'my street',
+    'address_number': '1',
+    'address_postcode': '0000',
+    'address_city': 'my city',
+    'address_country': 'my country',
+    'shares_number': 1,
+}
+
+TEST_MEMBER_POST = {
+    **TEST_MEMBER,
     'email': 'some_member@example.com',
+    'person_type': 'natural',
+    'membership_type': 'active',
     'email_verified': True,
+    'survey_contact': '-',
+    'survey_motivation': '-',
+    'shares_payment_type': 'sepa',
+    'data_use_approved': True,
+}
+
+TEST_MEMBER_GET = {
+    **TEST_MEMBER,
+    'membership_start': localdate(),
+    # Add expected tags
 }
 
 TEST_USER = {
@@ -72,7 +100,7 @@ class MembersTestCase(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=token['access_token'])
 
 
-class PrivateMemberApiTestsForNonMembers(MembersTestCase):
+class MemberRegistrationTests(MembersTestCase):
     """Test the private members API for users that are not members."""
 
     def test_cannot_access_profile(self):
@@ -82,15 +110,52 @@ class PrivateMemberApiTestsForNonMembers(MembersTestCase):
         self.assertEqual(res.data['detail'],
                          'User is not registered as a member.')
 
+    def create_member(self, payload=TEST_MEMBER_POST):
+        """Create a sample member."""
+        res = self.client.post(REGISTER_URL, payload)
+        if res.status_code != 201:
+            raise ValueError('Could not register member:', res.content)
+        member = Member.objects.get(id=res.data['id'])
+        return member
+
     def test_create_member(self):
         """Test that an authenticated user can create itself as a member."""
-        res = self.client.post(REGISTER_URL, TEST_MEMBER)
-        self.assertEqual(res.status_code, 201)
-        member = Member.objects.get(id=res.data['id'])
-        expected_user = {**TEST_MEMBER}
-        del expected_user['email_verified']  # not shown to user
-        for key in expected_user.keys():
-            self.assertEqual(expected_user[key], getattr(member, key))
+        member = self.create_member()
+        for key, value in TEST_MEMBER_GET.items():
+            self.assertEqual(value, getattr(member, key))
+
+    def test_create_legal_member(self):
+        """Test that a legal member automatically becomes type investing."""
+        payload = {**TEST_MEMBER_POST, 'person_type': 'legal'}
+        member = self.create_member(payload)
+        self.assertEqual(member.membership_type, 'investing')
+
+    def test_create_member_tags_missing(self):
+        """Test that unchecked tag fields do not become tags."""
+        member = self.create_member()
+        self.assertFalse(
+            member.tags.filter(label='Public use approved').exists())
+
+    def test_create_member_tags(self):
+        """Test that checked tag fields become tags."""
+        payload = {**TEST_MEMBER_POST, 'public_use_approved': True}
+        member = self.create_member(payload)
+        self.assertTrue(
+            member.tags.filter(label='Public use approved').exists())
+
+    def test_multiple_choice_str(self):
+        """Test that multiple choices can be selected with strings."""
+        payload = {**TEST_MEMBER_POST, 'groups_interested': ['1', '2', '3']}
+        member = self.create_member(payload)
+        group_ids = [group.id for group in member.groups_interested.all()]
+        self.assertEqual(group_ids, [1, 2, 3])
+
+    def test_multiple_choice_with_int(self):
+        """Test that multiple choices can be selected with numbers."""
+        payload = {**TEST_MEMBER_POST, 'groups_interested': [1, 2, 3]}
+        member = self.create_member(payload)
+        group_ids = [group.id for group in member.groups_interested.all()]
+        self.assertEqual(group_ids, [1, 2, 3])
 
 
 class PrivateMemberApiTestsForMembers(MembersTestCase):
@@ -99,8 +164,9 @@ class PrivateMemberApiTestsForMembers(MembersTestCase):
     def setUp(self):
         """Register authorized user as member."""
         super().setUp()
-        res = self.client.post(REGISTER_URL, TEST_MEMBER)
-        self.authorize()  # Needed to refresh token with new role
+        res = self.client.post(REGISTER_URL, TEST_MEMBER_POST)
+        if res.status_code != 201:
+            raise Exception('Could not register member:', res.content)
         self.members_id = res.data['id']
 
     def test_member_cannot_access_admin_area(self):
@@ -110,34 +176,78 @@ class PrivateMemberApiTestsForMembers(MembersTestCase):
 
     def test_cannot_create_same_member_twice(self):
         """Test that a member cannot create itself as a member again."""
-        res2 = self.client.post(REGISTER_URL, TEST_MEMBER)
+        res2 = self.client.post(REGISTER_URL, TEST_MEMBER_POST)
         self.assertEqual(res2.status_code, 403)
 
-    def test_get_own_member(self):
+    def test_get_profile(self):
         """Test that a member can view it's own data."""
         res = self.client.get(PROFILE_URL)
         self.assertEqual(res.status_code, 200)
-        expected_user = {**TEST_MEMBER}
-        del expected_user['email_verified']  # not shown to user
-        for key in expected_user.keys():
-            self.assertEqual(str(expected_user[key]), str(res.data[key]))
+        for key, value in TEST_MEMBER_GET.items():
+            self.assertEqual(str(value), str(res.data[key]))
 
     def test_update_member(self):
         """Test that a member can edit non-admin fields of it's own data."""
-        self.client.patch(PROFILE_URL, {'first_name': 'New Name'})
+        self.client.patch(PROFILE_URL, {'address_street': 'my_street'})
         res = self.client.get(PROFILE_URL)
-        self.assertEqual(res.data['first_name'], 'New Name')
-        self.assertEqual(res.data['last_name'], 'lastname')
-        # TODO Check with keycloak userinfo
+        self.assertEqual(res.data['address_street'], 'my_street')
 
     def test_update_member_admin_fields_fails(self):
         """Test that a member cannot edit admin fields of it's own data."""
-        res2 = self.client.put(
-            PROFILE_URL, {'membership_status': '2_provisional'})
-        self.assertEqual(res2.status_code, 400)
+        self.client.patch(PROFILE_URL, {'admin_notes': 'my note'})
         member = Member.objects.get(id=self.members_id)
         self.assertNotEqual(
-            getattr(member, 'membership_status'), '2_provisional')
+            getattr(member, 'admin_notes'), 'my note')
+
+    def test_members_profile_schema(self):
+        """Test that the schema for members registration is correct."""
+        res = self.client.get(PROFILE_SCHEMA_URL)
+        self.assertTrue('birthday' not in res.data)
+        self.assertEqual(res.data['first_name']['read_only'], True)
+        self.assertEqual(res.data['first_name']['required'], False)
+        self.assertEqual(res.data['address_street']['required'], True)
+
+
+class MemberAuthSyncTests(TestCase):
+    """Test data synchronization with keycloak."""
+
+    def setUp(self):
+        """Prepare test case."""
+        self.client = APIClient()
+        self.keycloak = get_auth_manager()
+        self.member_id = 7
+        self.email = 'test_superuser@example.com'
+        self.token = self.keycloak.openid.token(self.email, 'test')
+        self.access_token = self.token['access_token']
+        self.client.credentials(HTTP_AUTHORIZATION=self.access_token)
+
+    def tearDown(self):
+        """Reset user data of auth service."""
+        res = self.client.patch(
+            reverse(MEMBER_URL_LABEL, args=[self.member_id]),
+            {'first_name': 'Test Member 01'}
+        )
+        if res.status_code != 200:
+            raise ValueError("API call failed: ", res.content)
+
+    def test_auth_sync_as_admin(self):
+        """Test that auth fields are updated on auth server for /members."""
+        # Patch the name of a member
+        res2 = self.client.patch(
+            reverse(MEMBER_URL_LABEL, args=[self.member_id]),
+            {'first_name': 'new_name'}
+        )
+        if res2.status_code != 200:
+            raise ValueError("API call failed: ", res2.content)
+
+        # Check that new attribute is set on django
+        member = Member.objects.get(id=self.member_id)
+        self.assertEqual(
+            getattr(member, 'first_name'), 'new_name')
+
+        # Check that new attribute is set on keycloak
+        userinfo = self.keycloak.get_user(res2.data['user_id'])
+        self.assertEqual(userinfo['firstName'], 'new_name')
 
 
 class PrivateMemberApiTestsForAdmins(TestCase):
@@ -152,18 +262,14 @@ class PrivateMemberApiTestsForAdmins(TestCase):
             is_authenticated=True,
         )
         self.client.force_authenticate(user)
-        self.payload = {
-            'first_name': 'firstname',
-            'last_name': 'lastname',
-            'email_verified': True,
-            'email': 'test_member_1@example.com',
-        }
 
     def create_members(self):
         """Create an unordered set of members for testing."""
         for i in [0, 2, 1]:
-            payload = {**self.payload, 'first_name': str(i)}
-            self.client.post(MEMBERS_URL, payload)
+            payload = {**TEST_MEMBER_POST, 'first_name': str(i)}
+            res = self.client.post(MEMBERS_URL, payload)
+            if res.status_code != 201:
+                raise ValueError("Create members failed: ", res.content)
 
     def test_create_members(self):
         """Test that admins can create members."""
@@ -172,17 +278,18 @@ class PrivateMemberApiTestsForAdmins(TestCase):
 
     def test_update_member_admin_fields(self):
         """Test that admins can write to admin fields."""
-        res1 = self.client.post(MEMBERS_URL, self.payload)
+        res1 = self.client.post(MEMBERS_URL, TEST_MEMBER_POST)
+        self.assertEqual(res1.status_code, 201)
         res2 = self.client.patch(
             reverse(
                 'collectivo:collectivo.members:member-detail',
-                args=[res1.data['id']]),
-            {'membership_status': '2_provisional'}
+                args=[res1.data['id']]), {'admin_notes': 'my note'}
         )
-        self.assertEqual(res2.status_code, 200)
+        if res2.status_code != 200:
+            raise ValueError("API call failed: ", res2.content)
         member = Member.objects.get(id=res1.data['id'])
         self.assertEqual(
-            getattr(member, 'membership_status'), '2_provisional')
+            getattr(member, 'admin_notes'), 'my note')
 
     def test_member_sorting(self):
         """Test that all member fields can be sorted."""

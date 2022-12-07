@@ -18,7 +18,6 @@ services:
       - ./docker/static:/collectivo_app/static
     # Wait for database to be ready (this command will work only on linux),
     # migrate the database changes and start a development server.
-    # TODO Is this needed if already given in dockerfile?
     command: > #
       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
              while ! nc -z keycloak 8080; do sleep 1; done &&
@@ -28,18 +27,15 @@ services:
       DB_HOST: collectivo-db
       DB_NAME: collectivo_db
       DB_USER: admin
-      DB_PASS: badpassword  # UNSAFE DO NOT USE IN PRODUCTION
-      SECRET_KEY: badkey  # UNSAFE DO NOT USE IN PRODUCTION
+      DB_PASS: badpassword
+      SECRET_KEY: badkey
       KEYCLOAK_SERVER_URL: http://keycloak:8080
-      # UNSAFE! GENERATE SECRETE KEY IN KEYCLOAK FOR PRODUCTION
       KEYCLOAK_CLIENT_SECRET_KEY: '**********'
       COLLECTIVO_EXTENSIONS: members
       COLLECTIVO_SETTINGS: collectivo_extensions.settings
       DEBUG: 1
       DEVELOPMENT: 1
-      # Optional environment variables:
       # ALLOWED_HOSTS
-      # See https://docs.djangoproject.com/en/3.2/topics/i18n/
       # LANGUAGE_CODE
       # TIME_ZONE
       # KEYCLOAK_CLIENT_ID: collectivo

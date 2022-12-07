@@ -28,18 +28,19 @@ class RequestLogMiddleware:
         response = self.get_response(request)
 
         log_data["status_code"] = response.status_code
+        if str(response.status_code)[0] in '45':
+            log_data["response_body"] = response.content
         if hasattr(request, 'userinfo') and \
                 hasattr(request.userinfo, 'user_id'):
             log_data["user_id"] = request.userinfo.user_id
-        if response.status_code == 403:
-            log_data["response_body"] = response.content
 
-        if request.META["X-Request-ID"] is not None:
+        if request.META.get("X-Request-ID") is not None:
             log_data["request_id"] = request.META["X-Request-ID"]
 
         # add runtime to our log_data
         log_data["run_time"] = time.time() - start_time
-        request_logger.info(msg=log_data)
+        msg = '\n'+'\n'.join([f'  {k}: {v}' for k, v in log_data.items()])
+        request_logger.info(msg=msg)
 
         return response
 

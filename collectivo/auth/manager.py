@@ -1,5 +1,7 @@
 """A manager for keycloak users and permissions."""
 from keycloak import KeycloakAdmin, KeycloakOpenID
+from keycloak.exceptions import KeycloakPutError
+from rest_framework.exceptions import ParseError
 from django.conf import settings
 
 
@@ -42,7 +44,10 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
             'email': email,
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        super().update_user(user_id=user_id, payload=payload)
+        try:
+            super().update_user(user_id=user_id, payload=payload)
+        except KeycloakPutError as e:
+            raise ParseError(f'Could not update user {user_id}: {e}')
 
     def add_user_to_group(self, user_id, group_name):
         """Add a user to a keycloak group."""

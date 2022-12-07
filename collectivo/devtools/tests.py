@@ -33,7 +33,7 @@ class TestExtensionRegistrationTests(TestCase):
         items = MenuItem.objects.filter(extension=self.name)
         self.assertEqual(len(items), 3)
 
-    def test_test_users_exist(self):
+    def test_test_members_exist(self):
         """Test that test users exist."""
         for user in users:
             user_id = self.auth_manager.get_user_id(user['email'])
