@@ -21,7 +21,7 @@ class TestExtensionRegistrationTests(TestCase):
         """Prepare client."""
         self.client = APIClient()
         self.auth_manager = get_auth_manager()
-        self.name = 'collectivo.devtools'
+        self.name = 'devtools'
 
     def test_extension_exists(self):
         """Test extension exists."""

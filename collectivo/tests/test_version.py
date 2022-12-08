@@ -1,8 +1,8 @@
 """Tests for the core API."""
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
 from collectivo.version import __version__
+from collectivo.auth.clients import CollectivoAPIClient
 
 
 class PublicCoreApiTests(TestCase):
@@ -10,7 +10,8 @@ class PublicCoreApiTests(TestCase):
 
     def setUp(self):
         """Set up the test client."""
-        self.client = APIClient()
+        self.client = CollectivoAPIClient()
+        self.client.force_roles(['superuser'])
 
     def testGetVersion(self):
         """Test getting current version is correct."""

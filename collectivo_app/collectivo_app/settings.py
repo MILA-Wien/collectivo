@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from collectivo.errors import CollectivoError
 from collectivo.version import __version__
-from .utils import string_to_list
+from .utils import string_to_list, get_env_bool
 
 # TODO FOR PRODUCTION
 # Go through https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -17,13 +17,14 @@ from .utils import string_to_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
-DEBUG = os.environ.get('DEBUG', False)
-DEVELOPMENT = os.environ.get('DEVELOPMENT', False)
+DEBUG = get_env_bool('DEBUG', False)
+DEVELOPMENT = get_env_bool('DEVELOPMENT', False)
 
 if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = string_to_list(os.environ.get('ALLOWED_HOSTS'))
 elif DEVELOPMENT:
-    ALLOWED_HOSTS = ['*',"0.0.0.0","127.0.0.1", "localhost", "collectivo.local"]
+    ALLOWED_HOSTS = ['*', "0.0.0.0", "127.0.0.1",
+                     "localhost", "collectivo.local"]
 else:
     ALLOWED_HOSTS = []
 
@@ -82,8 +83,14 @@ if DEVELOPMENT:
         'user-agent',
         'x-csrftoken',
         'x-requested-with',
+        'X-Request-ID',
+
     ]
     CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_EXPOSE_HEADERS = [
+    'X-Request-ID',
+]
 
 ROOT_URLCONF = 'collectivo_app.urls'
 
@@ -170,6 +177,9 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -185,7 +195,7 @@ _schema_versions = ['0.1.0']
 _swagger_urls = ''
 for version in _schema_versions:
     _swagger_urls += (
-        f'{{url: "/api/collectivo/schema/?version={version}", '
+        f'{{url: "/api/dev/schema/?version={version}", '
         f'name: "API Version {version}"}}, '
     )
 
@@ -272,6 +282,3 @@ KEYCLOAK = {
     'CLIENT_ID': os.environ.get('KEYCLOAK_CLIENT_ID', 'collectivo'),
     'CLIENT_SECRET_KEY': os.environ.get('KEYCLOAK_CLIENT_SECRET_KEY')
 }
-
-
-

@@ -4,11 +4,14 @@ from rest_framework.fields import empty
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from collectivo.version import __version__
+from collectivo.auth.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 
 class AboutView(APIView):
     """API views of the project version."""
+
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(responses={200: OpenApiResponse()})
     def get(self, request):
@@ -53,7 +56,7 @@ class SchemaMixin:
 
     @extend_schema(responses={200: OpenApiResponse()})
     @action(detail=False, url_path='schema', url_name='schema',
-            permission_classes=[])
+            permission_classes=[IsAuthenticated])
     def _schema(self, request):
         """Return model schema."""
         serializer = self.get_serializer_class()()

@@ -33,8 +33,9 @@ services:
       KEYCLOAK_CLIENT_SECRET_KEY: '**********'
       COLLECTIVO_EXTENSIONS: members
       COLLECTIVO_SETTINGS: collectivo_extensions.settings
-      DEBUG: 1
-      DEVELOPMENT: 1
+      DEBUG: 'true'
+      DEVELOPMENT: 'true'
+      # Optional environment variables:
       # ALLOWED_HOSTS
       # LANGUAGE_CODE
       # TIME_ZONE

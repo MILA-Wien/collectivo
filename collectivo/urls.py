@@ -12,13 +12,6 @@ urlpatterns = [
     # Core API views
     path('api/collectivo/about/',
          views.AboutView.as_view(), name='version'),
-
-    # API Documentation
-    path('api/collectivo/schema/',
-         SpectacularAPIView.as_view(), name='api-schema'),
-    path('api/docs/',
-         SpectacularSwaggerView.as_view(url_name='collectivo:api-schema'),
-         name='api-docs'),
 ]
 
 for app in settings.INSTALLED_APPS:
@@ -32,4 +25,10 @@ if settings.DEBUG:
         # Access static files
         re_path(r'^static/(?P<path>.*)$', serve),
 
+        # API Documentation
+        path('api/dev/schema/',
+             SpectacularAPIView.as_view(), name='api-schema'),
+        path('api/dev/docs/',
+             SpectacularSwaggerView.as_view(url_name='collectivo:api-schema'),
+             name='api-docs'),
     ]

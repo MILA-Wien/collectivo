@@ -9,8 +9,10 @@ def post_migrate_callback(sender, **kwargs):
     from .populate import populate_keycloak_with_test_data
     from collectivo.menus.utils import register_menuitem
 
+    name = 'devtools'
+
     register_extension(
-        name=sender.name,
+        name=name,
         version='0.0.1',
         description='A test extension.'
     )
@@ -19,7 +21,7 @@ def post_migrate_callback(sender, **kwargs):
         item_id='show_nothing',
         menu_id='main_menu',
         label='Do nothing',
-        extension=sender.name,
+        extension=name,
         order=1000,
     )
 
@@ -27,7 +29,7 @@ def post_migrate_callback(sender, **kwargs):
         item_id='show_HelloSingle2',
         menu_id='main_menu',
         label='Open test webcomponent',
-        extension=sender.name,
+        extension=name,
         action='component',
         component_name='HelloSingle2',
         order=1000,
@@ -37,7 +39,7 @@ def post_migrate_callback(sender, **kwargs):
         item_id='show_iframe',
         menu_id='main_menu',
         label='Open test iframe',
-        extension=sender.name,
+        extension=name,
         action='link',
         link_source='http://example.com',
         order=1000,
