@@ -8,6 +8,7 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.extensions.utils import register_extension
     from .populate import populate_keycloak_with_test_data
     from collectivo.menus.utils import register_menuitem
+    from django.conf import settings
 
     name = 'devtools'
 
@@ -17,33 +18,34 @@ def post_migrate_callback(sender, **kwargs):
         description='A test extension.'
     )
 
-    register_menuitem(
-        item_id='show_nothing',
-        menu_id='main_menu',
-        label='Do nothing',
-        extension=name,
-        order=1000,
-    )
+    if getattr(settings, 'DEV_SHOW_TEST_MENU_ITEMS', False):
+        register_menuitem(
+            item_id='show_nothing',
+            menu_id='main_menu',
+            label='Do nothing',
+            extension=name,
+            order=1000,
+        )
 
-    register_menuitem(
-        item_id='show_HelloSingle2',
-        menu_id='main_menu',
-        label='Open test webcomponent',
-        extension=name,
-        action='component',
-        component_name='HelloSingle2',
-        order=1000,
-    )
+        register_menuitem(
+            item_id='show_HelloSingle2',
+            menu_id='main_menu',
+            label='Open test webcomponent',
+            extension=name,
+            action='component',
+            component_name='HelloSingle2',
+            order=1000,
+        )
 
-    register_menuitem(
-        item_id='show_iframe',
-        menu_id='main_menu',
-        label='Open test iframe',
-        extension=name,
-        action='link',
-        link_source='http://example.com',
-        order=1000,
-    )
+        register_menuitem(
+            item_id='show_iframe',
+            menu_id='main_menu',
+            label='Open test iframe',
+            extension=name,
+            action='link',
+            link_source='http://example.com',
+            order=1000,
+        )
 
     populate_keycloak_with_test_data()
 
