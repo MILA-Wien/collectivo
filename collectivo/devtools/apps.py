@@ -19,6 +19,7 @@ def post_migrate_callback(sender, **kwargs):
     )
 
     if getattr(settings, 'DEV_SHOW_TEST_MENU_ITEMS', False):
+
         register_menuitem(
             item_id='show_nothing',
             menu_id='main_menu',

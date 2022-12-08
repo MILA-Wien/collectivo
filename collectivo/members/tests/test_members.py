@@ -38,7 +38,6 @@ TEST_MEMBER_POST = {
     'survey_contact': '-',
     'survey_motivation': '-',
     'shares_payment_type': 'sepa',
-    'data_use_approved': True,
 }
 
 TEST_MEMBER_GET = {

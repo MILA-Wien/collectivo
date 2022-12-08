@@ -255,14 +255,6 @@ field_settings = {
             'help_text': 'TEXT PENDING JULIANNA'
         },
     },
-    'data_use_approved': {
-        'permissions': ['create'],
-        'kwargs': {
-            'required': True,
-            'label': 'Data use approved',
-            'help_text': 'TEXT PENDING JULIANNA'
-        },
-    },
     'founding_event': {
         'permissions': ['create'],
         'kwargs': {
@@ -293,7 +285,7 @@ summary_fields = [
 ]
 register_tag_fields = [
     # 'statutes_approved'
-    'public_use_approved', 'data_use_approved', 'founding_event'
+    'public_use_approved', 'founding_event'
 ]
 
 
@@ -321,8 +313,6 @@ class MemberRegisterSerializer(MemberSerializer):
     # statutes_approved = serializers.BooleanField(write_only=True)
     public_use_approved = serializers.BooleanField(
         write_only=True, required=False)
-    data_use_approved = serializers.BooleanField(
-        write_only=True, required=True)
     founding_event = serializers.BooleanField(
         write_only=True, required=False)
 
