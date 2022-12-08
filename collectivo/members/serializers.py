@@ -333,7 +333,10 @@ class MemberRegisterSerializer(MemberSerializer):
         for field in register_tag_fields:
             tag_setting = field_settings[field]
             tag_label = tag_setting['kwargs']['label']
-            value = attrs[field]
+            if field in attrs:
+                value = attrs[field]
+            else:
+                value = False
             if tag_setting['kwargs'].get('required') is True \
                     and value is not True:
                 raise ParseError(f'{field} must be true')
