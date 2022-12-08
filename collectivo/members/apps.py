@@ -1,6 +1,5 @@
 """Configuration file for the members extension."""
 from django.apps import AppConfig
-from django.conf import settings
 from django.db.models.signals import post_migrate
 from collectivo.version import __version__
 
@@ -14,11 +13,6 @@ def post_migrate_callback(sender, **kwargs):
         register_tag, register_group, register_skill, register_status)
 
     name = 'members'
-    # TODO Language change
-    # TODO Error handling
-    # TODO Path handling
-    # TODO Test put and patch
-    # TODO Role filtering menu
 
     register_extension(
         name=name,

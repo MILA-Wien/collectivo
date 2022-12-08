@@ -2,7 +2,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from collectivo.menus.models import MenuItem
 from collectivo.members.models import Member
 from collectivo.extensions.models import Extension
 from collectivo.utils import get_auth_manager
@@ -27,11 +26,6 @@ class TestExtensionRegistrationTests(TestCase):
         """Test extension exists."""
         extensions = Extension.objects.filter(name=self.name)
         self.assertTrue(extensions.exists())
-
-    def test_default_menus(self):
-        """Test menu items exist."""
-        items = MenuItem.objects.filter(extension=self.name)
-        self.assertEqual(len(items), 3)
 
     def test_test_members_exist(self):
         """Test that test users exist."""

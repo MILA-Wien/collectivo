@@ -26,7 +26,7 @@ TEST_MEMBER = {
     'address_postcode': '0000',
     'address_city': 'my city',
     'address_country': 'my country',
-    'shares_number': 1,
+    'shares_number': 9,
 }
 
 TEST_MEMBER_POST = {
@@ -38,6 +38,7 @@ TEST_MEMBER_POST = {
     'survey_contact': '-',
     'survey_motivation': '-',
     'shares_payment_type': 'sepa',
+    'shares_tarif': 'normal'
 }
 
 TEST_MEMBER_GET = {
