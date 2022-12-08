@@ -71,26 +71,25 @@ def post_migrate_callback(sender, **kwargs):
     for label in status_fields:
         register_status(label=label)
 
-    if settings.DEVELOPMENT:
-        groups = [
-            'Infogespräche', 'Sortiment',
-            'Öffentlichkeitsarbeit', 'Finanzen',
-            'Genossenschaft', 'IT und Digitales',
-            'Events', 'Standort', 'Minimarkt'
-        ]
-        for label in groups:
-            register_group(label=label)
-        skills = [
-            "Immobilien/Architektur/Planung",
-            "Einzelhandel",
-            "Handwerk (Elektrik, Tischlerei, …)",
-            "Genossenschaft/ Partizipation/Organisationsentwicklung",
-            "Kommunikation (Medien, Grafik, Text,…)",
-            "IT/ Digitales",
-            "Finanzen (BWL, Buchhaltung,…)",
-        ]
-        for label in skills:
-            register_skill(label=label)
+    groups = [
+        'Infogespräche', 'Sortiment',
+        'Öffentlichkeitsarbeit', 'Finanzen',
+        'Genossenschaft', 'IT und Digitales',
+        'Events', 'Standort', 'Minimarkt'
+    ]
+    for label in groups:
+        register_group(label=label)
+    skills = [
+        "Immobilien/Architektur/Planung",
+        "Einzelhandel",
+        "Handwerk (Elektrik, Tischlerei, …)",
+        "Genossenschaft/Partizipation/Organisationsentwicklung",
+        "Kommunikation (Medien, Grafik, Text,…)",
+        "IT/Digitales",
+        "Finanzen (BWL, Buchhaltung,…)",
+    ]
+    for label in skills:
+        register_skill(label=label)
 
 
 class MembersConfig(AppConfig):
