@@ -27,9 +27,10 @@ class RequestLogMiddleware:
         # Request passes on to controller
         response = self.get_response(request)
 
-        log_data["status_code"] = response.status_code
-        if str(response.status_code)[0] in '45':
-            log_data["response_body"] = response.content
+        if hasattr(response, 'status_code'):
+            log_data["status_code"] = response.status_code
+            if str(response.status_code)[0] in '45':
+                log_data["response_body"] = response.content
         if hasattr(request, 'userinfo') and \
                 hasattr(request.userinfo, 'user_id'):
             log_data["user_id"] = request.userinfo.user_id
@@ -50,4 +51,3 @@ class RequestLogMiddleware:
             raise exception
         except Exception as e:
             request_logger.exception("Unhandled Exception: " + str(e))
-        return exception
