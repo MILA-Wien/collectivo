@@ -145,7 +145,7 @@ field_settings = {
     },
     'membership_start': {
         'kwargs': {
-            'label': 'Starting date of your membership.',
+            'label': 'Starting date of your membership',
         },
         'permissions': ['read', 'table'],
     },
