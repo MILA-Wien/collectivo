@@ -154,8 +154,9 @@ field_settings = {
         'kwargs': {
             'label': 'Number of shares',
             'help_text': 'The amount of shares that you own.',
-            'required': True,
-            'min_value': 1
+            'required': False,
+            'min_value': 1,
+            'max_value': 100,
         }
     },
     'shares_payment_type': {
@@ -315,17 +316,32 @@ class MemberRegisterSerializer(MemberSerializer):
         write_only=True, required=False)
     founding_event = serializers.BooleanField(
         write_only=True, required=False)
+    shares_tarif = serializers.CharField(required=False)
 
     class Meta:
         """Serializer settings."""
 
         model = models.Member
-        fields = register_fields + register_tag_fields
+        fields = register_fields + register_tag_fields + ['shares_tarif']
         read_only_fields = ['id']  # Return the id after creation
         extra_kwargs = {
             field: field_settings[field]['kwargs'] for field in fields
             if field in field_settings and 'kwargs' in field_settings[field]
         }
+
+    def _convert_shares_tarif(self, attrs):
+        """Convert shares_tarif choice into shares_number value."""
+        shares_tarif = attrs.pop('shares_tarif', None)
+        if shares_tarif == 'social':
+            attrs['shares_number'] = 1
+        elif shares_tarif == 'normal':
+            attrs['shares_number'] = 9
+        elif shares_tarif == 'more':
+            if 'shares_number' not in attrs:
+                raise ParseError('shares_number: This field is required.')
+        else:
+            raise ParseError('shares_tarif: This field is incorrect.')
+        return attrs
 
     def validate(self, attrs):
         """Validate and transform tag fields before validation."""
@@ -344,6 +360,7 @@ class MemberRegisterSerializer(MemberSerializer):
             if value is True:
                 tag_id = models.MemberTag.objects.get(label=tag_label).id
                 attrs['tags'].append(tag_id)
+        attrs = self._convert_shares_tarif(attrs)
         return super().validate(attrs)
 
 
