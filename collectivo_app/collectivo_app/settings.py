@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from collectivo.errors import CollectivoError
 from collectivo.version import __version__
+from corsheaders.defaults import default_headers
 from .utils import string_to_list, get_env_bool
 
 # TODO FOR PRODUCTION
@@ -26,7 +27,8 @@ elif DEVELOPMENT:
     ALLOWED_HOSTS = ['*', "0.0.0.0", "127.0.0.1",
                      "localhost", "collectivo.local"]
 else:
-    ALLOWED_HOSTS = []
+    raise CollectivoError('You must set the environment variable '
+                          'ALLOWED_HOSTS if DEVELOPMENT is False.')
 
 # Choose built-in collectivo extensions from environment
 _built_in_extensions = ['members']
@@ -46,11 +48,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'collectivo',
     'collectivo.menus',
     'collectivo.auth',
     'collectivo.extensions',
     'collectivo.dashboard',
+
+    'corsheaders',
     'django_filters',
     'rest_framework',
     'drf_spectacular',
@@ -58,6 +63,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'collectivo.middleware.requestId.AddRequestId',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -71,26 +77,7 @@ MIDDLEWARE = [
 ]
 
 if DEVELOPMENT:
-    INSTALLED_APPS += ['collectivo.devtools', 'corsheaders']
-    MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware'] + MIDDLEWARE
-    CORS_ALLOW_HEADERS = [
-        'accept',
-        'accept-encoding',
-        'authorization',
-        'content-type',
-        'dnt',
-        'origin',
-        'user-agent',
-        'x-csrftoken',
-        'x-requested-with',
-        'X-Request-ID',
-
-    ]
-    CORS_ORIGIN_ALLOW_ALL = True
-
-CORS_EXPOSE_HEADERS = [
-    'X-Request-ID',
-]
+    INSTALLED_APPS += ['collectivo.devtools']
 
 ROOT_URLCONF = 'collectivo_app.urls'
 
@@ -111,6 +98,24 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'collectivo_app.wsgi.application'
+
+
+# CORS Settings
+# https://pypi.org/project/django-cors-headers/
+
+if os.environ.get('CORS_ALLOWED_ORIGINS'):
+    CORS_ALLOWED_ORIGINS = string_to_list(
+        os.environ.get('CORS_ALLOWED_ORIGINS'))
+elif DEVELOPMENT:
+    CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'X-Request-ID',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'X-Request-ID',
+]
 
 
 # Database
@@ -266,7 +271,6 @@ LOGGING = {
 }
 
 # Settings for collectivo
-
 COLLECTIVO = {
     # Path to default models
     'default_auth_manager': 'collectivo.auth.manager.KeycloakAuthManager',
