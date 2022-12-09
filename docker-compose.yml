@@ -35,8 +35,8 @@ services:
       COLLECTIVO_SETTINGS: collectivo_extensions.settings
       ALLOWED_HOSTS: collectivo.local
       CORS_ALLOWED_ORIGINS: http://collectivo.local:5173, http://collectivo.local:8001
-      DEBUG: 'false'
-      DEVELOPMENT: 'false'
+      DEBUG: 'true'
+      DEVELOPMENT: 'true'
       # Optional environment variables:
       # ALLOWED_HOSTS
       # LANGUAGE_CODE
