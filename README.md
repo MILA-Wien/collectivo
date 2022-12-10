@@ -78,7 +78,7 @@ The devtools extension sets up the following test users:
 - `test_user_not_verified@example.com`
 - `test_user_not_member@example.com`
 
-The password for all users is `test`.
+The password for all users is `Test123!`.
 
 ### auth
 

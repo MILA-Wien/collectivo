@@ -83,7 +83,7 @@ class MembersTestCase(TestCase):
         self.auth_manager = get_auth_manager()
         user_id = self.auth_manager.create_user(TEST_USER, exist_ok=True)
         self.auth_manager.set_user_password(  # noqa
-                user_id, password='test', temporary=False)  # noqa
+                user_id, password='Test123!', temporary=False)  # noqa
         self.client = APIClient()
         self.authorize()
 
@@ -96,7 +96,7 @@ class MembersTestCase(TestCase):
     def authorize(self):
         """Authorize test user."""
         token = self.auth_manager.openid.token(
-            'some_member@example.com', 'test')
+            'some_member@example.com', 'Test123!')
         self.client.credentials(HTTP_AUTHORIZATION=token['access_token'])
 
 
@@ -217,7 +217,7 @@ class MemberAuthSyncTests(TestCase):
         self.keycloak = get_auth_manager()
         self.member_id = 7
         self.email = 'test_superuser@example.com'
-        self.token = self.keycloak.openid.token(self.email, 'test')
+        self.token = self.keycloak.openid.token(self.email, 'Test123!')
         self.access_token = self.token['access_token']
         self.client.credentials(HTTP_AUTHORIZATION=self.access_token)
 

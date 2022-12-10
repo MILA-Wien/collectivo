@@ -53,7 +53,7 @@ class AuthenticationTests(TestCase):
             client_secret_key=config["CLIENT_SECRET_KEY"],
         )
         self.token = self.keycloak.token(
-            'test_member_01@example.com', 'test')
+            'test_member_01@example.com', 'Test123!')
         self.access_token = 'Token ' + self.token['access_token']
         self.middleware = KeycloakMiddleware(None)
         self.factory = RequestFactory()
@@ -145,7 +145,7 @@ class AuthenticationTests(TestCase):
     def test_admin_access_correct_token(self):
         """Test that admin api with admin token succeeds."""
         client = APIClient()
-        token = self.keycloak.token('test_superuser@example.com', 'test')
+        token = self.keycloak.token('test_superuser@example.com', 'Test123!')
         access_token = token['access_token']
         client.credentials(HTTP_AUTHORIZATION='Token ' + access_token)
         res = client.get(reverse(self.admin_endpoint))
@@ -154,7 +154,7 @@ class AuthenticationTests(TestCase):
     def test_admin_access_bad_token(self):
         """Test that admin api with non-admin token fails."""
         client = APIClient()
-        token = self.keycloak.token('test_member_01@example.com', 'test')
+        token = self.keycloak.token('test_member_01@example.com', 'Test123!')
         access_token = token['access_token']
         client.credentials(HTTP_AUTHORIZATION='Token ' + access_token)
         res = client.get(reverse(self.admin_endpoint))
