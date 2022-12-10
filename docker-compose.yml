@@ -32,17 +32,8 @@ services:
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_CLIENT_SECRET_KEY: '**********'
       COLLECTIVO_EXTENSIONS: members
-      COLLECTIVO_SETTINGS: collectivo_extensions.settings
-      ALLOWED_HOSTS: collectivo.local
-      CORS_ALLOWED_ORIGINS: http://collectivo.local:5173, http://collectivo.local:8001
       DEBUG: 'true'
       DEVELOPMENT: 'true'
-      # Optional environment variables:
-      # ALLOWED_HOSTS
-      # LANGUAGE_CODE
-      # TIME_ZONE
-      # KEYCLOAK_CLIENT_ID: collectivo
-      # KEYCLOAK_REALM_NAME: collectivo
     depends_on:
       - collectivo-db
       - keycloak
