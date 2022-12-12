@@ -15,3 +15,5 @@ flake8>=5.0.4,<5.1
 flake8-bandit>=4.1.1
 flake8-docstrings>=1.6.0
 
+# For deployment
+gunicorn>=20.1.0,<20.2

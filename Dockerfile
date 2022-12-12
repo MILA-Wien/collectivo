@@ -73,6 +73,4 @@ RUN mkdir -p /collectivo_app/test_extension/static/test_extension
 USER django-user
 
 # Set default command
-CMD while ! nc -z collectivo-db 5432; do sleep 1; done && \
-    python manage.py migrate && \
-    python manage.py runserver 0.0.0.0:8000
+CMD ["gunicorn"  , "-b", "0.0.0.0:8000", "collectivo_app.wsgi:application"]
