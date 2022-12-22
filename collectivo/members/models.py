@@ -114,6 +114,7 @@ class Member(models.Model):
 
     # Personal data (only for natural people)
     birthday = models.DateField(null=True)
+    occupation = models.CharField(max_length=255, null=True)
 
     # Personal data (only for legal person)
     legal_name = models.CharField(max_length=255, null=True)

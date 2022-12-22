@@ -65,6 +65,14 @@ field_settings = {
             'required': True
         }
     },
+    'occupation': {
+        'permissions': ['read', 'create', 'change', 'table'],
+        'kwargs': {'label': 'Occupation'},
+        'schema': {
+            'condition': conditions['natural'],
+            'required': True
+        }
+    },
     'address_street': {
         'permissions': ['read', 'create', 'change'],
         'kwargs': {'label': 'Street', 'required': True},
