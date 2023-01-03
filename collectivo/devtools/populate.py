@@ -110,7 +110,6 @@ def populate_keycloak_with_test_data():
         if member['email'] == 'test_member_02@example.com':
             payload['person_type'] = 'legal'
 
-
         register_viewset(
             MembersViewSet,
             payload=payload
