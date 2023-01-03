@@ -45,7 +45,7 @@ field_settings = {
         },
     },
     'person_type': {
-        'permissions': ['create', 'table'],
+        'permissions': ['read', 'create', 'table'],
         'kwargs': {
             'label': 'Type of person',
             'help_text': 'Whether you represent a natural person or '
@@ -141,7 +141,7 @@ field_settings = {
 
     # Membership fields
     'membership_type': {
-        'permissions': ['create', 'table'],
+        'permissions': ['read', 'create', 'table'],
         'kwargs': {
             'label': 'Type of membership',
             'help_text': 'Whether you are an active or investing member.',
