@@ -142,7 +142,7 @@ class MemberRegistrationTests(MembersTestCase):
         self.assertTrue(
             member.tags.filter(label='Public use approved').exists())
 
-    def test_create_member_status(self):
+    def test_registered_member_has_status(self):
         """Test that the member status is set to initial value."""
         member = self.create_member()
         label = '1 - Beitritt beantragt'
