@@ -71,6 +71,11 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
     serializer_class = serializers.MemberRegisterSerializer
     permission_classes = [IsAuthenticated]
 
+    def _get_status(self, label):
+        """Create member status with given label."""
+        status, _ = models.MemberStatus.objects.get_or_create(label=label)
+        return status
+
     def perform_create(self, serializer):
         """Create member with user_id from auth token."""
         user_id = self.request.userinfo.user_id
@@ -81,6 +86,7 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
             'user_id': user_id,
             'email': self.request.userinfo.email,
             'membership_start': localdate(),
+            'membership_status': self._get_status('1 - Beitritt beantragt')
         }
         if 'tags' in serializer.validated_data:
             extra_fields['tags'] = serializer.validated_data['tags']

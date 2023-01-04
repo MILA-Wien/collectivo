@@ -142,6 +142,12 @@ class MemberRegistrationTests(MembersTestCase):
         self.assertTrue(
             member.tags.filter(label='Public use approved').exists())
 
+    def test_create_member_status(self):
+        """Test that the member status is set to initial value."""
+        member = self.create_member()
+        label = '1 - Beitritt beantragt'
+        self.assertEqual(member.membership_status.label, label)
+
     def test_multiple_choice_str(self):
         """Test that multiple choices can be selected with strings."""
         payload = {**TEST_MEMBER_POST, 'groups_interested': ['1', '2', '3']}
