@@ -103,11 +103,14 @@ def create_test_users():
             'address_city': 'Wien',
             'address_country': 'Österreich',
             'phone': '066003745385',
-
             'membership_start': '2022-12-08',
+            'person_type': 'natural',
             'membership_type': 'active',
             'shares_number': 5,
         }
+        if member['email'] == 'test_member_02@example.com':
+            payload['person_type'] = 'legal'
+
         register_viewset(
             MembersViewSet,
             payload=payload
