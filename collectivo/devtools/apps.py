@@ -6,7 +6,7 @@ from django.db.models.signals import post_migrate
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
     from collectivo.extensions.utils import register_extension
-    from .populate import populate_keycloak_with_test_data
+    from .populate import create_test_users, create_default_objects
     from collectivo.menus.utils import register_menuitem
     from django.conf import settings
 
@@ -48,7 +48,8 @@ def post_migrate_callback(sender, **kwargs):
             order=1000,
         )
 
-    populate_keycloak_with_test_data()
+    create_test_users()
+    create_default_objects()
 
 
 class TestExtensionConfig(AppConfig):

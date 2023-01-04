@@ -4,7 +4,8 @@ from collectivo.utils import get_auth_manager, register_viewset
 from collectivo.members.views import MembersViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
-
+from collectivo.members.utils import (
+        register_tag, register_group, register_skill, register_status)
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ users = [
 ] + members
 
 
-def populate_keycloak_with_test_data():
+def create_test_users():
     """Add users, groups, and roles to keycloak."""
     logger.debug('Creating test-population')
     auth_manager = get_auth_manager()
@@ -111,3 +112,40 @@ def populate_keycloak_with_test_data():
             MembersViewSet,
             payload=payload
         )
+
+
+def create_default_objects():
+    """Create default objects."""
+    logger.debug('Creating default objects')
+
+    tags = [
+        'Statutes approved', 'Public use approved',
+        'Founding event'
+    ]
+    for label in tags:
+        register_tag(label=label)
+    status_fields = [
+        'Antrag ausstehend', 'Zahlung ausstehend', 'Bestätigung ausstehend',
+        'Zahlung fehlgeschlagen', 'Mitglied', 'Gesperrt', 'Beendet'
+    ]
+    for label in status_fields:
+        register_status(label=label)
+    groups = [
+        'Infogespräche', 'Sortiment',
+        'Öffentlichkeitsarbeit', 'Finanzen',
+        'Genossenschaft', 'IT und Digitales',
+        'Events', 'Standort', 'Minimarkt'
+    ]
+    for label in groups:
+        register_group(label=label)
+    skills = [
+        "Immobilien/Architektur/Planung",
+        "Einzelhandel",
+        "Handwerk (Elektrik, Tischlerei, …)",
+        "Genossenschaft/Partizipation/Organisationsentwicklung",
+        "Kommunikation (Medien, Grafik, Text,…)",
+        "IT/Digitales",
+        "Finanzen (BWL, Buchhaltung,…)",
+    ]
+    for label in skills:
+        register_skill(label=label)

@@ -9,8 +9,6 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.extensions.utils import register_extension
     from collectivo.menus.utils import register_menuitem
     from collectivo.dashboard.utils import register_tile
-    from .utils import (
-        register_tag, register_group, register_skill, register_status)
 
     name = 'members'
 
@@ -50,40 +48,6 @@ def post_migrate_callback(sender, **kwargs):
         component_name='members_registration_tile',
         blocked_role='members_user'
     )
-
-    tags = [
-        'Statutes approved', 'Public use approved',
-        'Founding event'
-    ]
-    for label in tags:
-        register_tag(label=label)
-
-    status_fields = [
-        'Antrag ausstehend', 'Zahlung ausstehend', 'Bestätigung ausstehend',
-        'Zahlung fehlgeschlagen', 'Mitglied', 'Gesperrt', 'Beendet'
-    ]
-    for label in status_fields:
-        register_status(label=label)
-
-    groups = [
-        'Infogespräche', 'Sortiment',
-        'Öffentlichkeitsarbeit', 'Finanzen',
-        'Genossenschaft', 'IT und Digitales',
-        'Events', 'Standort', 'Minimarkt'
-    ]
-    for label in groups:
-        register_group(label=label)
-    skills = [
-        "Immobilien/Architektur/Planung",
-        "Einzelhandel",
-        "Handwerk (Elektrik, Tischlerei, …)",
-        "Genossenschaft/Partizipation/Organisationsentwicklung",
-        "Kommunikation (Medien, Grafik, Text,…)",
-        "IT/Digitales",
-        "Finanzen (BWL, Buchhaltung,…)",
-    ]
-    for label in skills:
-        register_skill(label=label)
 
 
 class MembersConfig(AppConfig):

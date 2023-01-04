@@ -7,19 +7,19 @@ from . import views
 
 app_name = 'collectivo.members'
 
-router = DefaultRouter()
-router.register('members', views.MembersViewSet, basename='member')
-router.register('summary', views.MembersSummaryViewSet, basename='summary')
-router.register('tags', views.MemberTagViewSet, basename='tag')
-router.register('skills', views.MemberSkillViewSet, basename='skill')
-router.register('groups', views.MemberGroupViewSet, basename='group')
-router.register('status', views.MemberStatusViewSet, basename='status')
+router1 = DefaultRouter()
+router1.register('members', views.MembersViewSet, basename='member')
+router1.register('summary', views.MembersSummaryViewSet, basename='summary')
+router1.register('tags', views.MemberTagViewSet, basename='tag')
+router1.register('skills', views.MemberSkillViewSet, basename='skill')
+router1.register('groups', views.MemberGroupViewSet, basename='group')
+router1.register('status', views.MemberStatusViewSet, basename='status')
 
-me_router = DirectDetailRouter()
-me_router.register('register', views.MemberRegisterViewSet, basename='register')
-me_router.register('profile', views.MemberProfileViewSet, basename='profile')
+router2 = DirectDetailRouter()
+router2.register('register', views.MemberRegisterViewSet, basename='register')
+router2.register('profile', views.MemberProfileViewSet, basename='profile')
 
 urlpatterns = [
-    path('api/members/', include(router.urls)),
-    path('api/members/', include(me_router.urls)),
+    path('api/members/', include(router1.urls)),
+    path('api/members/', include(router2.urls)),
 ]
