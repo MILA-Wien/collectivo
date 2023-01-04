@@ -37,14 +37,13 @@ TEST_MEMBER_POST = {
     'survey_contact': '-',
     'survey_motivation': '-',
     'shares_payment_type': 'sepa',
-    'shares_tarif': 'normal'
+    'shares_tarif': 'normal',
 }
 
 TEST_MEMBER_GET = {
     **TEST_MEMBER,
     'membership_start': localdate(),
     'email': 'some_member@example.com',
-    # Add expected tags
 }
 
 TEST_USER = {

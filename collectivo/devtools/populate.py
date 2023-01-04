@@ -5,7 +5,7 @@ from collectivo.members.views import MembersViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 from collectivo.members.utils import (
-        register_tag, register_group, register_skill, register_status)
+        register_group, register_skill, register_status)
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ def create_test_users():
 
             'membership_start': '2022-12-08',
             'membership_type': 'active',
-            'shares_number': 5
+            'shares_number': 5,
         }
         register_viewset(
             MembersViewSet,
@@ -116,14 +116,8 @@ def create_test_users():
 
 def create_default_objects():
     """Create default objects."""
-    logger.debug('Creating default objects')
+    logger.debug('Creating test objects')
 
-    tags = [
-        'Statutes approved', 'Public use approved',
-        'Founding event'
-    ]
-    for label in tags:
-        register_tag(label=label)
     status_fields = [
         'Antrag ausstehend', 'Zahlung ausstehend', 'Bestätigung ausstehend',
         'Zahlung fehlgeschlagen', 'Mitglied', 'Gesperrt', 'Beendet'
