@@ -5,7 +5,7 @@ from collectivo.members.views import MembersViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 from collectivo.members.utils import (
-        register_group, register_skill, register_status)
+        register_group, register_skill, register_status, register_tag)
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +118,11 @@ def create_default_objects():
     """Create default objects."""
     logger.debug('Creating test objects')
 
+    tag_fields = [
+        'tag1', 'tag2', 'tag3'
+    ]
+    for label in tag_fields:
+        register_tag(label=label)
     status_fields = [
         'Antrag ausstehend', 'Zahlung ausstehend', 'Bestätigung ausstehend',
         'Zahlung fehlgeschlagen', 'Mitglied', 'Gesperrt', 'Beendet'
