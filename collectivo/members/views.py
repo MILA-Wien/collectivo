@@ -132,7 +132,7 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     ordering_fields = member_fields
 
 
-class MemberTagViewSet(viewsets.ModelViewSet):
+class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member tags."""
 
     permission_classes = [IsMembersAdmin]
@@ -140,15 +140,7 @@ class MemberTagViewSet(viewsets.ModelViewSet):
     queryset = models.MemberTag.objects.all()
 
 
-class MemberSkillViewSet(viewsets.ModelViewSet):
-    """Manage member skills."""
-
-    permission_classes = [IsMembersAdmin]
-    serializer_class = serializers.MemberSkillSerializer
-    queryset = models.MemberSkill.objects.all()
-
-
-class MemberGroupViewSet(viewsets.ModelViewSet):
+class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member groups."""
 
     permission_classes = [IsMembersAdmin]
@@ -156,9 +148,17 @@ class MemberGroupViewSet(viewsets.ModelViewSet):
     queryset = models.MemberGroup.objects.all()
 
 
-class MemberStatusViewSet(viewsets.ModelViewSet):
+class MemberStatusViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member status."""
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberStatusSerializer
     queryset = models.MemberStatus.objects.all()
+
+
+class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage member skills."""
+
+    permission_classes = [IsMembersAdmin]
+    serializer_class = serializers.MemberSkillSerializer
+    queryset = models.MemberSkill.objects.all()
