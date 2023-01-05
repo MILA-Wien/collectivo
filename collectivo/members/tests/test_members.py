@@ -37,14 +37,13 @@ TEST_MEMBER_POST = {
     'survey_contact': '-',
     'survey_motivation': '-',
     'shares_payment_type': 'sepa',
-    'shares_tarif': 'normal'
+    'shares_tarif': 'normal',
 }
 
 TEST_MEMBER_GET = {
     **TEST_MEMBER,
     'membership_start': localdate(),
     'email': 'some_member@example.com',
-    # Add expected tags
 }
 
 TEST_USER = {
@@ -142,6 +141,12 @@ class MemberRegistrationTests(MembersTestCase):
         member = self.create_member(payload)
         self.assertTrue(
             member.tags.filter(label='Public use approved').exists())
+
+    def test_registered_member_has_status(self):
+        """Test that the member status is set to initial value."""
+        member = self.create_member()
+        label = '1 - Beitritt beantragt'
+        self.assertEqual(member.membership_status.label, label)
 
     def test_multiple_choice_str(self):
         """Test that multiple choices can be selected with strings."""

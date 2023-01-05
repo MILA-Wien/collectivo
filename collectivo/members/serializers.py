@@ -362,12 +362,12 @@ class MemberRegisterSerializer(MemberSerializer):
             raise ParseError('shares_tarif: This field is incorrect.')
         return attrs
 
-    def validate(self, attrs):
-        """Validate and transform tag fields before validation."""
+    def _convert_tag_fields(self, attrs):
+        """Convert tag fields into tags."""
         attrs['tags'] = []
         for field in register_tag_fields:
             tag_setting = field_settings[field]
-            tag_label = tag_setting['kwargs']['label']
+            label = tag_setting['kwargs']['label']
             if field in attrs:
                 value = attrs[field]
             else:
@@ -377,8 +377,13 @@ class MemberRegisterSerializer(MemberSerializer):
                 raise ParseError(f'{field} must be true')
             attrs.pop(field, None)
             if value is True:
-                tag_id = models.MemberTag.objects.get(label=tag_label).id
-                attrs['tags'].append(tag_id)
+                tag, _ = models.MemberTag.objects.get_or_create(label=label)
+                attrs['tags'].append(tag.id)
+        return attrs
+
+    def validate(self, attrs):
+        """Validate and transform tag fields before validation."""
+        attrs = self._convert_tag_fields(attrs)
         attrs = self._convert_shares_tarif(attrs)
         attrs = self._validate_membership_type(attrs)
         return super().validate(attrs)

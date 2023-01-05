@@ -71,6 +71,11 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
     serializer_class = serializers.MemberRegisterSerializer
     permission_classes = [IsAuthenticated]
 
+    def _get_status(self, label):
+        """Create member status with given label."""
+        status, _ = models.MemberStatus.objects.get_or_create(label=label)
+        return status
+
     def perform_create(self, serializer):
         """Create member with user_id from auth token."""
         user_id = self.request.userinfo.user_id
@@ -81,6 +86,7 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
             'user_id': user_id,
             'email': self.request.userinfo.email,
             'membership_start': localdate(),
+            'membership_status': self._get_status('1 - Beitritt beantragt')
         }
         if 'tags' in serializer.validated_data:
             extra_fields['tags'] = serializer.validated_data['tags']
@@ -132,7 +138,7 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     ordering_fields = member_fields
 
 
-class MemberTagViewSet(viewsets.ModelViewSet):
+class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member tags."""
 
     permission_classes = [IsMembersAdmin]
@@ -140,15 +146,7 @@ class MemberTagViewSet(viewsets.ModelViewSet):
     queryset = models.MemberTag.objects.all()
 
 
-class MemberSkillViewSet(viewsets.ModelViewSet):
-    """Manage member skills."""
-
-    permission_classes = [IsMembersAdmin]
-    serializer_class = serializers.MemberSkillSerializer
-    queryset = models.MemberSkill.objects.all()
-
-
-class MemberGroupViewSet(viewsets.ModelViewSet):
+class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member groups."""
 
     permission_classes = [IsMembersAdmin]
@@ -156,9 +154,17 @@ class MemberGroupViewSet(viewsets.ModelViewSet):
     queryset = models.MemberGroup.objects.all()
 
 
-class MemberStatusViewSet(viewsets.ModelViewSet):
+class MemberStatusViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member status."""
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberStatusSerializer
     queryset = models.MemberStatus.objects.all()
+
+
+class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage member skills."""
+
+    permission_classes = [IsMembersAdmin]
+    serializer_class = serializers.MemberSkillSerializer
+    queryset = models.MemberSkill.objects.all()
