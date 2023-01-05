@@ -51,6 +51,17 @@ def post_migrate_callback(sender, **kwargs):
         order=11,
     )
 
+    register_menuitem(
+        item_id='members_status_menu_item',
+        menu_id='main_menu',
+        label='Status',
+        extension=name,
+        action='component',
+        component_name='status',
+        required_role='members_admin',
+        order=11,
+    )
+
     register_tile(
         tile_id='members_registration_tile',
         label='Membership application',
