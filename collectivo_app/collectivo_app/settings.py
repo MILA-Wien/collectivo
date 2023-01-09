@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'collectivo.auth',
     'collectivo.extensions',
     'collectivo.dashboard',
+    'collectivo.emails',
 
     'corsheaders',
     'django_filters',
@@ -269,6 +270,17 @@ LOGGING = {
         },
     },
 }
+
+
+# Emails
+# EMAIL_HOST
+# EMAIL_PORT
+# EMAIL_HOST_USER
+# EMAIL_HOST_PASSWORD
+# EMAIL_USE_TLS
+# EMAIL_USE_SSL
+# DEFAULT_FROM_EMAIL
+
 
 # Settings for collectivo
 COLLECTIVO = {
