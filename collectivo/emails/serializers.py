@@ -20,4 +20,4 @@ class EmailBatchSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.EmailBatch
-        fields = '__all__'
+        exclude = ['status']

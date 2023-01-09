@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from collectivo.auth.permissions import IsSuperuser
 from . import models, serializers
+import time
 
 
 def send_bulk_email(recipients, subject, message, from_email):
@@ -39,13 +40,16 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Send the emails."""
-        try:
-            send_bulk_email(
-                recipients=serializer.validated_data['recipients'],
-                subject=serializer.validated_data['email'].subject,
-                message=serializer.validated_data['email'].message,
-                from_email='mitmachen@mila.wien'
-            )
-        except Exception as e:
-            ValidationError("Could not send email: %s" % e)
         serializer.save()
+        n_success = send_bulk_email(
+            recipients=serializer.validated_data['recipients'],
+            subject=serializer.validated_data['template'].subject,
+            message=serializer.validated_data['template'].message,
+            from_email='mitmachen@mila.wien'
+        )
+        #  time.sleep(5) TODO Background task
+        if n_success != len(serializer.validated_data['recipients']):
+            serializer.instance.status = 'failed'
+        else:
+            serializer.instance.status = 'success'
+        serializer.instance.save()
