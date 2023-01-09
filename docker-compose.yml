@@ -18,7 +18,7 @@ services:
       - ./docker/static:/collectivo_app/static
     # Wait for database to be ready (this command will work only on linux),
     # migrate the database changes and start a development server.
-    
+
     # start a development server.
     # command: > #
     #   sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
@@ -44,6 +44,12 @@ services:
       COLLECTIVO_EXTENSIONS: members
       DEBUG: 'true'
       DEVELOPMENT: 'true'
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_USE_TLS: 'true'
+      EMAIL_FROM: ${EMAIL_HOST_USER}
     depends_on:
       - collectivo-db
       - keycloak

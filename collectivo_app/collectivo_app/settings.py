@@ -272,14 +272,14 @@ LOGGING = {
 }
 
 
-# Emails
-# EMAIL_HOST
-# EMAIL_PORT
-# EMAIL_HOST_USER
-# EMAIL_HOST_PASSWORD
-# EMAIL_USE_TLS
-# EMAIL_USE_SSL
-# DEFAULT_FROM_EMAIL
+# Email settings
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'mail.convive.io')
+EMAIL_PORT = 465 # os.environ.get('EMAIL_PORT', 587)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = False # get_env_bool('EMAIL_USE_TLS', False)
+EMAIL_USE_SSL = True # get_env_bool('EMAIL_USE_SSL', False)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', '')
 
 
 # Settings for collectivo
