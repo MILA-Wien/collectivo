@@ -33,16 +33,14 @@ class PrivateMenusApiTests(TestCase):
         res = self._create_email_template()
         self.assertEqual(res.status_code, 201)
 
-    def test_send_email_batch(self):
+    def test_email_batch(self):
         """Test that a superuser can send a batch of emails."""
         res = self._create_email_template()
         payload = {
             'template': res.data['id'],
             'recipients': [1, 2],
         }
-        print('before')
         res = self.client.post(BATCHES_URL, payload)
-        print('after')
         self.assertEqual(res.status_code, 201)
         self.assertEqual(len(mail.outbox), 2)
         obj = EmailBatch.objects.get(pk=res.data['id'])
