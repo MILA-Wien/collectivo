@@ -50,4 +50,3 @@ class PrivateMenusApiTests(TestCase):
             mail.outbox[0].recipients()[0], 'test_member_01@example.com')
         obj = EmailBatch.objects.get(pk=res.data['id'])
         self.assertEqual(obj.status, 'success')
-
