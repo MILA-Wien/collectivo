@@ -17,9 +17,10 @@ class EmailBatch(models.Model):
         'EmailTemplate', on_delete=models.SET_NULL, null=True)
     status = models.CharField(
         max_length=255, choices=[
-            ('working','working'),
+            ('working', 'working'),
             ('success', 'success'),
-            ('failed', 'failed')]
+            ('failed', 'failed')
+        ]
     )
     created = models.DateTimeField(auto_now_add=True)
     recipients = models.ManyToManyField('members.Member')

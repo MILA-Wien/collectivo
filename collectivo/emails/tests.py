@@ -1,11 +1,10 @@
 """Test the features of the emails API."""
 from django.test import TestCase
 from django.urls import reverse
-from django.core.mail import send_mail
 from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
 from django.core import mail
-from .models import EmailTemplate, EmailBatch
+from .models import EmailBatch
 
 
 TEMPLATES_URL = reverse('collectivo:collectivo.emails:template-list')

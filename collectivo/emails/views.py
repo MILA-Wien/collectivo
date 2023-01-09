@@ -3,10 +3,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.core import mail
 from rest_framework import viewsets
-from rest_framework.exceptions import ValidationError
 from collectivo.auth.permissions import IsSuperuser
 from . import models, serializers
-import time
 
 
 def send_bulk_email(recipients, subject, message, from_email):
@@ -47,7 +45,7 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
             message=serializer.validated_data['template'].message,
             from_email='mitmachen@mila.wien'
         )
-        #  time.sleep(5) TODO Background task
+        # TODO Background task
         if n_success != len(serializer.validated_data['recipients']):
             serializer.instance.status = 'failed'
         else:
