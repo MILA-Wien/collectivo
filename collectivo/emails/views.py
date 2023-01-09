@@ -11,10 +11,10 @@ def send_bulk_email(recipients, subject, message, from_email):
     """Send an html email to a list of recipients."""
     emails = []
     for recipient in recipients:
-        html_content = message
+        html_content = message  # TODO Handle variables here, django templating
         text_content = strip_tags(html_content)
         email = EmailMultiAlternatives(
-            subject, text_content, from_email, [recipient])
+            subject, text_content, from_email, [recipient.email])
         email.attach_alternative(html_content, "text/html")
         emails.append(email)
     connection = mail.get_connection()

@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
+from collectivo.members.models import Member
 from django.core import mail
 from .models import EmailBatch
 
@@ -38,10 +39,15 @@ class PrivateMenusApiTests(TestCase):
         res = self._create_email_template()
         payload = {
             'template': res.data['id'],
-            'recipients': [1, 2],
+            'recipients': [
+                Member.objects.get(email='test_member_01@example.com').id,
+                Member.objects.get(email='test_member_02@example.com').id],
         }
         res = self.client.post(BATCHES_URL, payload)
         self.assertEqual(res.status_code, 201)
         self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            mail.outbox[0].recipients()[0], 'test_member_01@example.com')
         obj = EmailBatch.objects.get(pk=res.data['id'])
         self.assertEqual(obj.status, 'success')
+
