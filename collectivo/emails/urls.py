@@ -8,6 +8,7 @@ app_name = 'collectivo.emails'
 router = DefaultRouter()
 router.register('templates', views.EmailTemplateViewSet, basename='template')
 router.register('batches', views.EmailBatchViewSet, basename='batch')
+router.register('designs', views.EmailDesignViewSet, basename='design')
 
 urlpatterns = [
     path('api/emails/', include(router.urls)),

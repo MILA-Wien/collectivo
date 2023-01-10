@@ -10,10 +10,11 @@ from .models import EmailBatch
 
 TEMPLATES_URL = reverse('collectivo:collectivo.emails:template-list')
 BATCHES_URL = reverse('collectivo:collectivo.emails:batch-list')
+DESIGNS_URL = reverse('collectivo:collectivo.emails:design-list')
 
 
-class PrivateMenusApiTests(TestCase):
-    """Test the privatly available menus API."""
+class MembersEmailAPITests(TestCase):
+    """Test the members emails API."""
 
     def setUp(self):
         """Prepare test case."""
@@ -21,32 +22,50 @@ class PrivateMenusApiTests(TestCase):
         self.client.force_authenticate(
             UserInfo(is_authenticated=True, roles=['superuser'])
         )
-
-    def _create_email_template(self):
-        payload = {
+        res = self.client.post(DESIGNS_URL, {'body': 'TEST {{content}}'})
+        self.template_data = {
             'subject': 'Test',
-            'message': 'Test {{first_name}} <b/> Test'
+            'design': res.data['id'],
+            'message': 'First name: {{member.first_name}} <br/> '
+                       'Person type: {{member.person_type}}'
         }
-        return self.client.post(TEMPLATES_URL, payload)
+        self.recipients = [
+            Member.objects.get(email='test_member_01@example.com').id,
+            Member.objects.get(email='test_member_02@example.com').id
+        ]
 
-    def test_create_email_template(self):
-        """Test that a superuser can create an email template."""
-        res = self._create_email_template()
+    def _batch_assertions(self, res):
+        """Assert the results of a batch email request."""
         self.assertEqual(res.status_code, 201)
-
-    def test_email_batch(self):
-        """Test that a superuser can send a batch of emails."""
-        res = self._create_email_template()
-        payload = {
-            'template': res.data['id'],
-            'recipients': [
-                Member.objects.get(email='test_member_01@example.com').id,
-                Member.objects.get(email='test_member_02@example.com').id],
-        }
-        res = self.client.post(BATCHES_URL, payload)
-        self.assertEqual(res.status_code, 201)
+        obj = EmailBatch.objects.get(pk=res.data['id'])
+        self.assertEqual(obj.status, 'success')
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
             mail.outbox[0].recipients()[0], 'test_member_01@example.com')
-        obj = EmailBatch.objects.get(pk=res.data['id'])
-        self.assertEqual(obj.status, 'success')
+        self.assertEqual(mail.outbox[0].subject, 'Test')
+        self.assertEqual(
+            mail.outbox[0].alternatives[0][0],
+            "TEST First name: Test Member 01 <br/> Person type: natural")
+        self.assertEqual(
+            mail.outbox[0].body,
+            "TEST First name: Test Member 01  \nPerson type: natural\n\n")
+
+    def test_email_batch_direct(self):
+        """Test that a superuser can send a batch of emails."""
+        payload = {
+            **self.template_data,
+            'recipients': self.recipients
+        }
+        res = self.client.post(BATCHES_URL, payload)
+        self._batch_assertions(res)
+
+    def test_email_batch_template(self):
+        """Test that a superuser can send a batch of emails with template."""
+        res = self.client.post(TEMPLATES_URL, self.template_data)
+        self.assertEqual(res.status_code, 201)
+        payload = {
+            'template': res.data['id'],
+            'recipients': self.recipients
+        }
+        res = self.client.post(BATCHES_URL, payload)
+        self._batch_assertions(res)
