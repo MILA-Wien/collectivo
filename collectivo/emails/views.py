@@ -1,11 +1,13 @@
 """Views of the emails module."""
 from django.core.mail import EmailMultiAlternatives
-from django.core import mail
 from django.template import Context, Template
+from django.conf import settings
 from rest_framework import viewsets
 from collectivo.auth.permissions import IsSuperuser
 from . import models, serializers
+from .tasks import send_mails_async, send_mails_async_end
 from html2text import html2text
+from celery import chain
 
 
 class EmailDesignViewSet(viewsets.ModelViewSet):
@@ -42,8 +44,18 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
                 subject, body_text, from_email, [recipient.email])
             email.attach_alternative(body_html, "text/html")
             emails.append(email)
-        connection = mail.get_connection()
-        return connection.send_messages(emails)
+
+        # Split emails into batches of size 100
+        batches = [emails[i:i+100] for i in range(0, len(emails), 100)]
+
+        # Create a chain of async tasks to send the emails
+        results = {'n_sent': 0}
+        tasks = []
+        tasks.append(send_mails_async.s(results, batches.pop(0)))
+        for batch in batches:
+            tasks.append(send_mails_async.s(batch))
+        tasks.append(send_mails_async_end.s())
+        chain(*tasks)().get()
 
     def perform_create(self, serializer):
         """Send the emails."""
@@ -62,16 +74,10 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
                 .replace('{{content}}', batch.message)
             batch.save()
 
-        # Try to send emails (TODO Do this as a background task)
-        n_success = self.send_bulk_email(
+        # Send emails in background
+        self.send_bulk_email(
             recipients=serializer.validated_data['recipients'],
             subject=batch.subject, message=batch.message,
-            from_email='mitmachen@mila.wien'
+            # TODO Get from_email from settings
+            from_email=settings.DEFAULT_FROM_EMAIL
         )
-
-        # Log success
-        if n_success != len(serializer.validated_data['recipients']):
-            serializer.instance.status = 'failed'
-        else:
-            serializer.instance.status = 'success'
-        serializer.instance.save()

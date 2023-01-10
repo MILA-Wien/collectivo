@@ -133,6 +133,13 @@ DATABASES = {
 }
 
 
+# Celery settings
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://127.0.0.1:6379/0")
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -279,7 +286,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = False # get_env_bool('EMAIL_USE_TLS', False)
 EMAIL_USE_SSL = True # get_env_bool('EMAIL_USE_SSL', False)
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', '')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_FROM', '')
 
 
 # Settings for collectivo
