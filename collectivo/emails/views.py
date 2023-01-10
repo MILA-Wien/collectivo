@@ -3,6 +3,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import Context, Template
 from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from collectivo.auth.permissions import IsSuperuser
 from . import models, serializers
 from .tasks import send_mails_async, send_mails_async_end
@@ -59,10 +60,22 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Send the emails."""
+        direct_data = [serializer.validated_data[x]
+                       for x in ['subject', 'message', 'design']]
+        if serializer.validated_data['template']:
+            if direct_data != [None, None, None]:
+                raise ValidationError("Cannot use template together with "
+                                      "subject, message, or design.")
+        else:
+            if None in direct_data:
+                raise ValidationError("Must specify subject, message, "
+                                      "and design if no template is used.")
+
+        # Save instance if there are no validation errors
         serializer.save()
         batch = serializer.instance
 
-        # Apply template
+        # Apply template (overrides other data)
         if batch.template is not None:
             batch.subject = batch.template.subject
             batch.message = batch.template.message
@@ -78,6 +91,5 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
         self.send_bulk_email(
             recipients=serializer.validated_data['recipients'],
             subject=batch.subject, message=batch.message,
-            # TODO Get from_email from settings
             from_email=settings.DEFAULT_FROM_EMAIL
         )
