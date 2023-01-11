@@ -20,8 +20,8 @@ class EmailTemplate(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 
-class EmailBatch(models.Model):
-    """An email batch that is being processed or has been sent."""
+class EmailCampaign(models.Model):
+    """A mass email that is being processed or has been sent."""
 
     # Use a template
     template = models.ForeignKey(
@@ -39,7 +39,7 @@ class EmailBatch(models.Model):
         max_length=255, default='working', choices=[
             ('working', 'working'),
             ('success', 'success'),
-            ('failed', 'failed')
+            ('failure', 'failure')
         ]
     )
     status_message = models.CharField(max_length=255, null=True)

@@ -27,14 +27,15 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
     queryset = models.EmailTemplate.objects.all()
 
 
-class EmailBatchViewSet(viewsets.ModelViewSet):
-    """Send mass emails and manage logs."""
+class EmailCampaignViewSet(viewsets.ModelViewSet):
+    """Manage email campaigns (mass email orders)."""
 
     permission_classes = [IsSuperuser]
-    serializer_class = serializers.EmailBatchSerializer
-    queryset = models.EmailBatch.objects.all()
+    serializer_class = serializers.EmailCampaignSerializer
+    queryset = models.EmailCampaign.objects.all()
 
-    def send_bulk_email(self, model, recipients, subject, message, from_email):
+    def send_bulk_email(
+            self, campaign, recipients, subject, message, from_email):
         """Send an html email to a list of recipients."""
         emails = []
         for recipient in recipients:
@@ -46,16 +47,17 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
             email.attach_alternative(body_html, "text/html")
             emails.append(email)
 
-        # Split emails into batches of size 100
-        batches = [emails[i:i+100] for i in range(0, len(emails), 100)]
+        # Split recipients into batches
+        n = 100  # TODO Get this number from the settings
+        batches = [emails[i:i+n] for i in range(0, len(emails), n)]
 
         # Create a chain of async tasks to send the emails
-        results = {'n_sent': 0}
+        results = {'n_sent': 0, 'campaign': campaign}
         tasks = []
         tasks.append(send_mails_async.s(results, batches.pop(0)))
         for batch in batches:
             tasks.append(send_mails_async.s(batch))
-        tasks.append(send_mails_async_end.s(model))
+        tasks.append(send_mails_async_end.s())
         chain(*tasks)()
 
     def perform_create(self, serializer):
@@ -73,24 +75,24 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
 
         # Save instance if there are no validation errors
         serializer.save()
-        batch = serializer.instance
+        campaign = serializer.instance
 
         # Apply template (overrides other data)
-        if batch.template is not None:
-            batch.subject = batch.template.subject
-            batch.message = batch.template.message
-            batch.design = batch.template.design
+        if campaign.template is not None:
+            campaign.subject = campaign.template.subject
+            campaign.message = campaign.template.message
+            campaign.design = campaign.template.design
 
         # Apply design
-        if batch.design is not None:
-            batch.message = batch.design.body\
-                .replace('{{content}}', batch.message)
-            batch.save()
+        if campaign.design is not None:
+            campaign.message = campaign.design.body\
+                .replace('{{content}}', campaign.message)
+            campaign.save()
 
         # Send emails in background
         self.send_bulk_email(
-            model=batch,
+            campaign=campaign,
             recipients=serializer.validated_data['recipients'],
-            subject=batch.subject, message=batch.message,
+            subject=campaign.subject, message=campaign.message,
             from_email=settings.DEFAULT_FROM_EMAIL
         )

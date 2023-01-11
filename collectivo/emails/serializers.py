@@ -23,12 +23,12 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class EmailBatchSerializer(serializers.ModelSerializer):
-    """Serializer for email logs."""
+class EmailCampaignSerializer(serializers.ModelSerializer):
+    """Serializer for email campaigns (email sending orders)."""
 
     class Meta:
         """Serializer settings."""
 
-        model = models.EmailBatch
+        model = models.EmailCampaign
         fields = '__all__'
         read_only_fields = ('status', 'status_message', 'created')

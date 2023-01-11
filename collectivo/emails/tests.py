@@ -5,7 +5,7 @@ from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
 from collectivo.members.models import Member
 from django.core import mail
-from .models import EmailBatch
+from .models import EmailCampaign
 from unittest.mock import patch
 
 TEMPLATES_URL = reverse('collectivo:collectivo.emails:template-list')
@@ -46,7 +46,7 @@ class MembersEmailAPITests(TestCase):
     def _batch_assertions(self, res):
         """Assert the results of a batch email request."""
         self.assertEqual(res.status_code, 201)
-        obj = EmailBatch.objects.get(pk=res.data['id'])
+        obj = EmailCampaign.objects.get(pk=res.data['id'])
         self.assertEqual(obj.status, 'success')
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
