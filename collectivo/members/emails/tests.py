@@ -8,9 +8,9 @@ from django.core import mail
 from .models import EmailCampaign
 from unittest.mock import patch
 
-TEMPLATES_URL = reverse('collectivo:collectivo.emails:template-list')
-BATCHES_URL = reverse('collectivo:collectivo.emails:batch-list')
-DESIGNS_URL = reverse('collectivo:collectivo.emails:design-list')
+TEMPLATES_URL = reverse('collectivo:collectivo.members.emails:template-list')
+CAMPAIGNS_URL = reverse('collectivo:collectivo.members.emails:campaign-list')
+DESIGNS_URL = reverse('collectivo:collectivo.members.emails:design-list')
 
 
 def run_mocked_celery_chain(mocked_chain):
@@ -59,18 +59,18 @@ class MembersEmailAPITests(TestCase):
             mail.outbox[0].body,
             "TEST First name: Test Member 01  \nPerson type: natural\n\n")
 
-    @patch('collectivo.emails.views.chain')
+    @patch('collectivo.members.emails.views.chain')
     def test_email_batch_direct(self, chain):
         """Test sending a batch of emails with direct inputs."""
         payload = {
             **self.template_data,
             'recipients': self.recipients
         }
-        res = self.client.post(BATCHES_URL, payload)
+        res = self.client.post(CAMPAIGNS_URL, payload)
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)
 
-    @patch('collectivo.emails.views.chain')
+    @patch('collectivo.members.emails.views.chain')
     def test_email_batch_template(self, chain):
         """Test sending a batch of emails using a template."""
         res = self.client.post(TEMPLATES_URL, self.template_data)
@@ -79,6 +79,6 @@ class MembersEmailAPITests(TestCase):
             'template': res.data['id'],
             'recipients': self.recipients
         }
-        res = self.client.post(BATCHES_URL, payload)
+        res = self.client.post(CAMPAIGNS_URL, payload)
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)

@@ -32,6 +32,7 @@ else:
 
 # Choose built-in collectivo extensions from environment
 _built_in_extensions = ['members']
+_sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get('COLLECTIVO_EXTENSIONS'))
 for ext in _chosen_extensions:
     if ext not in _built_in_extensions:
@@ -40,6 +41,10 @@ for ext in _chosen_extensions:
             f"'{ext}' is not a built-in extension. "
             f"Available extensions are: {_built_in_extensions}."
         )
+    if ext == 'members':
+        _sub_extensions.append('members.emails')
+_chosen_extensions += _sub_extensions
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -54,7 +59,6 @@ INSTALLED_APPS = [
     'collectivo.auth',
     'collectivo.extensions',
     'collectivo.dashboard',
-    'collectivo.emails',
 
     'corsheaders',
     'django_filters',
