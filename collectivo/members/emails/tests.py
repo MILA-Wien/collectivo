@@ -29,7 +29,7 @@ class MembersEmailAPITests(TestCase):
         """Prepare test case."""
         self.client = CollectivoAPIClient()
         self.client.force_authenticate(
-            UserInfo(is_authenticated=True, roles=['superuser'])
+            UserInfo(is_authenticated=True, roles=['members_admin'])
         )
         res = self.client.post(DESIGNS_URL, {'body': 'TEST {{content}}'})
         self.template_data = {

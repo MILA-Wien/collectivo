@@ -19,7 +19,7 @@ def post_migrate_callback(sender, **kwargs):
         extension=name,
         action='component',
         component_name='emails',
-        required_role='superuser',
+        required_role='members_admin',
         order=11,
     )
 

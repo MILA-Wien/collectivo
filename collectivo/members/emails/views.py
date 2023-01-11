@@ -4,7 +4,7 @@ from django.template import Context, Template
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
-from collectivo.auth.permissions import IsSuperuser
+from collectivo.members.permissions import IsMembersAdmin
 from . import models, serializers
 from .tasks import send_mails_async, send_mails_async_end
 from html2text import html2text
@@ -14,7 +14,7 @@ from celery import chain
 class EmailDesignViewSet(viewsets.ModelViewSet):
     """Manage email designs."""
 
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsMembersAdmin]
     serializer_class = serializers.EmailDesignSerializer
     queryset = models.EmailDesign.objects.all()
 
@@ -22,7 +22,7 @@ class EmailDesignViewSet(viewsets.ModelViewSet):
 class EmailTemplateViewSet(viewsets.ModelViewSet):
     """Manage email templates."""
 
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsMembersAdmin]
     serializer_class = serializers.EmailTemplateSerializer
     queryset = models.EmailTemplate.objects.all()
 
@@ -30,7 +30,7 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 class EmailCampaignViewSet(viewsets.ModelViewSet):
     """Manage email campaigns (mass email orders)."""
 
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsMembersAdmin]
     serializer_class = serializers.EmailCampaignSerializer
     queryset = models.EmailCampaign.objects.all()
 
