@@ -34,7 +34,7 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EmailBatchSerializer
     queryset = models.EmailBatch.objects.all()
 
-    def send_bulk_email(self, recipients, subject, message, from_email):
+    def send_bulk_email(self, model, recipients, subject, message, from_email):
         """Send an html email to a list of recipients."""
         emails = []
         for recipient in recipients:
@@ -55,14 +55,14 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
         tasks.append(send_mails_async.s(results, batches.pop(0)))
         for batch in batches:
             tasks.append(send_mails_async.s(batch))
-        tasks.append(send_mails_async_end.s())
-        chain(*tasks)().get()
+        tasks.append(send_mails_async_end.s(model))
+        chain(*tasks)()
 
     def perform_create(self, serializer):
         """Send the emails."""
-        direct_data = [serializer.validated_data[x]
+        direct_data = [serializer.validated_data.get(x)
                        for x in ['subject', 'message', 'design']]
-        if serializer.validated_data['template']:
+        if serializer.validated_data.get('template'):
             if direct_data != [None, None, None]:
                 raise ValidationError("Cannot use template together with "
                                       "subject, message, or design.")
@@ -89,6 +89,7 @@ class EmailBatchViewSet(viewsets.ModelViewSet):
 
         # Send emails in background
         self.send_bulk_email(
+            model=batch,
             recipients=serializer.validated_data['recipients'],
             subject=batch.subject, message=batch.message,
             from_email=settings.DEFAULT_FROM_EMAIL

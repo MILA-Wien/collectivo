@@ -6,11 +6,20 @@ from collectivo.auth.userinfo import UserInfo
 from collectivo.members.models import Member
 from django.core import mail
 # from .models import EmailBatch
-
+from unittest.mock import patch
 
 TEMPLATES_URL = reverse('collectivo:collectivo.emails:template-list')
 BATCHES_URL = reverse('collectivo:collectivo.emails:batch-list')
 DESIGNS_URL = reverse('collectivo:collectivo.emails:design-list')
+
+
+def run_mocked_celery_chain(mocked_chain):
+    """Take a called mocked celery chain and run it locally."""
+    args = list(mocked_chain.call_args[0])
+    task = args.pop(0).apply()
+    for arg in args:
+        task = arg.apply((task.result,))
+    return task.result
 
 
 class MembersEmailAPITests(TestCase):
@@ -50,17 +59,20 @@ class MembersEmailAPITests(TestCase):
             mail.outbox[0].body,
             "TEST First name: Test Member 01  \nPerson type: natural\n\n")
 
-    def test_email_batch_direct(self):
-        """Test that a superuser can send a batch of emails."""
+    @patch('collectivo.emails.views.chain')
+    def test_email_batch_direct(self, chain):
+        """Test sending a batch of emails with direct inputs."""
         payload = {
             **self.template_data,
             'recipients': self.recipients
         }
         res = self.client.post(BATCHES_URL, payload)
+        run_mocked_celery_chain(chain)
         self._batch_assertions(res)
 
-    def test_email_batch_template(self):
-        """Test that a superuser can send a batch of emails with template."""
+    @patch('collectivo.emails.views.chain')
+    def test_email_batch_template(self, chain):
+        """Test sending a batch of emails using a template."""
         res = self.client.post(TEMPLATES_URL, self.template_data)
         self.assertEqual(res.status_code, 201)
         payload = {
@@ -68,4 +80,5 @@ class MembersEmailAPITests(TestCase):
             'recipients': self.recipients
         }
         res = self.client.post(BATCHES_URL, payload)
+        run_mocked_celery_chain(chain)
         self._batch_assertions(res)

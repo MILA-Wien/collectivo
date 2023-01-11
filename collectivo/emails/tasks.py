@@ -1,25 +1,24 @@
 """Celery tasks of the emails module."""
 from celery import shared_task
 from django.core import mail
-import logging
+from celery.utils.log import get_task_logger
+import time
 
-
-logger = logging.getLogger(__name__)
+logger = get_task_logger(__name__)
 
 
 @shared_task
 def send_mails_async(results, emails):
     """Send a batch of emails."""
-    logger.info("Starting to send mails")
     connection = mail.get_connection()
     results['n_sent'] += connection.send_messages(emails)
-    logger.info("SEND MAILS: " + str(results))
-
+    time.sleep(1)
     return results
 
 
 @shared_task
-def send_mails_async_end(results):
+def send_mails_async_end(results, model):
     """Document results of sending emails in the database."""
-    logger.info("REACHED THE END OF SENDING MAILS: " + str(results))
-    # TODO Log success in database
+    model.n_sent = results['n_sent']
+    model.status = 'success'
+    model.save()
