@@ -37,28 +37,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
     def send_bulk_email(
             self, campaign, recipients, subject, message, from_email):
         """Send an html email to a list of recipients."""
-        emails = []
-        for recipient in recipients:
-            body_html = Template(message)\
-                .render(Context({'member': recipient}))
-            body_text = html2text(body_html)
-            email = EmailMultiAlternatives(
-                subject, body_text, from_email, [recipient.email])
-            email.attach_alternative(body_html, "text/html")
-            emails.append(email)
 
-        # Split recipients into batches
-        n = 100  # TODO Get this number from the settings
-        batches = [emails[i:i+n] for i in range(0, len(emails), n)]
-
-        # Create a chain of async tasks to send the emails
-        results = {'n_sent': 0, 'campaign': campaign}
-        tasks = []
-        tasks.append(send_mails_async.s(results, batches.pop(0)))
-        for batch in batches:
-            tasks.append(send_mails_async.s(batch))
-        tasks.append(send_mails_async_end.s())
-        chain(*tasks)()
 
     def perform_create(self, serializer):
         """Send the emails."""
@@ -89,10 +68,30 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                 .replace('{{content}}', campaign.message)
             campaign.save()
 
-        # Send emails in background
-        self.send_bulk_email(
-            campaign=campaign,
-            recipients=serializer.validated_data['recipients'],
-            subject=campaign.subject, message=campaign.message,
-            from_email=settings.DEFAULT_FROM_EMAIL
-        )
+        # Prepare the emails
+        recipients = serializer.validated_data['recipients']
+        subject = campaign.subject
+        message = campaign.message
+        from_email = settings.DEFAULT_FROM_EMAIL
+        emails = []
+        for recipient in recipients:
+            body_html = Template(message)\
+                .render(Context({'member': recipient}))
+            body_text = html2text(body_html)
+            email = EmailMultiAlternatives(
+                subject, body_text, from_email, [recipient.email])
+            email.attach_alternative(body_html, "text/html")
+            emails.append(email)
+
+        # Split recipients into batches
+        n = 100  # TODO Get this number from the settings
+        batches = [emails[i:i+n] for i in range(0, len(emails), n)]
+
+        # Create a chain of async tasks to send the emails
+        results = {'n_sent': 0, 'campaign': campaign}
+        tasks = []
+        tasks.append(send_mails_async.s(results, batches.pop(0)))
+        for batch in batches:
+            tasks.append(send_mails_async.s(batch))
+        tasks.append(send_mails_async_end.s())
+        chain(*tasks)()
