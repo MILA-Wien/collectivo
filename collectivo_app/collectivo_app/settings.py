@@ -288,12 +288,12 @@ LOGGING = {
 
 
 # Email settings
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'mail.convive.io')
-EMAIL_PORT = 465 # os.environ.get('EMAIL_PORT', 587)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = os.environ.get('EMAIL_PORT', 465)
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = False # get_env_bool('EMAIL_USE_TLS', False)
-EMAIL_USE_SSL = True # get_env_bool('EMAIL_USE_SSL', False)
+EMAIL_USE_TLS = get_env_bool('EMAIL_USE_TLS', False)
+EMAIL_USE_SSL = get_env_bool('EMAIL_USE_SSL', False)
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_FROM', '')
 
 
