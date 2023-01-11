@@ -34,11 +34,6 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EmailCampaignSerializer
     queryset = models.EmailCampaign.objects.all()
 
-    def send_bulk_email(
-            self, campaign, recipients, subject, message, from_email):
-        """Send an html email to a list of recipients."""
-
-
     def perform_create(self, serializer):
         """Send the emails."""
         direct_data = [serializer.validated_data.get(x)
