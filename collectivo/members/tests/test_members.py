@@ -215,7 +215,7 @@ class MemberAuthSyncTests(TestCase):
         """Prepare test case."""
         self.client = APIClient()
         self.keycloak = get_auth_manager()
-        self.member_id = 7
+        self.member_id = 2
         self.email = 'test_superuser@example.com'
         self.token = self.keycloak.openid.token(self.email, 'Test123!')
         self.access_token = self.token['access_token']

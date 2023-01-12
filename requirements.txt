@@ -5,6 +5,9 @@ django-filter==22.1
 drf-spectacular>=0.24.2,<0.25
 python-keycloak>=2.5.0,<2.6
 PyJWT>=2.5.0
+html2text>=2019.8.11<2019.9
+celery>=5.2.7,<5.3
+redis>=4.4.1,<4.5
 
 # For docker
 psycopg2>=2.9.3,<2.10

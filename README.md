@@ -21,9 +21,10 @@ The following development environment is used in our team:
 
 To run and test the app with docker:
 
-1. Install docker and docker-compose.
-2. Clone the repository.
-3. Uncomment the following lines in `docker-compose.yml` and comment the lines for the deployment server:
+* Install docker and docker-compose.
+* Clone the repository.
+* Copy `.env.example` to `.env` 
+* Uncomment the following lines in `docker-compose.yml` and comment the lines for the deployment server:
     ```yml
     # start a development server.
      command: > #
@@ -39,20 +40,21 @@ To run and test the app with docker:
     #          python manage.py migrate &&
     #          gunicorn collectivo_app.wsgi:application --bind 0.0.0.0:8000
     ```
-4. (alternative to 3.) use the `docker-compose.dev.yml` file with `docker compose -f docker-compose.dev.yml up -d`
-5. Build a development server and run: `docker compose build`
-6. Add the following line to your `/etc/hosts/` file: `127.0.0.1 keycloak collectivo.local`
-7. To start a development server, run: `docker compose up -d`
+* (alternative to 3.) use the `docker-compose.dev.yml` file with `docker compose -f docker-compose.dev.yml up -d`
+* Build a development server and run: `docker compose build`
+* Add the following line to your `/etc/hosts/` file: `127.0.0.1 keycloak collectivo.local`
+* To start a development server, run: `docker compose up -d`
     - Optional: To also set up a development server for the frontend, follow the instructions at [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/).
-8. The API will then be available at `collectivo.local:8000/api/docs/`.
-9. The frontend will be available at `collectivo.local:8001` (or `collectivo.local:5137` if you set up a development server via [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)).
-10. To perform tests and linting, run: `docker compose run --rm collectivo sh -c "python manage.py test && flake8"`
+* The API will then be available at `collectivo.local:8000/api/docs/`.
+* The frontend will be available at `collectivo.local:8001` (or `collectivo.local:5137` if you set up a development server via [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)).
+* To perform tests and linting, run: `docker compose run --rm collectivo sh -c "python manage.py test && flake8"`
 
 ## Installation
 
 To install collectivo, there are two ways:
 
 - With docker
+    - Copy `.env.example` to `.env`
 - With a custom django app
 
 ## API

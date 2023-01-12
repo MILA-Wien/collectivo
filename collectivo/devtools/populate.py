@@ -8,7 +8,7 @@ from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
 logger = logging.getLogger(__name__)
 
-N_TEST_MEMBERS = 15
+N_TEST_MEMBERS = 3
 
 
 # Add users
