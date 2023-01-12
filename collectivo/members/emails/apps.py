@@ -7,6 +7,8 @@ def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
     from collectivo.menus.utils import register_menuitem
     from collectivo.extensions.utils import register_extension
+    from .utils import register_email_design, register_email_template
+    from django.conf import settings
 
     name = 'emails'
     description = 'API for emails.'
@@ -22,6 +24,17 @@ def post_migrate_callback(sender, **kwargs):
         required_role='members_admin',
         order=11,
     )
+
+    if settings.DEVELOPMENT:
+        res = register_email_design(
+            body='<html><body style="margin:0;padding:40px;word-spacing:'
+                 'normal;background-color:#fff;">{{content}}</body></html>',
+        )
+        register_email_template(
+            design=res.data['id'],
+            subject='Test email',
+            message='This is a test email addressed at {{member.first_name}}.',
+        )
 
 
 class CollectivoUxConfig(AppConfig):
