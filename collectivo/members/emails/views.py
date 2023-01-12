@@ -79,7 +79,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             emails.append(email)
 
         # Split recipients into batches
-        n = 100  # TODO Get this number from the settings
+        n = 20  # TODO Get this number from the settings
         batches = [emails[i:i+n] for i in range(0, len(emails), n)]
 
         # Create a chain of async tasks to send the emails

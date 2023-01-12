@@ -14,6 +14,7 @@ def send_mails_async(results, emails):
     """Send a mass email."""
     connection = mail.get_connection()
     try:
+        time.sleep(1)  # TODO Get this number from the settings
         results['n_sent'] += connection.send_messages(emails)
     except SMTPException as e:
         campaign = results['campaign']
@@ -22,8 +23,6 @@ def send_mails_async(results, emails):
         campaign.save()
         # TODO Send an email to the admins
         raise e
-    # TODO Get this number from the settings
-    time.sleep(1)
     return results
 
 
