@@ -17,5 +17,5 @@ jobs:
       - name: Build container image
         run: |
           export VERSION=`python -c "import collectivo; print(collectivo.__version__);"`
-          docker build -t milawien/collectivo:pr-${VERSION} .
-          docker push milawien/collectivo:pr-${VERSION}
+          docker build -t milawien/collectivo:v${VERSION} .
+          docker push milawien/collectivo:v${VERSION}
