@@ -6,6 +6,7 @@ class MemberTag(models.Model):
     """A tag that can be assigned to members."""
 
     label = models.CharField(max_length=255, unique=True)
+    built_in = models.BooleanField(default=False, editable=False)
 
     def __str__(self):
         """Return string representation."""
@@ -163,3 +164,7 @@ class Member(models.Model):
     groups = models.ManyToManyField(
         'MemberGroup', related_name="groups", blank=True)
     admin_notes = models.TextField(null=True)
+
+    def __str__(self):
+        """Return string representation."""
+        return f"{self.first_name} {self.last_name} ({self.id})"

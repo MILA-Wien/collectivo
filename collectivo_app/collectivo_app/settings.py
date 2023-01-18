@@ -288,13 +288,13 @@ LOGGING = {
 
 
 # Email settings
-EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT', 465)
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = get_env_bool('EMAIL_USE_TLS', False)
 EMAIL_USE_SSL = get_env_bool('EMAIL_USE_SSL', False)
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_FROM', '')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_FROM')
 
 
 # Settings for collectivo

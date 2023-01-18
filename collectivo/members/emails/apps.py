@@ -6,13 +6,12 @@ from django.db.models.signals import post_migrate
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
     from collectivo.menus.utils import register_menuitem
-    from collectivo.extensions.utils import register_extension
     from .utils import register_email_design, register_email_template
     from django.conf import settings
+    import logging
 
-    name = 'emails'
-    description = 'API for emails.'
-    register_extension(name=name, built_in=True, description=description)
+    logger = logging.getLogger(__name__)
+    name = 'members'
 
     register_menuitem(
         item_id='menus_admin_menu_item',
@@ -26,15 +25,20 @@ def post_migrate_callback(sender, **kwargs):
     )
 
     if settings.DEVELOPMENT:
-        res = register_email_design(
-            body='<html><body style="margin:0;padding:40px;word-spacing:'
-                 'normal;background-color:#fff;">{{content}}</body></html>',
-        )
-        register_email_template(
-            design=res.data['id'],
-            subject='Test email',
-            message='This is a test email addressed at {{member.first_name}}.',
-        )
+        try:
+            res = register_email_design(
+                name="Test design",
+                body='<html><body style="margin:0;padding:40px;word-spacing:'
+                     'normal;background-color:#fff;">{{content}}</body></html>'
+            )
+            register_email_template(
+                name="Test template",
+                design=res.data['id'],
+                subject='Test email',
+                body='This is a test email to {{member.first_name}}.',
+            )
+        except Exception as e:
+            logger.debug(e)
 
 
 class CollectivoUxConfig(AppConfig):

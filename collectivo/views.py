@@ -43,6 +43,7 @@ input_types = {
     'IntegerField': 'number',
     'FloatField': 'number',
     'DateField': 'date',
+    'DateTimeField': 'datetime',
     'BooleanField': 'checkbox',
     'ManyRelatedField': 'multiselect',
     'PrimaryKeyRelatedField': 'select',

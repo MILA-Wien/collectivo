@@ -15,11 +15,12 @@ DESIGNS_URL = reverse('collectivo:collectivo.members.emails:design-list')
 
 def run_mocked_celery_chain(mocked_chain):
     """Take a called mocked celery chain and run it locally."""
-    args = list(mocked_chain.call_args[0])
-    task = args.pop(0).apply()
-    for arg in args:
-        task = arg.apply((task.result,))
-    return task.result
+    if mocked_chain.call_args:
+        args = list(mocked_chain.call_args[0])
+        task = args.pop(0).apply()
+        for arg in args:
+            task = arg.apply((task.result,))
+        return task.result
 
 
 class MembersEmailAPITests(TestCase):
@@ -31,11 +32,15 @@ class MembersEmailAPITests(TestCase):
         self.client.force_authenticate(
             UserInfo(is_authenticated=True, roles=['members_admin'])
         )
-        res = self.client.post(DESIGNS_URL, {'body': 'TEST {{content}}'})
+        res = self.client.post(DESIGNS_URL, {
+            'name': 'Test design 2',
+            'body': 'TEST {{content}}'
+        })
         self.template_data = {
+            'name': 'Test template 2',
             'subject': 'Test',
             'design': res.data['id'],
-            'message': 'First name: {{member.first_name}} <br/> '
+            'body': 'First name: {{member.first_name}} <br/> '
                        'Person type: {{member.person_type}}'
         }
         self.recipients = [
@@ -59,26 +64,17 @@ class MembersEmailAPITests(TestCase):
             mail.outbox[0].body,
             "TEST First name: Test Member 01  \nPerson type: natural\n\n")
 
-    @patch('collectivo.members.emails.views.chain')
-    def test_email_batch_direct(self, chain):
-        """Test sending a batch of emails with direct inputs."""
-        payload = {
-            **self.template_data,
-            'recipients': self.recipients
-        }
-        res = self.client.post(CAMPAIGNS_URL, payload)
-        run_mocked_celery_chain(chain)
-        self._batch_assertions(res)
-
-    @patch('collectivo.members.emails.views.chain')
+    @patch('collectivo.members.emails.serializers.chain')
     def test_email_batch_template(self, chain):
         """Test sending a batch of emails using a template."""
         res = self.client.post(TEMPLATES_URL, self.template_data)
         self.assertEqual(res.status_code, 201)
         payload = {
+            'send': True,
             'template': res.data['id'],
             'recipients': self.recipients
         }
         res = self.client.post(CAMPAIGNS_URL, payload)
+        self.assertEqual(res.status_code, 201)
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)
