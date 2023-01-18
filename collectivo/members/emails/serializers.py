@@ -81,7 +81,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         # Prevent sending to members with broken emails tag
         recipients = data.get('recipients')
         tag = MemberTag.objects.get_or_create(
-            label='broken_email', built_in=True)[0]
+            label='Email broken', built_in=True)[0]
         if recipients is not None:
             for recipient in recipients:
                 if tag in recipient.tags.all():
