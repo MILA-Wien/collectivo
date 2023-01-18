@@ -74,6 +74,12 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         if self.instance and self.instance.status != 'draft':
             raise ValidationError("Only drafts can be edited.")
 
+        if attrs.get('template') is None:
+            raise ValidationError("Template is required.")
+
+        if attrs.get('recipients') is None or attrs.get('recipients') == []:
+            raise ValidationError("Recipients are required.")
+
         # Data together with instance data if objects already exists
         data = self.instance.__dict__ if self.instance else {}
         data.update(attrs)

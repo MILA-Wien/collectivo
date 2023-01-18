@@ -22,8 +22,8 @@ def send_mails_async(results, emails):
         campaign.status = 'failure'
         campaign.status_message = str(e)
         campaign.save()
+        logger.error("Error sending emails: %s", e)
         # TODO Send an email to the admins
-        raise e
 
     # Add optional tag to recipients if batch is successful
     if campaign.template.tag is not None:
