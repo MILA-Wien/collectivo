@@ -11,10 +11,6 @@ from collectivo.version import __version__
 from corsheaders.defaults import default_headers
 from .utils import string_to_list, get_env_bool
 
-# TODO FOR PRODUCTION
-# Go through https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-# Remove unused django functions
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
