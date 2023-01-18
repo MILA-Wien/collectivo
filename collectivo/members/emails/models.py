@@ -52,3 +52,8 @@ class EmailCampaign(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     sent = models.DateTimeField(null=True)
     recipients = models.ManyToManyField('members.Member')
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return "Email campaign "\
+            f"({self.id}, {self.status}, {self.template.name})"

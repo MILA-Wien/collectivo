@@ -70,17 +70,6 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         # Save send value for later use in view
         self._send = attrs.pop('send', False)
 
-        # Check email settings
-        if self._send:
-            if settings.EMAIL_HOST is None:
-                raise ValidationError("EMAIL_HOST not set.")
-            if settings.EMAIL_HOST_USER is None:
-                raise ValidationError("EMAIL_HOST_USER not set.")
-            if settings.EMAIL_HOST_PASSWORD is None:
-                raise ValidationError("EMAIL_HOST_PASSWORD not set.")
-            if settings.DEFAULT_FROM_EMAIL is None:
-                raise ValidationError("EMAIL_FROM not set.")
-
         # Prevent editing of sent campaigns
         if self.instance and self.instance.status != 'draft':
             raise ValidationError("Only drafts can be edited.")

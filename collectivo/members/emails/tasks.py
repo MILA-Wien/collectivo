@@ -19,7 +19,7 @@ def send_mails_async(results, emails):
     try:
         time.sleep(1)  # TODO Get this number from the settings
         results['n_sent'] += connection.send_messages(emails)
-    except SMTPException as e:
+    except Exception as e:
         campaign.status = 'failure'
         campaign.status_message = str(e)
         campaign.save()
