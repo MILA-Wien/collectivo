@@ -3,7 +3,6 @@ from celery import shared_task
 from django.core import mail
 from celery.utils.log import get_task_logger
 import time
-from smtplib import SMTPException
 from collectivo.members.models import Member
 
 
