@@ -61,8 +61,9 @@ def post_migrate_callback(sender, **kwargs):
             register_tag(label=label)
 
         status_fields = [
-            'Antrag ausstehend', 'Zahlung ausstehend', 'Bestätigung ausstehend',
-            'Zahlung fehlgeschlagen', 'Mitglied', 'Gesperrt', 'Beendet'
+            'Antrag ausstehend', 'Zahlung ausstehend',
+            'Bestätigung ausstehend', 'Zahlung fehlgeschlagen',
+            'Mitglied', 'Gesperrt', 'Beendet'
         ]
         for label in status_fields:
             register_status(label=label)
