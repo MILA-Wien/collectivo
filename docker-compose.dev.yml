@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
 
-  # A sample django project that has installed collectivo.
+  # A django app that is runs collectivo.
   collectivo:
     container_name: collectivo-app
     restart: "no"
@@ -18,21 +18,11 @@ services:
       - ./docker/static:/collectivo_app/static
     # Wait for database to be ready (this command will work only on linux),
     # migrate the database changes and start a development server.
-
-    # start a development server.
     command: > #
       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
              while ! nc -z keycloak 8080; do sleep 1; done &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
-
-    # start a deployment server.
-    # command: > #
-    #    sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
-    #           while ! nc -z keycloak 8080; do sleep 1; done &&
-    #           python manage.py migrate &&
-    #           gunicorn collectivo_app.wsgi:application --bind 0.0.0.0:8000
-    #           "
     env_file:
       - .env
     depends_on:
