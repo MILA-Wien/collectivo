@@ -14,48 +14,30 @@ Folders:
 
 ## Development
 
-The following development environment is used in our team:
-
-1. [Docker](https://www.docker.com/), Version >= 20.10
-2. [VisualStudioCode](https://code.visualstudio.com/) (VSCode)
-
 To run and test the app with docker:
 
-* Install docker and docker-compose.
-* Clone the repository.
-* Copy `.env.example` to `.env` 
-* Uncomment the following lines in `docker-compose.yml` and comment the lines for the deployment server:
-    ```yml
-    # start a development server.
-     command: > #
-       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
-              while ! nc -z keycloak 8080; do sleep 1; done &&
-              python manage.py migrate &&
-              python manage.py runserver 0.0.0.0:8000"
-
-    # start a deployment server.
-    #command: > #
-    #   sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
-    #          while ! nc -z keycloak 8080; do sleep 1; done &&
-    #          python manage.py migrate &&
-    #          gunicorn collectivo_app.wsgi:application --bind 0.0.0.0:8000
-    ```
-* (alternative to 3.) use the `docker-compose.dev.yml` file with `docker compose -f docker-compose.dev.yml up -d`
-* Build a development server and run: `docker compose build`
+* Install docker and docker-compose (Version >= 20.10)
+* Clone the repository with `git clone https://github.com/MILA-Wien/collectivo.git`
 * Add the following line to your `/etc/hosts/` file: `127.0.0.1 keycloak collectivo.local`
-* To start a development server, run: `docker compose up -d`
-    - Optional: To also set up a development server for the frontend, follow the instructions at [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/).
-* The API will then be available at `collectivo.local:8000/api/docs/`.
-* The frontend will be available at `collectivo.local:8001` (or `collectivo.local:5137` if you set up a development server via [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)).
+* Copy `.env.example` to `.env`
+    - Optional: Fill out the email variables if you want to test the email features
+* To start a local instance of collectivo, run: `docker compose up -d`
+    - Optional: To set up a development server for the backend, use `docker compose -f docker-compose.dev.yml up -d`
+    - Optional: To set up a development server for the frontend, follow the instructions at [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)
+* To open the API docs, go to `collectivo.local:8000/api/docs/`
+* To open the frontend, go to `collectivo.local:8001`
+    - Optional: If you set up a development server for the frontend, go to `collectivo.local:5137`
 * To perform tests and linting, run: `docker compose run --rm collectivo sh -c "python manage.py test && flake8"`
 
 ## Installation
 
 To install collectivo, there are two ways:
 
-- With docker
+- Using docker
     - Copy `.env.example` to `.env`
-- With a custom django app
+- Using collectivo as a Django app within your existing Django project
+    - Add `collectivo` to the requirements of your Django project
+    - Add collectivo modules to your installed apps like in `collectivo_app/collectivo_app/settings.py`
 
 ## API
 
@@ -95,7 +77,7 @@ To install a built-in extension:
 The devtools extension sets up the following test users:
 
 - `test_superuser@example.com`
-- `test_member_01@example.com`, `test_member_02@example.com`, ..., `test_member_15@example.com`
+- `test_member_01@example.com`, `test_member_02@example.com`, `test_member_03@example.com`
 - `test_user_not_verified@example.com`
 - `test_user_not_member@example.com`
 
