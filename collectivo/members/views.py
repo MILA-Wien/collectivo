@@ -28,7 +28,7 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     queryset = models.Member.objects.all()
 
-    def sync_user_data_with_auth(self, user_id, data):
+    def sync_user_data_with_auth(self, user_id, data, destroy=False):
         """Synchronize user data within authentication service."""
         if user_id is None:  # Member does not have a user account
             return
@@ -43,8 +43,12 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         role = 'members_user'
         auth_manager = get_auth_manager()
         role_id = auth_manager.get_realm_role(role)['id']
-        auth_manager.assign_realm_roles(
+        if destroy:
+            auth_manager.unassign_realm_roles(
             user_id, {'id': role_id, 'name': role})
+        else:
+            auth_manager.delete_realm_roles_of_user(
+                user_id, {'id': role_id, 'name': role})
 
     def perform_create(self, serializer):
         """Create member and synchronize user data with auth service."""
@@ -59,6 +63,15 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
             serializer.instance.user_id,
             serializer.validated_data)
         serializer.save()
+
+    def perform_destroy(self, serializer):
+        """Delete member and remove members_user role from auth service."""
+        self.sync_user_data_with_auth(
+            serializer.instance.user_id,
+            serializer.validated_data,
+            destroy=True)
+        serializer.delete()
+
 
 
 class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
