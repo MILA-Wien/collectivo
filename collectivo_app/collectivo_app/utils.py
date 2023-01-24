@@ -13,6 +13,9 @@ def string_to_list(string: str):
 def get_env_bool(key, default=None):
     """Take the name of an environment variable and return a boolean."""
     options = {
+        None: False,
+        False: False,
+        '': False,
         'false': False,
         'False': False,
         0: False,
@@ -21,6 +24,7 @@ def get_env_bool(key, default=None):
         'True': True,
         '1': True,
         1: True,
+        True: True,
     }
     value = os.environ.get(key, default)
     if isinstance(value, bool):
