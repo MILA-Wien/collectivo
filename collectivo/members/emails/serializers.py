@@ -138,4 +138,10 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         for batch in batches:
             tasks.append(send_mails_async.s(batch))
         tasks.append(send_mails_async_end.s())
-        chain(*tasks)()
+        try:
+            chain(*tasks)()
+        except Exception as e:
+            campaign.status = 'failure'
+            campaign.status_message = str(e)
+            campaign.save()
+            raise e
