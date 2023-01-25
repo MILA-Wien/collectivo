@@ -49,6 +49,9 @@ services:
   redis:
     container_name: redis
     image: redis:7-alpine
+    command: >
+      --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb --maxmemory-policy volatile-lru
+
 
   # A static files server for django
   collectivo-static:
