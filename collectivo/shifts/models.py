@@ -29,7 +29,7 @@ class GeneralShift(models.Model):
             ("D", "D"),
         ],
     )
-    starting_time = models.DateField(max_length=30)
+    starting_time = models.DateTimeField()
     duration = models.FloatField(
         default=3,
     )
@@ -52,16 +52,46 @@ class GeneralShift(models.Model):
         ],
     )
     individual_shifts = models.ManyToManyField("IndividualShift")
+    created_by = models.ForeignKey("ShiftAdmin", on_delete=models.CASCADE)
+    updated_by = models.ForeignKey("ShiftAdmin", on_delete=models.CASCADE)
+    updated_at = models.DateTimeField(auto_now=True)
+    additional_info = models.TextField(max_length=300)
 
 
 class IndividualShift(models.Model):
     assigned_user = models.ForeignKey("ShiftUser", on_delete=models.CASCADE)
     requirement = models.ManyToManyField("ShiftRequirement")
+    user_has_attended = models.BooleanField(
+        default=False
+    )  # how to require only shift admins to change this?
+    shift_type = models.CharField(
+        help_text=(
+            "Type of shift. Fixed shifts are recurring mostly every month."
+            "Open shifts are asked to be done once."
+        ),
+        max_length=20,
+        default="fixed",
+        choices=[
+            ("fixed", "fixed"),
+            ("open", "open"),
+        ],
+    )
+    additional_info = models.TextField(max_length=300)
+    # how to inherit additional_info and shift_type from GeneralShift?
 
 
 class ShiftRequirement(models.Model):
+    """A requirement to be fulfilled by user attending general shifts."""
+
+    # how to add a field to dynamically add requirements?
     pass
 
 
 class ShiftUser(models.Model):
-    pass
+    requirement = models.ManyToManyField("ShiftRequirement")
+    # username taken by keycloak, role also taken by keycloak?
+
+
+class ShiftAdmin(models.Model):
+    requirement = models.ManyToManyField("ShiftRequirement")
+    # username taken by keycloak, role also taken by keycloak?
