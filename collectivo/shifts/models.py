@@ -1,4 +1,4 @@
-"""Models of the user experience module."""
+"""Models of the shift module."""
 from django.db import models
 
 
@@ -33,6 +33,7 @@ class GeneralShift(models.Model):
     duration = models.FloatField(
         default=3,
     )
+    end_time = models.DateTimeField()
     required_users = models.IntegerField()
     shift_day = models.CharField(
         help_text=(
@@ -52,46 +53,20 @@ class GeneralShift(models.Model):
         ],
     )
     individual_shifts = models.ManyToManyField("IndividualShift")
-    created_by = models.ForeignKey("ShiftAdmin", on_delete=models.CASCADE)
-    updated_by = models.ForeignKey("ShiftAdmin", on_delete=models.CASCADE)
-    updated_at = models.DateTimeField(auto_now=True)
-    additional_info = models.TextField(max_length=300)
+    additional_info_general = models.TextField(max_length=300)
 
 
-class IndividualShift(models.Model):
+class IndividualShift(GeneralShift):
+    # to access attributes from parent class, read:
+    # https://stackoverflow.com/a/19143342/19932351
     assigned_user = models.ForeignKey("ShiftUser", on_delete=models.CASCADE)
-    requirement = models.ManyToManyField("ShiftRequirement")
     user_has_attended = models.BooleanField(
         default=False
     )  # how to require only shift admins to change this?
-    shift_type = models.CharField(
-        help_text=(
-            "Type of shift. Fixed shifts are recurring mostly every month."
-            "Open shifts are asked to be done once."
-        ),
-        max_length=20,
-        default="fixed",
-        choices=[
-            ("fixed", "fixed"),
-            ("open", "open"),
-        ],
-    )
-    additional_info = models.TextField(max_length=300)
-    # how to inherit additional_info and shift_type from GeneralShift?
-
-
-class ShiftRequirement(models.Model):
-    """A requirement to be fulfilled by user attending general shifts."""
-
-    # how to add a field to dynamically add requirements?
-    pass
+    additional_info_individual = models.TextField(max_length=300)
 
 
 class ShiftUser(models.Model):
-    requirement = models.ManyToManyField("ShiftRequirement")
-    # username taken by keycloak, role also taken by keycloak?
-
-
-class ShiftAdmin(models.Model):
-    requirement = models.ManyToManyField("ShiftRequirement")
-    # username taken by keycloak, role also taken by keycloak?
+    shift_creator = models.BooleanField(
+        default=False
+    )  # should be set by keycloak and collectivo

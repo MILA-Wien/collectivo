@@ -11,5 +11,5 @@ logger = logging.getLogger(__name__)
 class ShiftViewSet(viewsets.ModelViewSet):
     """Manage shiftss."""
 
-    queryset = models.Shift.objects.all()
+    queryset = models.GeneralShift.objects.all()
     serializers_class = serializers.ShiftSerializer

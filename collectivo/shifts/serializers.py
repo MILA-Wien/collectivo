@@ -1,7 +1,7 @@
 """Serializers of the collectivo user experience module."""
 from rest_framework import serializers
 
-from .models import Shift
+from .models import GeneralShift
 
 
 class ShiftSerializer(serializers.ModelSerializer):
@@ -12,5 +12,5 @@ class ShiftSerializer(serializers.ModelSerializer):
         Serializer settings.
         """
 
-        model = Shift
+        model = GeneralShift
         fields = "__all__"
