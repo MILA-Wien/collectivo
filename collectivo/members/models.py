@@ -150,7 +150,8 @@ class Member(models.Model):
         ]
     )
     bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
-    bank_account_owner = models.CharField(max_length=255, null=True, blank=True)
+    bank_account_owner = models.CharField(
+        max_length=255, null=True, blank=True)
 
     # Survey data
     survey_contact = models.TextField(null=True, blank=True)
