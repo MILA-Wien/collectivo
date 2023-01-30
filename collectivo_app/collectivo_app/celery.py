@@ -3,7 +3,6 @@ import os
 
 from celery import Celery
 from celery.schedules import crontab
-from .tasks import ping
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'collectivo_app.settings')
