@@ -27,4 +27,4 @@ app.conf.beat_schedule = {
         'task': 'ping',
         'schedule': crontab(minute='*/1'),
     },
-} 
+}
