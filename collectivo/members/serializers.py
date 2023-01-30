@@ -414,6 +414,17 @@ class MemberAdminSerializer(MemberSerializer):
 
         model = models.Member
         fields = '__all__'
+        read_only_fields = ['user_id', 'email', 'email_verified']
+
+
+class MemberSudoSerializer(MemberSerializer):
+    """Serializer for admins to manage all member data."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Member
+        fields = '__all__'
 
 
 class MemberTagCreateSerializer(serializers.ModelSerializer):

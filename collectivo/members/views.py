@@ -19,7 +19,6 @@ filterset_fields = {
     'first_name': ('contains', ),
     'last_name': ('contains', ),
     'person_type': ('exact', ),
-    'membership_status': ('exact', ),
 }
 
 
@@ -127,6 +126,19 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     """
 
     serializer_class = serializers.MemberAdminSerializer
+    permission_classes = [IsMembersAdmin]
+    filterset_fields = filterset_fields
+    ordering_fields = member_fields
+
+
+class MembersSudoViewSet(MemberMixin, viewsets.ModelViewSet):
+    """
+    API for admins to manage members.
+
+    Requires the role 'members_admin'.
+    """
+
+    serializer_class = serializers.MemberSudoSerializer
     permission_classes = [IsMembersAdmin]
     filterset_fields = filterset_fields
     ordering_fields = member_fields
