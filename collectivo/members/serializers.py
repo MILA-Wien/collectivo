@@ -109,7 +109,7 @@ field_settings = {
 
     # Legal person fields
     'legal_name': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {'label': 'Name of the organisation'},
         'schema': {
             'condition': conditions['legal'],
@@ -117,7 +117,7 @@ field_settings = {
         }
     },
     'legal_type': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Type of the organisation',
             'help_text': 'Such as company, association, or cooperative.'
@@ -128,7 +128,7 @@ field_settings = {
         }
     },
     'legal_id': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Idenfication number of the organisation',
             'help_text': 'Legal entity identifier or registry number.'
@@ -150,9 +150,6 @@ field_settings = {
         'schema': {
             'condition': conditions['natural'],
         }
-    },
-    'membership_status': {
-        'permissions': ['table'],
     },
     'membership_start': {
         'kwargs': {
@@ -456,14 +453,4 @@ class MemberGroupSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.MemberGroup
-        fields = '__all__'
-
-
-class MemberStatusSerializer(serializers.ModelSerializer):
-    """Serializer for member status."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.MemberStatus
         fields = '__all__'

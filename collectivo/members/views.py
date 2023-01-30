@@ -154,11 +154,3 @@ class MemberGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberGroupSerializer
     queryset = models.MemberGroup.objects.all()
-
-
-class MemberStatusViewSet(viewsets.ModelViewSet):
-    """Manage member status."""
-
-    permission_classes = [IsMembersAdmin]
-    serializer_class = serializers.MemberStatusSerializer
-    queryset = models.MemberStatus.objects.all()
