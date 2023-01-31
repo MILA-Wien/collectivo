@@ -252,25 +252,16 @@ field_settings = {
 
     # Special boolean fields for registration
     # Will be converted to tags during validation
-    # 'statutes_approved': {
-    #     'permissions': ['create'],
-    #     'kwargs': {
-    #         'label': 'Statutes approved',
-    #         'help_text': 'TEXT PENDING JULIANNA'
-    #     },
-    # },
+    'statutes_approved': {
+        'permissions': ['create'],
+        'kwargs': {
+            'label': 'Statutes approved',
+        },
+    },
     'public_use_approved': {
         'permissions': ['create'],
         'kwargs': {
             'label': 'Public use approved',
-            'help_text': 'TEXT PENDING JULIANNA'
-        },
-    },
-    'founding_event': {
-        'permissions': ['create'],
-        'kwargs': {
-            'label': 'Founding event',
-            'help_text': 'TEXT PENDING JULIANNA'
         },
     },
 }
@@ -295,8 +286,7 @@ summary_fields = [
     if 'table' in s['permissions']
 ]
 register_tag_fields = [
-    # 'statutes_approved'
-    'public_use_approved', 'founding_event'
+    'statutes_approved', 'public_use_approved'
 ]
 
 
@@ -314,11 +304,9 @@ class MemberRegisterSerializer(MemberSerializer):
     """Serializer for users to register themselves as members."""
 
     # Tag fields
-    # These will change after the founding event
-    # statutes_approved = serializers.BooleanField(write_only=True)
+    statutes_approved = serializers.BooleanField(
+        write_only=True, required=True)
     public_use_approved = serializers.BooleanField(
-        write_only=True, required=False)
-    founding_event = serializers.BooleanField(
         write_only=True, required=False)
     shares_tarif = serializers.CharField(required=False)
 
