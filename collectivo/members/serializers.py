@@ -256,6 +256,7 @@ field_settings = {
         'permissions': ['create'],
         'kwargs': {
             'label': 'Statutes approved',
+            'required': True,
         },
     },
     'public_use_approved': {
