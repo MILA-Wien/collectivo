@@ -37,11 +37,21 @@ def post_migrate_callback(sender, **kwargs):
         menu_id='main_menu',
         label='Members',
         extension=name,
-        menu='admin_menu',
         action='component',
         component_name='members',
         required_role='members_admin',
         order=11,
+    )
+
+    register_menuitem(
+        item_id='members_tags_menu_item',
+        menu_id='main_menu',
+        label='Tags',
+        extension=name,
+        action='component',
+        component_name='tags',
+        required_role='members_admin',
+        order=12,
     )
 
     register_tile(
