@@ -54,7 +54,7 @@ field_settings = {
         },
     },
     'gender': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Gender', 'required': True},
     },
     'birthday': {
@@ -74,19 +74,19 @@ field_settings = {
         }
     },
     'address_street': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Street', 'required': True},
     },
     'address_number': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Number', 'required': True},
     },
     'address_stair': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Stair', 'allow_blank': True},
     },
     'address_door': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Door', 'allow_blank': True},
     },
     'address_postcode': {
@@ -94,7 +94,7 @@ field_settings = {
         'kwargs': {'label': 'Postcode', 'required': True},
     },
     'address_city': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'City', 'required': True},
     },
     'address_country': {
@@ -103,7 +103,7 @@ field_settings = {
         'schema': {'default': 'Austria'}
     },
     'phone': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Phone number', 'allow_blank': True},
     },
 
