@@ -16,6 +16,8 @@ admin_router.register(
     'groups', views.MemberGroupViewSet, basename='group')
 admin_router.register(
     'skills', views.MemberSkillViewSet, basename='skill')
+admin_router.register(
+    'tags', views.MemberTagViewSet, basename='tag')
 
 me_router = DirectDetailRouter()
 me_router.register(

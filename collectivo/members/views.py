@@ -1,7 +1,7 @@
 """Views of the members extension."""
 import logging
 from rest_framework import viewsets, mixins
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from collectivo.auth.permissions import IsAuthenticated
 from collectivo.utils import get_auth_manager
 from collectivo.views import SchemaMixin
@@ -144,15 +144,22 @@ class MembersSudoViewSet(MemberMixin, viewsets.ModelViewSet):
     ordering_fields = member_fields
 
 
-class MemberTagViewSet(viewsets.ModelViewSet):
+class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member tags."""
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberTagSerializer
     queryset = models.MemberTag.objects.all()
 
+    def perform_destroy(self, instance):
+        """Prevent deletion if assigned to members."""
+        if instance.member_set.all().exists():
+            raise ValidationError(
+                'Cannot delete tag that is assigned to members.')
+        return super().perform_destroy(instance)
 
-class MemberSkillViewSet(viewsets.ModelViewSet):
+
+class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member skills."""
 
     permission_classes = [IsMembersAdmin]
@@ -160,7 +167,7 @@ class MemberSkillViewSet(viewsets.ModelViewSet):
     queryset = models.MemberSkill.objects.all()
 
 
-class MemberGroupViewSet(viewsets.ModelViewSet):
+class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member groups."""
 
     permission_classes = [IsMembersAdmin]
