@@ -33,16 +33,6 @@ class MemberSkill(models.Model):
         return self.label
 
 
-class MemberStatus(models.Model):
-    """A status that can be assigned to members."""
-
-    label = models.CharField(max_length=255, unique=True)
-
-    def __str__(self):
-        """Return string representation."""
-        return self.label
-
-
 class MemberCard(models.Model):
     """A membership card that can be assigned to members."""
 
@@ -133,8 +123,6 @@ class Member(models.Model):
             ('investing', 'investing'),
         ]
     )
-    membership_status = models.ForeignKey(
-        'MemberStatus', null=True, blank=True, on_delete=models.SET_NULL)
     membership_card = models.ForeignKey(
         'MemberCard', null=True, blank=True, on_delete=models.SET_NULL)
 

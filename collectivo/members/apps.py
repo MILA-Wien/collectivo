@@ -11,7 +11,7 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.dashboard.utils import register_tile
     from django.conf import settings
     from .utils import (
-        register_tag, register_group, register_skill, register_status)
+        register_tag, register_group, register_skill)
 
     name = 'members'
 
@@ -59,15 +59,6 @@ def post_migrate_callback(sender, **kwargs):
         ]
         for label in tags:
             register_tag(label=label)
-
-        status_fields = [
-            'Antrag ausstehend', 'Zahlung ausstehend',
-            'Bestätigung ausstehend', 'Zahlung fehlgeschlagen',
-            'Mitglied', 'Gesperrt', 'Beendet'
-        ]
-        for label in status_fields:
-            register_status(label=label)
-
         groups = [
             'Infogespräche', 'Sortiment',
             'Öffentlichkeitsarbeit', 'Finanzen',

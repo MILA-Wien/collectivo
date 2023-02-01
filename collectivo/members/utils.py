@@ -19,9 +19,3 @@ def register_group(**payload):
     """Register a dashboard tile."""
     return register_viewset(views.MemberGroupViewSet, payload=payload,
                             allow_bad_response=True)
-
-
-def register_status(**payload):
-    """Register a dashboard tile."""
-    return register_viewset(views.MemberStatusViewSet, payload=payload,
-                            allow_bad_response=True)

@@ -109,7 +109,7 @@ field_settings = {
 
     # Legal person fields
     'legal_name': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {'label': 'Name of the organisation'},
         'schema': {
             'condition': conditions['legal'],
@@ -117,7 +117,7 @@ field_settings = {
         }
     },
     'legal_type': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Type of the organisation',
             'help_text': 'Such as company, association, or cooperative.'
@@ -128,7 +128,7 @@ field_settings = {
         }
     },
     'legal_id': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Idenfication number of the organisation',
             'help_text': 'Legal entity identifier or registry number.'
@@ -150,9 +150,6 @@ field_settings = {
         'schema': {
             'condition': conditions['natural'],
         }
-    },
-    'membership_status': {
-        'permissions': ['table'],
     },
     'membership_start': {
         'kwargs': {
@@ -255,25 +252,17 @@ field_settings = {
 
     # Special boolean fields for registration
     # Will be converted to tags during validation
-    # 'statutes_approved': {
-    #     'permissions': ['create'],
-    #     'kwargs': {
-    #         'label': 'Statutes approved',
-    #         'help_text': 'TEXT PENDING JULIANNA'
-    #     },
-    # },
+    'statutes_approved': {
+        'permissions': ['create'],
+        'kwargs': {
+            'label': 'Statutes approved',
+            'required': True,
+        },
+    },
     'public_use_approved': {
         'permissions': ['create'],
         'kwargs': {
             'label': 'Public use approved',
-            'help_text': 'TEXT PENDING JULIANNA'
-        },
-    },
-    'founding_event': {
-        'permissions': ['create'],
-        'kwargs': {
-            'label': 'Founding event',
-            'help_text': 'TEXT PENDING JULIANNA'
         },
     },
 }
@@ -298,8 +287,7 @@ summary_fields = [
     if 'table' in s['permissions']
 ]
 register_tag_fields = [
-    # 'statutes_approved'
-    'public_use_approved', 'founding_event'
+    'statutes_approved', 'public_use_approved'
 ]
 
 
@@ -317,11 +305,9 @@ class MemberRegisterSerializer(MemberSerializer):
     """Serializer for users to register themselves as members."""
 
     # Tag fields
-    # These will change after the founding event
-    # statutes_approved = serializers.BooleanField(write_only=True)
+    statutes_approved = serializers.BooleanField(
+        write_only=True, required=True)
     public_use_approved = serializers.BooleanField(
-        write_only=True, required=False)
-    founding_event = serializers.BooleanField(
         write_only=True, required=False)
     shares_tarif = serializers.CharField(required=False)
 
@@ -417,6 +403,17 @@ class MemberAdminSerializer(MemberSerializer):
 
         model = models.Member
         fields = '__all__'
+        read_only_fields = ['user_id', 'email', 'email_verified']
+
+
+class MemberSudoSerializer(MemberSerializer):
+    """Serializer for admins to manage all member data."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Member
+        fields = '__all__'
 
 
 class MemberTagCreateSerializer(serializers.ModelSerializer):
@@ -456,14 +453,4 @@ class MemberGroupSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.MemberGroup
-        fields = '__all__'
-
-
-class MemberStatusSerializer(serializers.ModelSerializer):
-    """Serializer for member status."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.MemberStatus
         fields = '__all__'
