@@ -363,7 +363,8 @@ class MemberRegisterSerializer(MemberSerializer):
                 raise ParseError(f'{field} must be true')
             attrs.pop(field, None)
             if value is True:
-                tag_id = models.MemberTag.objects.get(label=tag_label).id
+                tag_id = models.MemberTag.objects.get_or_create(
+                    label=tag_label)[0].id
                 attrs['tags'].append(tag_id)
         attrs = self._convert_shares_tarif(attrs)
         attrs = self._validate_membership_type(attrs)
