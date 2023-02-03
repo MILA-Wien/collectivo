@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     "collectivo.dashboard",
     "corsheaders",
     "django_filters",
-    "django_extensions",
     "rest_framework",
     "drf_spectacular",
     *[f"collectivo.{ext}" for ext in _chosen_extensions],

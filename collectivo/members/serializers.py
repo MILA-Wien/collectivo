@@ -54,7 +54,7 @@ field_settings = {
         },
     },
     'gender': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Gender', 'required': True},
     },
     'birthday': {
@@ -74,19 +74,19 @@ field_settings = {
         }
     },
     'address_street': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Street', 'required': True},
     },
     'address_number': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Number', 'required': True},
     },
     'address_stair': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Stair', 'allow_blank': True},
     },
     'address_door': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Door', 'allow_blank': True},
     },
     'address_postcode': {
@@ -94,7 +94,7 @@ field_settings = {
         'kwargs': {'label': 'Postcode', 'required': True},
     },
     'address_city': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'City', 'required': True},
     },
     'address_country': {
@@ -103,13 +103,13 @@ field_settings = {
         'schema': {'default': 'Austria'}
     },
     'phone': {
-        'permissions': ['read', 'create', 'change'],
+        'permissions': ['read', 'create', 'change', 'table'],
         'kwargs': {'label': 'Phone number', 'allow_blank': True},
     },
 
     # Legal person fields
     'legal_name': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {'label': 'Name of the organisation'},
         'schema': {
             'condition': conditions['legal'],
@@ -117,7 +117,7 @@ field_settings = {
         }
     },
     'legal_type': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Type of the organisation',
             'help_text': 'Such as company, association, or cooperative.'
@@ -128,7 +128,7 @@ field_settings = {
         }
     },
     'legal_id': {
-        'permissions': ['create'],
+        'permissions': ['create', 'table'],
         'kwargs': {
             'label': 'Idenfication number of the organisation',
             'help_text': 'Legal entity identifier or registry number.'
@@ -150,9 +150,6 @@ field_settings = {
         'schema': {
             'condition': conditions['natural'],
         }
-    },
-    'membership_status': {
-        'permissions': ['table'],
     },
     'membership_start': {
         'kwargs': {
@@ -255,25 +252,17 @@ field_settings = {
 
     # Special boolean fields for registration
     # Will be converted to tags during validation
-    # 'statutes_approved': {
-    #     'permissions': ['create'],
-    #     'kwargs': {
-    #         'label': 'Statutes approved',
-    #         'help_text': 'TEXT PENDING JULIANNA'
-    #     },
-    # },
+    'statutes_approved': {
+        'permissions': ['create'],
+        'kwargs': {
+            'label': 'Statutes approved',
+            'required': True,
+        },
+    },
     'public_use_approved': {
         'permissions': ['create'],
         'kwargs': {
             'label': 'Public use approved',
-            'help_text': 'TEXT PENDING JULIANNA'
-        },
-    },
-    'founding_event': {
-        'permissions': ['create'],
-        'kwargs': {
-            'label': 'Founding event',
-            'help_text': 'TEXT PENDING JULIANNA'
         },
     },
 }
@@ -298,8 +287,7 @@ summary_fields = [
     if 'table' in s['permissions']
 ]
 register_tag_fields = [
-    # 'statutes_approved'
-    'public_use_approved', 'founding_event'
+    'statutes_approved', 'public_use_approved'
 ]
 
 
@@ -317,11 +305,9 @@ class MemberRegisterSerializer(MemberSerializer):
     """Serializer for users to register themselves as members."""
 
     # Tag fields
-    # These will change after the founding event
-    # statutes_approved = serializers.BooleanField(write_only=True)
+    statutes_approved = serializers.BooleanField(
+        write_only=True, required=True)
     public_use_approved = serializers.BooleanField(
-        write_only=True, required=False)
-    founding_event = serializers.BooleanField(
         write_only=True, required=False)
     shares_tarif = serializers.CharField(required=False)
 
@@ -377,7 +363,8 @@ class MemberRegisterSerializer(MemberSerializer):
                 raise ParseError(f'{field} must be true')
             attrs.pop(field, None)
             if value is True:
-                tag_id = models.MemberTag.objects.get(label=tag_label).id
+                tag_id = models.MemberTag.objects.get_or_create(
+                    label=tag_label)[0].id
                 attrs['tags'].append(tag_id)
         attrs = self._convert_shares_tarif(attrs)
         attrs = self._validate_membership_type(attrs)
@@ -411,6 +398,17 @@ class MemberSummarySerializer(MemberSerializer):
 
 class MemberAdminSerializer(MemberSerializer):
     """Serializer for admins to manage members in detail."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Member
+        fields = '__all__'
+        read_only_fields = ['user_id', 'email', 'email_verified']
+
+
+class MemberSudoSerializer(MemberSerializer):
+    """Serializer for admins to manage all member data."""
 
     class Meta:
         """Serializer settings."""
@@ -456,14 +454,4 @@ class MemberGroupSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.MemberGroup
-        fields = '__all__'
-
-
-class MemberStatusSerializer(serializers.ModelSerializer):
-    """Serializer for member status."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.MemberStatus
         fields = '__all__'

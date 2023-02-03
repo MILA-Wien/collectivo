@@ -45,10 +45,29 @@ services:
       - collectivo
       - redis
 
+  celery-beat:
+    container_name: celery-beat
+    build:
+      context: .
+    command: celery -A collectivo_app beat -l info
+    volumes:
+      - ./collectivo_app:/collectivo_app
+      - ./collectivo:/collectivo_app/collectivo
+      - ./docker/static:/collectivo_app/static
+    env_file:
+      - .env
+    depends_on:
+      - collectivo
+      - redis
+
+
   # A communication broker for celery.
   redis:
     container_name: redis
     image: redis:7-alpine
+    command: >
+      --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb --maxmemory-policy volatile-lru
+
 
   # A static files server for django
   collectivo-static:
