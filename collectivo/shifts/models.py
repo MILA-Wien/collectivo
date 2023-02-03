@@ -53,8 +53,10 @@ class GeneralShift(models.Model):
         ],
     )
     individual_shifts = models.ManyToManyField(
-        "IndividualShift", related_name="%(class)s_individual_shifts", blank=True
-    )  # adding class to avoid error: https://stackoverflow.com/a/22538875/19932351
+        "IndividualShift",
+        related_name="%(class)s_individual_shifts",
+        blank=True
+    )  # %(class) to avoid error: https://stackoverflow.com/a/22538875/19932351
     additional_info_general = models.TextField(max_length=300)
 
 
