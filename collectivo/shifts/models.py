@@ -34,7 +34,7 @@ class GeneralShift(models.Model):
         default=3,
     )
     end_time = models.DateTimeField()
-    required_users = models.IntegerField()
+    required_users = models.IntegerField(default=2)
     shift_day = models.CharField(
         help_text=(
             "Shift days are necessary for fixed shifts to register"
@@ -52,7 +52,9 @@ class GeneralShift(models.Model):
             ("Sunday", "Sunday"),
         ],
     )
-    individual_shifts = models.ManyToManyField("IndividualShift")
+    individual_shifts = models.ManyToManyField(
+        "IndividualShift", related_name="%(class)s_individual_shifts", blank=True
+    )  # adding class to avoid error: https://stackoverflow.com/a/22538875/19932351
     additional_info_general = models.TextField(max_length=300)
 
 
