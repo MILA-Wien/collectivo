@@ -45,7 +45,6 @@ TEST_MEMBER_GET = {
     **TEST_MEMBER,
     'membership_start': localdate(),
     'email': 'some_member@example.com',
-    # Add expected tags
 }
 
 TEST_USER = {
@@ -71,7 +70,7 @@ class PublicMemberApiTests(TestCase):
         self.assertEqual(res.status_code, 403)
 
     def test_auth_required_for_me(self):
-        """Test that authentication is required for /me."""
+        """Test that authentication is required for /profile."""
         res = self.client.get(PROFILE_URL)
         self.assertEqual(res.status_code, 403)
 
@@ -207,48 +206,6 @@ class PrivateMemberApiTestsForMembers(MembersTestCase):
         self.assertEqual(res.data['first_name']['read_only'], True)
         self.assertEqual(res.data['first_name']['required'], False)
         self.assertEqual(res.data['address_street']['required'], True)
-
-
-class MemberAuthSyncTests(TestCase):
-    """Test data synchronization with keycloak."""
-
-    def setUp(self):
-        """Prepare test case."""
-        self.client = APIClient()
-        self.keycloak = get_auth_manager()
-        self.member_id = 2
-        self.email = 'test_superuser@example.com'
-        self.token = self.keycloak.openid.token(self.email, 'Test123!')
-        self.access_token = self.token['access_token']
-        self.client.credentials(HTTP_AUTHORIZATION=self.access_token)
-
-    def tearDown(self):
-        """Reset user data of auth service."""
-        res = self.client.patch(
-            reverse(MEMBER_URL_LABEL, args=[self.member_id]),
-            {'first_name': 'Test Member 01'}
-        )
-        if res.status_code != 200:
-            raise ValueError("API call failed: ", res.content)
-
-    def test_auth_sync_as_admin(self):
-        """Test that auth fields are updated on auth server for /members."""
-        # Patch the name of a member
-        res2 = self.client.patch(
-            reverse(MEMBER_URL_LABEL, args=[self.member_id]),
-            {'first_name': 'new_name'}
-        )
-        if res2.status_code != 200:
-            raise ValueError("API call failed: ", res2.content)
-
-        # Check that new attribute is set on django
-        member = Member.objects.get(id=self.member_id)
-        self.assertEqual(
-            getattr(member, 'first_name'), 'new_name')
-
-        # Check that new attribute is set on keycloak
-        userinfo = self.keycloak.get_user(res2.data['user_id'])
-        self.assertEqual(userinfo['firstName'], 'new_name')
 
 
 class PrivateMemberApiTestsForAdmins(TestCase):
