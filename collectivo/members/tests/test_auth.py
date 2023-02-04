@@ -45,8 +45,8 @@ class MemberAuthSyncTests(TestCase):
             reverse(MEMBER_URL_LABEL, args=[self.member_id]),
             {'first_name': 'Test Member 01'}
         )
-        if res.status_code != 200:
-            raise ValueError("API call failed: ", res.content)
+        self.assertEqual(res.status_code, 200)
+        #self.keycloak.delete_user(res.data['user_id'])
 
     def test_auth_sync_as_admin(self):
         """Test that auth fields are updated on auth server for /members."""
@@ -80,3 +80,13 @@ class MemberAuthSyncTests(TestCase):
         self.assertEqual(res.status_code, 204)
         _, data = self.get_token(self.user_email)
         self.assertNotIn('members_user', data['realm_access']['roles'])
+
+    def test_create_member_as_admin(self):
+        """Test that admins can create new member without keycloak."""
+        payload = {**TEST_MEMBER_POST, 'email': 'new_test_member@example.com'}
+        res = self.client.post(MEMBERS_URL, payload)
+        self.assertEqual(res.status_code, 201)
+        user_id = self.keycloak.get_user_id(payload['email'])
+        userinfo = self.keycloak.get_user(user_id)
+        self.assertEqual(userinfo['firstName'], payload['first_name'])
+        self.assertEqual(userinfo['emailVerified'], False)

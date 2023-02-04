@@ -31,6 +31,7 @@ TEST_MEMBER = {
 
 TEST_MEMBER_POST = {
     **TEST_MEMBER,
+    'email': 'some_member@example.com',
     'person_type': 'natural',
     'membership_type': 'active',
     'email_verified': True,
@@ -81,7 +82,13 @@ class MembersTestCase(TestCase):
     def setUp(self):
         """Create client with authorized test user."""
         self.auth_manager = get_auth_manager()
-        user_id = self.auth_manager.create_user(TEST_USER, exist_ok=True)
+        user_id = self.auth_manager.create_user(
+            first_name=TEST_USER['firstName'],
+            last_name=TEST_USER['lastName'],
+            email=TEST_USER['email'],
+            emailVerified=True,
+            exist_ok=True
+        )
         self.auth_manager.set_user_password(  # noqa
                 user_id, password='Test123!', temporary=False)  # noqa
         self.client = APIClient()

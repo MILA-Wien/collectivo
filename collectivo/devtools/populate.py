@@ -67,7 +67,7 @@ def populate_keycloak_with_test_data():
             Member.objects.filter(email=user['email']).delete()
         except (KeycloakGetError, KeycloakDeleteError):
             pass
-        user_id = auth_manager.create_user(user)
+        user_id = auth_manager.create_user(user['firstName'], user['lastName'], user['email'], emailVerified=True)
         auth_manager.set_user_password(  # noqa
             user_id, password='Test123!', temporary=False)  # noqa
 
@@ -105,7 +105,10 @@ def populate_keycloak_with_test_data():
             'membership_start': '2022-12-08',
             'person_type': 'natural',
             'membership_type': 'active',
-            'shares_number': 5
+            'shares_number': 5,
+            'shares_tarif': 'normal',
+            'shares_payment_type': 'sepa',
+            'statutes_approved': True,
         }
         if member['email'] == 'test_member_02@example.com':
             payload['person_type'] = 'legal'
