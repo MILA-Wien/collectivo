@@ -7,7 +7,7 @@ class DirectDetailRouter(SimpleRouter):
 
     routes = [
         Route(
-            url=r'^{prefix}$',
+            url=r'^{prefix}{trailing_slash}$',
             mapping={
                 'get': 'retrieve',
                 'post': 'create',

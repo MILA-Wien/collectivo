@@ -1,7 +1,7 @@
 """Views of the members extension."""
 import logging
 from rest_framework import viewsets, mixins
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from collectivo.auth.permissions import IsAuthenticated
 from collectivo.utils import get_auth_manager
 from collectivo.views import SchemaMixin
@@ -19,7 +19,6 @@ filterset_fields = {
     'first_name': ('contains', ),
     'last_name': ('contains', ),
     'person_type': ('exact', ),
-    'membership_status': ('exact', ),
 }
 
 
@@ -142,15 +141,35 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     ordering_fields = member_fields
 
 
-class MemberTagViewSet(viewsets.ModelViewSet):
+class MembersSudoViewSet(MemberMixin, viewsets.ModelViewSet):
+    """
+    API for admins to manage members.
+
+    Requires the role 'members_admin'.
+    """
+
+    serializer_class = serializers.MemberSudoSerializer
+    permission_classes = [IsMembersAdmin]
+    filterset_fields = filterset_fields
+    ordering_fields = member_fields
+
+
+class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member tags."""
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberTagSerializer
     queryset = models.MemberTag.objects.all()
 
+    def perform_destroy(self, instance):
+        """Prevent deletion if assigned to members."""
+        if instance.member_set.all().exists():
+            raise ValidationError(
+                'Cannot delete tag that is assigned to members.')
+        return super().perform_destroy(instance)
 
-class MemberSkillViewSet(viewsets.ModelViewSet):
+
+class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member skills."""
 
     permission_classes = [IsMembersAdmin]
@@ -158,17 +177,9 @@ class MemberSkillViewSet(viewsets.ModelViewSet):
     queryset = models.MemberSkill.objects.all()
 
 
-class MemberGroupViewSet(viewsets.ModelViewSet):
+class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member groups."""
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberGroupSerializer
     queryset = models.MemberGroup.objects.all()
-
-
-class MemberStatusViewSet(viewsets.ModelViewSet):
-    """Manage member status."""
-
-    permission_classes = [IsMembersAdmin]
-    serializer_class = serializers.MemberStatusSerializer
-    queryset = models.MemberStatus.objects.all()

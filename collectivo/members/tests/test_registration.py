@@ -27,7 +27,7 @@ class MembersRegistrationTests(TestCase):
     def test_menu_items_exist(self):
         """Test that the menu items are registered."""
         res = MenuItem.objects.filter(extension=self.name)
-        self.assertEqual(len(res), 3)
+        self.assertEqual(len(res), 4)
 
     def test_tile_exist(self):
         """Test that the menu items are registered."""

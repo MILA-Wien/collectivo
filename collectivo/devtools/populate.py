@@ -1,7 +1,7 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 from collectivo.utils import get_auth_manager, register_viewset
-from collectivo.members.views import MembersViewSet
+from collectivo.members.views import MembersSudoViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
@@ -17,7 +17,7 @@ superusers = [
         "email": "test_superuser@example.com",
         "username": "test_superuser@example.com",
         "enabled": True,
-        "firstName": "Example",
+        "firstName": "Test Superuser",
         "lastName": "Example",
         "emailVerified": True,
     },
@@ -111,6 +111,6 @@ def populate_keycloak_with_test_data():
             payload['person_type'] = 'legal'
 
         register_viewset(
-            MembersViewSet,
+            MembersSudoViewSet,
             payload=payload
         )

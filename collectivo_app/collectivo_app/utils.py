@@ -13,6 +13,8 @@ def string_to_list(string: str):
 def get_env_bool(key, default=None):
     """Take the name of an environment variable and return a boolean."""
     options = {
+        None: False,
+        '': False,
         'false': False,
         'False': False,
         0: False,
