@@ -28,7 +28,14 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     queryset = models.Member.objects.all()
 
-    def sync_user_data_with_auth(self, user_id, data, destroy=False):
+    def get_members_user_role(self):
+        """Return representation of the members_user role."""
+        auth_manager = get_auth_manager()
+        role = 'members_user'
+        role_id = auth_manager.get_realm_role(role)['id']
+        return {'id': role_id, 'name': role}
+
+    def sync_auth_service(self, user_id, data):
         """Synchronize user data within authentication service."""
         if user_id is None:  # Member does not have a user account
             return
@@ -39,39 +46,29 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         }
         auth_manager.update_user(user_id=user_id, **new_user_data)
 
-        # Give user the role members user
-        role = 'members_user'
-        auth_manager = get_auth_manager()
-        role_id = auth_manager.get_realm_role(role)['id']
-        if destroy:
-            auth_manager.unassign_realm_roles(
-            user_id, {'id': role_id, 'name': role})
-        else:
-            auth_manager.delete_realm_roles_of_user(
-                user_id, {'id': role_id, 'name': role})
-
     def perform_create(self, serializer):
         """Create member and synchronize user data with auth service."""
-        self.sync_user_data_with_auth(
+        self.sync_auth_service(
             serializer.initial_data.get('user_id'),
             serializer.validated_data)
+        auth_manager = get_auth_manager()
+        auth_manager.assign_realm_roles(
+            serializer.instance.user_id, self.get_members_user_role())
         serializer.save()
 
     def perform_update(self, serializer):
         """Update member and synchronize user data with auth service."""
-        self.sync_user_data_with_auth(
+        self.sync_auth_service(
             serializer.instance.user_id,
             serializer.validated_data)
         serializer.save()
 
     def perform_destroy(self, serializer):
         """Delete member and remove members_user role from auth service."""
-        self.sync_user_data_with_auth(
-            serializer.instance.user_id,
-            serializer.validated_data,
-            destroy=True)
+        auth_manager = get_auth_manager()
+        auth_manager.unassign_realm_roles(
+            serializer.instance.user_id, self.get_members_user_role())
         serializer.delete()
-
 
 
 class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
@@ -89,7 +86,7 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
         user_id = self.request.userinfo.user_id
         if Member.objects.filter(user_id=user_id).exists():
             raise PermissionDenied('User is already registered as a member.')
-        self.sync_user_data_with_auth(user_id, serializer.validated_data)
+        self.sync_auth_service(user_id, serializer.validated_data)
         extra_fields = {
             'user_id': user_id,
             'email': self.request.userinfo.email,
