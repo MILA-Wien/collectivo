@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     *[f'collectivo.{ext}' for ext in _chosen_extensions],
+
 ]
 
 MIDDLEWARE = [
