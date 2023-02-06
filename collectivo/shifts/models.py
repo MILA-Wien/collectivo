@@ -61,6 +61,8 @@ class GeneralShift(models.Model):
 
 
 class IndividualShift(GeneralShift):
+    """A shift to be done by a single user."""
+
     # to access attributes from parent class, read:
     # https://stackoverflow.com/a/19143342/19932351
     assigned_user = models.ForeignKey("ShiftUser", on_delete=models.CASCADE)
@@ -71,6 +73,8 @@ class IndividualShift(GeneralShift):
 
 
 class ShiftUser(models.Model):
+    """A user that can be assigned to a shift."""
+
     shift_creator = models.BooleanField(
         default=False
     )  # should be set by keycloak and collectivo
