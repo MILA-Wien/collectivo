@@ -158,13 +158,24 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
                 'Cannot delete tag that is assigned to members.')
         return super().perform_destroy(instance)
 
+    def get_permissions(self):
+        """Set permissions for this viewset."""
+        if self.action == 'list':
+            return [IsAuthenticated()]
+        return [IsMembersAdmin()]
+
 
 class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member skills."""
 
-    permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberSkillSerializer
     queryset = models.MemberSkill.objects.all()
+
+    def get_permissions(self):
+        """Set permissions for this viewset."""
+        if self.action == 'list':
+            return [IsAuthenticated()]
+        return [IsMembersAdmin()]
 
 
 class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
@@ -173,3 +184,9 @@ class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberGroupSerializer
     queryset = models.MemberGroup.objects.all()
+
+    def get_permissions(self):
+        """Set permissions for this viewset."""
+        if self.action == 'list':
+            return [IsAuthenticated()]
+        return [IsMembersAdmin()]
