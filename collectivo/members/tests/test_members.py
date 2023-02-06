@@ -241,7 +241,7 @@ class PrivateMemberApiTestsForAdmins(TestCase):
             payload = {
                 **TEST_MEMBER_POST,
                 'email': str(i)+'@example.com', 'first_name': str(i)}
-            member = self.client.post(MEMBERS_URL, payload)
+            self.client.post(MEMBERS_URL, payload)
 
     def test_create_members(self):
         """Test that admins can create members."""
@@ -291,7 +291,6 @@ class PrivateMemberApiTestsForAdmins(TestCase):
 
     def test_member_pagination(self):
         """Test that pagination works for members."""
-        # TODO: This test has an issue (should fail?)
         self.create_members()
 
         limit = 3

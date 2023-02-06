@@ -46,7 +46,6 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
             'enabled': True,
             'emailVerified': email_verified,
         }
-        print('CREATING', payload)
         try:
             user = super().create_user(payload, exist_ok=exist_ok)
         except Exception as e:
@@ -64,7 +63,6 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
             'emailVerified': email_verified,
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        print('UPDATING', payload)
         try:
             super().update_user(user_id=user_id, payload=payload)
         except KeycloakPutError as e:
