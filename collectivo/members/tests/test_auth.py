@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 from collectivo.utils import get_auth_manager
 from ..models import Member
 from .test_members import TEST_MEMBER_POST
+from keycloak.exceptions import KeycloakDeleteError
 from jwt import decode
 
 MEMBERS_URL = reverse('collectivo:collectivo.members:member-list')
@@ -46,7 +47,11 @@ class MemberAuthSyncTests(TestCase):
             {'first_name': 'Test Member 01'}
         )
         self.assertEqual(res.status_code, 200)
-        #self.keycloak.delete_user(res.data['user_id'])
+        user_id = self.keycloak.get_user_id('new_test_member@example.com')
+        try:
+            self.keycloak.delete_user(user_id)
+        except KeycloakDeleteError:
+            pass
 
     def test_auth_sync_as_admin(self):
         """Test that auth fields are updated on auth server for /members."""
@@ -83,7 +88,11 @@ class MemberAuthSyncTests(TestCase):
 
     def test_create_member_as_admin(self):
         """Test that admins can create new member without keycloak."""
-        payload = {**TEST_MEMBER_POST, 'email': 'new_test_member@example.com'}
+        payload = {
+            **TEST_MEMBER_POST,
+            'email': 'new_test_member@example.com',
+            'email_verified': False
+        }
         res = self.client.post(MEMBERS_URL, payload)
         self.assertEqual(res.status_code, 201)
         user_id = self.keycloak.get_user_id(payload['email'])

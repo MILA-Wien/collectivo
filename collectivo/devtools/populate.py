@@ -1,7 +1,7 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 from collectivo.utils import get_auth_manager, register_viewset
-from collectivo.members.views import MembersSudoViewSet
+from collectivo.members.views import MembersAdminViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
@@ -67,7 +67,9 @@ def populate_keycloak_with_test_data():
             Member.objects.filter(email=user['email']).delete()
         except (KeycloakGetError, KeycloakDeleteError):
             pass
-        user_id = auth_manager.create_user(user['firstName'], user['lastName'], user['email'], emailVerified=True)
+        user_id = auth_manager.create_user(
+            user['firstName'], user['lastName'], user['email'],
+            email_verified=user['emailVerified'])
         auth_manager.set_user_password(  # noqa
             user_id, password='Test123!', temporary=False)  # noqa
 
@@ -114,6 +116,6 @@ def populate_keycloak_with_test_data():
             payload['person_type'] = 'legal'
 
         register_viewset(
-            MembersSudoViewSet,
+            MembersAdminViewSet,
             payload=payload
         )

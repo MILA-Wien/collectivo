@@ -36,7 +36,7 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
         return ('first_name', 'last_name', 'email', 'email_verified')
 
     def create_user(self, first_name, last_name, email,
-                    emailVerified=False, email_verified=False, exist_ok=False):
+                    email_verified=False, exist_ok=False):
         """Create a keycloak user."""
         payload = {
             'firstName': first_name,
@@ -44,8 +44,9 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
             'email': email,
             'username': email,
             'enabled': True,
-            'emailVerified': emailVerified or email_verified,
+            'emailVerified': email_verified,
         }
+        print('CREATING', payload)
         try:
             user = super().create_user(payload, exist_ok=exist_ok)
         except Exception as e:
@@ -53,15 +54,17 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
         return user
 
     def update_user(self, user_id, first_name=None,
-                    last_name=None, email=None, emailVerified=False, email_verified=False, ):
+                    last_name=None, email=None,
+                    email_verified=None):
         """Update a keycloak user."""
         payload = {
             'firstName': first_name,
             'lastName': last_name,
             'email': email,
-
+            'emailVerified': email_verified,
         }
         payload = {k: v for k, v in payload.items() if v is not None}
+        print('UPDATING', payload)
         try:
             super().update_user(user_id=user_id, payload=payload)
         except KeycloakPutError as e:

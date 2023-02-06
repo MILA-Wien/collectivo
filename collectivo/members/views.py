@@ -71,16 +71,17 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
             if k in auth_manager.get_user_fields()
         }
         auth_manager.update_user(user_id=user_id, **new_user_data)
+        return auth_manager.get_user(user_id)
 
     def perform_create(self, serializer, user_id):
         """Create member and synchronize user data with auth service."""
         if Member.objects.filter(user_id=user_id).exists():
             raise PermissionDenied('User is already registered as a member.')
-        self.sync_user_data(user_id, serializer.validated_data)
+        userinfo = self.sync_user_data(user_id, serializer.validated_data)
         self.assign_members_role(user_id)
         extra_fields = {
             'user_id': user_id,
-            'email': self.request.userinfo.email,
+            'email': userinfo['email'],
             'membership_start': localdate(),
         }
         if 'tags' in serializer.validated_data:
@@ -147,7 +148,7 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
     ordering_fields = member_fields
 
 
-class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
+class MembersAdminViewSet(MemberMixin, viewsets.ModelViewSet):
     """
     API for admins to manage members.
 
@@ -162,31 +163,7 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Return serializer class depending on action."""
         if self.action == 'create':
-            return serializers.MemberRegisterAdminSerializer
-        return super().get_serializer_class()
-
-    def perform_create(self, serializer):
-        """Create a keycloak user before creating a member."""
-        user_id = self.get_or_create_user(serializer.validated_data)
-        super().perform_create(serializer, user_id)
-
-
-class MembersSudoViewSet(MemberMixin, viewsets.ModelViewSet):
-    """
-    API for admins to manage members.
-
-    Requires the role 'members_admin'.
-    """
-
-    serializer_class = serializers.MemberSudoSerializer
-    permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
-    ordering_fields = member_fields
-
-    def get_serializer_class(self):
-        """Return serializer class depending on action."""
-        if self.action == 'create':
-            return serializers.MemberRegisterAdminSerializer
+            return serializers.MemberAdminCreateSerializer
         return super().get_serializer_class()
 
     def perform_create(self, serializer):

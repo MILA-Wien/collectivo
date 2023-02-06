@@ -373,17 +373,6 @@ class MemberRegisterSerializer(MemberSerializer):
 
 class MemberRegisterAdminSerializer(MemberRegisterSerializer):
 
-    class Meta:
-        """Serializer settings."""
-
-        model = models.Member
-        fields = register_fields + register_tag_fields + ['shares_tarif'] + ['email', 'email_verified']
-        read_only_fields = ['id']  # Return the id after creation
-        extra_kwargs = {
-            field: field_settings[field]['kwargs'] for field in fields
-            if field in field_settings and 'kwargs' in field_settings[field]
-        }
-
 class MemberProfileSerializer(MemberSerializer):
     """Serializer for members to manage their own data."""
 
@@ -417,27 +406,23 @@ class MemberAdminSerializer(MemberSerializer):
 
         model = models.Member
         fields = '__all__'
-        read_only_fields = ['user_id', 'email', 'email_verified']
+        read_only_fields = ['user_id']
 
 
-class MemberSudoSerializer(MemberSerializer):
-    """Serializer for admins to manage all member data."""
+class MemberAdminCreateSerializer(MemberRegisterSerializer):
+    """Serializer for admins to register new members."""
 
     class Meta:
         """Serializer settings."""
 
         model = models.Member
-        fields = '__all__'
-
-
-class MemberTagCreateSerializer(serializers.ModelSerializer):
-    """Serializer for new dashboard tiles."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.MemberTag
-        fields = '__all__'
+        fields = register_fields + register_tag_fields + \
+            ['shares_tarif', 'email', 'email_verified']
+        read_only_fields = ['id']  # Return the id after creation
+        extra_kwargs = {
+            field: field_settings[field]['kwargs'] for field in fields
+            if field in field_settings and 'kwargs' in field_settings[field]
+        }
 
 
 class MemberTagSerializer(serializers.ModelSerializer):
