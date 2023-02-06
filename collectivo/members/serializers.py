@@ -371,8 +371,6 @@ class MemberRegisterSerializer(MemberSerializer):
         return super().validate(attrs)
 
 
-class MemberRegisterAdminSerializer(MemberRegisterSerializer):
-
 class MemberProfileSerializer(MemberSerializer):
     """Serializer for members to manage their own data."""
 
