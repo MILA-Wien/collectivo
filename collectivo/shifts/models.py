@@ -2,7 +2,7 @@
 from django.db import models
 
 
-class Shift(models.Model):
+class GeneralShift(models.Model):
     """A shift to be done by the collective."""
 
     shift_title = models.CharField(max_length=30, blank=True)
@@ -55,25 +55,21 @@ class Shift(models.Model):
     )
     additional_info_general = models.TextField(max_length=300)
 
-
-class GeneralShift(Shift):
-    """A shift to be done by the collective."""
-
-    individual_shifts = models.ManyToManyField(
-        "IndividualShift",
-        related_name="%(class)s_individual_shifts",
-        blank=True,
-    )  # %(class) to avoid error: https://stackoverflow.com/a/22538875/19932351
+    # individual_shifts = models.ManyToManyField(
+    #     "IndividualShift",
+    #     related_name="%(class)s_individual_shifts",
+    #     blank=True,
+    # )  # %(class) to avoid error:
+    # https://stackoverflow.com/a/22538875/19932351
 
 
-class IndividualShift(Shift):
+class IndividualShift(models.Model):
     """A shift to be done by a single user."""
 
-    # comment out for now, to avoid error of unknown private key of ShiftUser
-    # assigned_user = models.ForeignKey(
-    #     "ShiftUser", on_delete=models.CASCADE, null=True, blank=True
-    # )
-    assigned_user = models.CharField(max_length=30, blank=True)
+    assigned_user = models.ForeignKey(
+        "ShiftUser", on_delete=models.SET_NULL, blank=True, null=True
+    )
+    general_shift = models.ForeignKey(GeneralShift, on_delete=models.CASCADE)
 
     attended = models.BooleanField(
         default=False
@@ -84,6 +80,7 @@ class IndividualShift(Shift):
 class ShiftUser(models.Model):
     """A user that can be assigned to a shift."""
 
+    username = models.CharField(max_length=30, blank=True)
     creator = models.BooleanField(
         default=False
     )  # should be set by keycloak and collectivo
