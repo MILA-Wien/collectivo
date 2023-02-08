@@ -12,11 +12,12 @@ def post_migrate_callback(sender, **kwargs):
     register_extension(name=name, built_in=True, description=description)
 
 
-class CollectivoUxConfig(AppConfig):
+class ShiftsConfig(AppConfig):
     """Configuration class of the shifts extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.shifts"
+    label = "shifts"
 
     def ready(self):
         """

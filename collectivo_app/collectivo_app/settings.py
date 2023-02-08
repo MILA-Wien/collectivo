@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     "collectivo.auth",
     "collectivo.extensions",
     "collectivo.dashboard",
-    "collectivo.shifts",
     "corsheaders",
     "django_filters",
     "rest_framework",
@@ -300,6 +299,7 @@ COLLECTIVO = {
     "default_auth_manager": "collectivo.auth.manager.KeycloakAuthManager",
     "default_user_model": "collectivo.members.models.Member",
     "default_extension_model": "collectivo.extensions.models.Extension",
+    "default_shifts_model": "collectivo.shifts.models.GeneralShift",
 }
 
 

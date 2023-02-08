@@ -117,7 +117,7 @@ class ShiftAPITests(TestCase):
             ShiftUser.objects.all()[2].username,
         )
 
-        shift.assigned_shift = None
+        shift.assigned_user = None
         shift.save()
 
         self.assertEqual(
