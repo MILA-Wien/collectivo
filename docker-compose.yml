@@ -97,7 +97,7 @@ services:
   # A frontend web application.
   collectivo-ux:
     container_name: collectivo-ux
-    image: v0.3.1
+    image: milawien/collectivo-ux:v0.3.1
     restart: always
     environment:
       VITE_APP_API: http://collectivo.local:8000
