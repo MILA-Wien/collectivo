@@ -1,10 +1,10 @@
 """Test the features of the shifts API."""
 from django.test import TestCase
 from django.urls import reverse
-from shifts.models import GeneralShift, IndividualShift, ShiftUser
 
 from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
+from collectivo.shifts.models import GeneralShift, IndividualShift, ShiftUser
 
 GENERAL_SHIFTS_URL = reverse("collectivo:collectivo.shifts:general-shift-list")
 INDI_SHIFTS_URL = reverse("collectivo:collectivo.shifts:individual-shift-list")
