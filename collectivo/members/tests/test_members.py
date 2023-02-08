@@ -199,7 +199,7 @@ class PrivateMemberApiTestsForMembers(MembersTestCase):
 
     def test_update_member_admin_fields_fails(self):
         """Test that a member cannot edit admin fields of it's own data."""
-        res = self.client.patch(PROFILE_URL, {'admin_notes': 'my note'})
+        self.client.patch(PROFILE_URL, {'admin_notes': 'my note'})
         member = Member.objects.get(id=self.members_id)
         self.assertNotEqual(
             getattr(member, 'admin_notes'), 'my note')
