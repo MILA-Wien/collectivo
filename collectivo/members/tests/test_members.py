@@ -10,6 +10,7 @@ from ..models import Member
 
 
 MEMBERS_URL = reverse('collectivo:collectivo.members:member-list')
+MEMBERS_CREATE_URL = reverse('collectivo:collectivo.members:create-list')
 MEMBER_URL_LABEL = 'collectivo:collectivo.members:member-detail'
 PROFILE_URL = reverse('collectivo:collectivo.members:profile')
 REGISTER_URL = reverse('collectivo:collectivo.members:register')
@@ -241,7 +242,7 @@ class PrivateMemberApiTestsForAdmins(TestCase):
             payload = {
                 **TEST_MEMBER_POST,
                 'email': str(i)+'@example.com', 'first_name': str(i)}
-            self.client.post(MEMBERS_URL, payload)
+            self.client.post(MEMBERS_CREATE_URL, payload)
 
     def test_create_members(self):
         """Test that admins can create members."""
@@ -253,7 +254,7 @@ class PrivateMemberApiTestsForAdmins(TestCase):
         payload = {
                 **TEST_MEMBER_POST,
                 'email': '0@example.com'}
-        res1 = self.client.post(MEMBERS_URL, payload)
+        res1 = self.client.post(MEMBERS_CREATE_URL, payload)
         self.assertEqual(res1.status_code, 201)
 
         res2 = self.client.patch(

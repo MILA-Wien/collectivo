@@ -9,6 +9,7 @@ from keycloak.exceptions import KeycloakDeleteError
 from jwt import decode
 
 MEMBERS_URL = reverse('collectivo:collectivo.members:member-list')
+MEMBERS_CREATE_URL = reverse('collectivo:collectivo.members:create-list')
 MEMBER_URL_LABEL = 'collectivo:collectivo.members:member-detail'
 PROFILE_URL = reverse('collectivo:collectivo.members:profile')
 REGISTER_URL = reverse('collectivo:collectivo.members:register')
@@ -92,7 +93,7 @@ class MemberAuthSyncTests(TestCase):
             **TEST_MEMBER_POST,
             'email': 'new_test_member@example.com',
         }
-        res = self.client.post(MEMBERS_URL, payload)
+        res = self.client.post(MEMBERS_CREATE_URL, payload)
         self.assertEqual(res.status_code, 201)
         user_id = self.keycloak.get_user_id(payload['email'])
         userinfo = self.keycloak.get_user(user_id)

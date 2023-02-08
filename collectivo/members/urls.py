@@ -11,6 +11,8 @@ admin_router = DefaultRouter()
 admin_router.register(
     'members', views.MembersAdminViewSet, basename='member')
 admin_router.register(
+    'create', views.MembersAdminCreateViewSet, basename='create')
+admin_router.register(
     'summary', views.MembersSummaryViewSet, basename='summary')
 admin_router.register(
     'groups', views.MemberGroupViewSet, basename='group')

@@ -167,7 +167,9 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
     ordering_fields = member_fields
 
 
-class MembersAdminViewSet(MemberMixin, viewsets.ModelViewSet):
+class MembersAdminViewSet(MemberMixin, mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                          mixins.DestroyModelMixin):
     """
     API for admins to manage members.
 
@@ -179,11 +181,18 @@ class MembersAdminViewSet(MemberMixin, viewsets.ModelViewSet):
     filterset_fields = filterset_fields
     ordering_fields = member_fields
 
-    def get_serializer_class(self):
-        """Return serializer class depending on action."""
-        if self.action == 'create':
-            return serializers.MemberAdminCreateSerializer
-        return super().get_serializer_class()
+
+class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
+    """
+    API for admins to create members.
+
+    Requires the role 'members_admin'.
+    """
+
+    serializer_class = serializers.MemberAdminCreateSerializer
+    permission_classes = [IsMembersAdmin]
+    filterset_fields = filterset_fields
+    ordering_fields = member_fields
 
     def perform_create(self, serializer):
         """Create a keycloak user before creating a member."""

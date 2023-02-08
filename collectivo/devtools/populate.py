@@ -1,7 +1,7 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 from collectivo.utils import get_auth_manager, register_viewset
-from collectivo.members.views import MembersAdminViewSet
+from collectivo.members.views import MembersAdminCreateViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
@@ -111,6 +111,6 @@ def populate_keycloak_with_test_data():
             payload['person_type'] = 'legal'
 
         register_viewset(
-            MembersAdminViewSet,
+            MembersAdminCreateViewSet,
             payload=payload
         )
