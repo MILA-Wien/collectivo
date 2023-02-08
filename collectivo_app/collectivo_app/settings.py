@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "collectivo.auth",
     "collectivo.extensions",
     "collectivo.dashboard",
+    "collectivo.shifts",
     "corsheaders",
     "django_filters",
     "rest_framework",
