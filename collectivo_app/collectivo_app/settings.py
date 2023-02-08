@@ -29,7 +29,7 @@ else:
     )
 
 # Choose built-in collectivo extensions from environment
-_built_in_extensions = ["members", "shifts"]
+_built_in_extensions = ["members"]
 _sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "collectivo.auth",
     "collectivo.extensions",
     "collectivo.dashboard",
+    "collectivo.shifts",
     "corsheaders",
     "django_filters",
     "rest_framework",
