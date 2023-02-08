@@ -33,7 +33,7 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
 
     def get_user_fields(self):
         """Return attributes of the user model."""
-        return ('first_name', 'last_name', 'email', 'email_verified')
+        return ('first_name', 'last_name', 'email')
 
     def create_user(self, first_name, last_name, email,
                     email_verified=False, exist_ok=False):

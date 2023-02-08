@@ -64,7 +64,6 @@ class Member(models.Model):
     # Account
     user_id = models.UUIDField(null=True, unique=True)
     email = models.EmailField(null=True)
-    email_verified = models.BooleanField(null=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
 

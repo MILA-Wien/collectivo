@@ -42,6 +42,7 @@ field_settings = {
         'kwargs': {
             'label': 'Email address',
             'help_text': 'The address used for communication and login.',
+            'required': True,
         },
     },
     'person_type': {
@@ -415,8 +416,8 @@ class MemberAdminCreateSerializer(MemberRegisterSerializer):
 
         model = models.Member
         fields = register_fields + register_tag_fields + \
-            ['shares_tarif', 'email', 'email_verified']
-        read_only_fields = ['id']  # Return the id after creation
+            ['shares_tarif', 'email']
+        read_only_fields = ['id', 'user_id']  # Return the id after creation
         extra_kwargs = {
             field: field_settings[field]['kwargs'] for field in fields
             if field in field_settings and 'kwargs' in field_settings[field]

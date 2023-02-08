@@ -31,10 +31,8 @@ TEST_MEMBER = {
 
 TEST_MEMBER_POST = {
     **TEST_MEMBER,
-    'email': 'some_member@example.com',
     'person_type': 'natural',
     'membership_type': 'active',
-    'email_verified': True,
     'survey_contact': '-',
     'survey_motivation': '-',
     'shares_payment_type': 'sepa',
@@ -80,6 +78,9 @@ class MembersTestCase(TestCase):
     def setUp(self):
         """Create client with authorized test user."""
         self.auth_manager = get_auth_manager()
+        user_id = self.auth_manager.get_user_id('some_member@example.com')
+        if user_id is not None:
+            self.auth_manager.delete_user(user_id)
         user_id = self.auth_manager.create_user(
             first_name=TEST_USER['firstName'],
             last_name=TEST_USER['lastName'],
@@ -94,9 +95,8 @@ class MembersTestCase(TestCase):
 
     def tearDown(self):
         """Delete test user."""
-        auth_manager = get_auth_manager()
-        user_id = auth_manager.get_user_id('some_member@example.com')
-        auth_manager.delete_user(user_id)
+        user_id = self.auth_manager.get_user_id('some_member@example.com')
+        self.auth_manager.delete_user(user_id)
 
     def authorize(self):
         """Authorize test user."""
@@ -199,7 +199,7 @@ class PrivateMemberApiTestsForMembers(MembersTestCase):
 
     def test_update_member_admin_fields_fails(self):
         """Test that a member cannot edit admin fields of it's own data."""
-        self.client.patch(PROFILE_URL, {'admin_notes': 'my note'})
+        res = self.client.patch(PROFILE_URL, {'admin_notes': 'my note'})
         member = Member.objects.get(id=self.members_id)
         self.assertNotEqual(
             getattr(member, 'admin_notes'), 'my note')
@@ -250,8 +250,12 @@ class PrivateMemberApiTestsForAdmins(TestCase):
 
     def test_update_member_admin_fields(self):
         """Test that admins can write to admin fields."""
-        res1 = self.client.post(MEMBERS_URL, TEST_MEMBER_POST)
+        payload = {
+                **TEST_MEMBER_POST,
+                'email': '0@example.com'}
+        res1 = self.client.post(MEMBERS_URL, payload)
         self.assertEqual(res1.status_code, 201)
+
         res2 = self.client.patch(
             reverse(
                 'collectivo:collectivo.members:member-detail',

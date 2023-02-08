@@ -91,7 +91,6 @@ class MemberAuthSyncTests(TestCase):
         payload = {
             **TEST_MEMBER_POST,
             'email': 'new_test_member@example.com',
-            'email_verified': False
         }
         res = self.client.post(MEMBERS_URL, payload)
         self.assertEqual(res.status_code, 201)

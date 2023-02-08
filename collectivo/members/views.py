@@ -62,16 +62,35 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         return user_id
 
     def sync_user_data(self, user_id, data):
-        """Synchronize user data with auth service if user_id exists."""
+        """
+        Synchronize user data with auth service.
+
+        Only performed if data is changed and user_id is not None.
+        If email is changed, email_verified is set to False.
+        """
         if user_id is None:
             return
         auth_manager = get_auth_manager()
-        new_user_data = {
-            k: v for k, v in data.items()
-            if k in auth_manager.get_user_fields()
-        }
-        auth_manager.update_user(user_id=user_id, **new_user_data)
-        return auth_manager.get_user(user_id)
+        userinfo = auth_manager.get_user(user_id)
+
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        email = data.get('email')
+
+        payload = {}
+        if first_name and userinfo['firstName'] != first_name:
+            payload['first_name'] = first_name
+        if last_name and userinfo['lastName'] != last_name:
+            payload['last_name'] = last_name
+        if email and userinfo['email'] != email:
+            payload['email'] = email
+            payload['email_verified'] = False
+
+        if payload != {}:
+            auth_manager.update_user(user_id=user_id, **payload)
+            return auth_manager.get_user(user_id)
+        else:
+            return userinfo
 
     def perform_create(self, serializer, user_id):
         """Create member and synchronize user data with auth service."""

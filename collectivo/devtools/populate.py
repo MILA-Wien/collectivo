@@ -87,14 +87,9 @@ def populate_keycloak_with_test_data():
     for member in members:
         user_id = auth_manager.get_user_id(member['email'])
         payload = {
-            'user_id': user_id,
-
-            'email': member['email'],
-            'email_verified': member['emailVerified'],
-
+            'email': member['email'],  # To match with keycloak user
             'first_name': member['firstName'],
             'last_name': member['lastName'],
-
             'gender': 'diverse',
             'address_street': 'My street',
             'address_number': '5',
