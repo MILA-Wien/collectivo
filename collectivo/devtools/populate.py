@@ -1,7 +1,7 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 from collectivo.utils import get_auth_manager, register_viewset
-from collectivo.members.views import MembersSudoViewSet
+from collectivo.members.views import MembersAdminCreateViewSet
 from collectivo.members.models import Member
 from keycloak.exceptions import KeycloakGetError, KeycloakDeleteError
 
@@ -67,7 +67,9 @@ def populate_keycloak_with_test_data():
             Member.objects.filter(email=user['email']).delete()
         except (KeycloakGetError, KeycloakDeleteError):
             pass
-        user_id = auth_manager.create_user(user)
+        user_id = auth_manager.create_user(
+            user['firstName'], user['lastName'], user['email'],
+            email_verified=user['emailVerified'])
         auth_manager.set_user_password(  # noqa
             user_id, password='Test123!', temporary=False)  # noqa
 
@@ -85,14 +87,9 @@ def populate_keycloak_with_test_data():
     for member in members:
         user_id = auth_manager.get_user_id(member['email'])
         payload = {
-            'user_id': user_id,
-
-            'email': member['email'],
-            'email_verified': member['emailVerified'],
-
+            'email': member['email'],  # To match with keycloak user
             'first_name': member['firstName'],
             'last_name': member['lastName'],
-
             'gender': 'diverse',
             'address_street': 'My street',
             'address_number': '5',
@@ -105,12 +102,15 @@ def populate_keycloak_with_test_data():
             'membership_start': '2022-12-08',
             'person_type': 'natural',
             'membership_type': 'active',
-            'shares_number': 5
+            'shares_number': 5,
+            'shares_tarif': 'normal',
+            'shares_payment_type': 'sepa',
+            'statutes_approved': True,
         }
         if member['email'] == 'test_member_02@example.com':
             payload['person_type'] = 'legal'
 
         register_viewset(
-            MembersSudoViewSet,
+            MembersAdminCreateViewSet,
             payload=payload
         )

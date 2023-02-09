@@ -27,37 +27,96 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     queryset = models.Member.objects.all()
 
-    def sync_user_data_with_auth(self, user_id, data):
-        """Synchronize user data within authentication service."""
-        if user_id is None:  # Member does not have a user account
+    def members_role(self):
+        """Return representation of the members_user role."""
+        auth_manager = get_auth_manager()
+        role = 'members_user'
+        role_id = auth_manager.get_realm_role(role)['id']
+        return {'id': role_id, 'name': role}
+
+    def assign_members_role(self, user_id):
+        """Assign members_user role to user."""
+        if user_id is None:
             return
         auth_manager = get_auth_manager()
-        new_user_data = {
-            k: v for k, v in data.items()
-            if k in auth_manager.get_user_fields()
-        }
-        auth_manager.update_user(user_id=user_id, **new_user_data)
+        auth_manager.assign_realm_roles(user_id, self.members_role())
 
-        # Give user the role members user
-        role = 'members_user'
+    def remove_members_role(self, user_id):
+        """Remove members_user role from user."""
+        if user_id is None:
+            return
         auth_manager = get_auth_manager()
-        role_id = auth_manager.get_realm_role(role)['id']
-        auth_manager.assign_realm_roles(
-            user_id, {'id': role_id, 'name': role})
+        auth_manager.delete_realm_roles_of_user(user_id, self.members_role())
 
-    def perform_create(self, serializer):
+    def get_or_create_user(self, data):
+        """Create a user in the auth service."""
+        auth_manager = get_auth_manager()
+        user_id = auth_manager.get_user_id(data['email'])
+        if user_id is None:
+            user_data = {
+                k: v for k, v in data.items()
+                if k in auth_manager.get_user_fields()
+            }
+            auth_manager.create_user(**user_data)
+            user_id = auth_manager.get_user_id(data['email'])
+        return user_id
+
+    def sync_user_data(self, user_id, data):
+        """
+        Synchronize user data with auth service.
+
+        Only performed if data is changed and user_id is not None.
+        If email is changed, email_verified is set to False.
+        """
+        if user_id is None:
+            return
+        auth_manager = get_auth_manager()
+        userinfo = auth_manager.get_user(user_id)
+
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        email = data.get('email')
+
+        payload = {}
+        if first_name and userinfo['firstName'] != first_name:
+            payload['first_name'] = first_name
+        if last_name and userinfo['lastName'] != last_name:
+            payload['last_name'] = last_name
+        if email and userinfo['email'] != email:
+            payload['email'] = email
+            payload['email_verified'] = False
+
+        if payload != {}:
+            auth_manager.update_user(user_id=user_id, **payload)
+            return auth_manager.get_user(user_id)
+        else:
+            return userinfo
+
+    def perform_create(self, serializer, user_id):
         """Create member and synchronize user data with auth service."""
-        self.sync_user_data_with_auth(
-            serializer.initial_data.get('user_id'),
-            serializer.validated_data)
-        serializer.save()
+        if Member.objects.filter(user_id=user_id).exists():
+            raise PermissionDenied('User is already registered as a member.')
+        userinfo = self.sync_user_data(user_id, serializer.validated_data)
+        self.assign_members_role(user_id)
+        extra_fields = {
+            'user_id': user_id,
+            'email': userinfo['email'],
+            'membership_start': localdate(),
+        }
+        if 'tags' in serializer.validated_data:
+            extra_fields['tags'] = serializer.validated_data['tags']
+        serializer.save(**extra_fields)
 
     def perform_update(self, serializer):
         """Update member and synchronize user data with auth service."""
-        self.sync_user_data_with_auth(
-            serializer.instance.user_id,
-            serializer.validated_data)
+        self.sync_user_data(
+            serializer.instance.user_id, serializer.validated_data)
         serializer.save()
+
+    def perform_destroy(self, instance):
+        """Delete member and remove members_user role from auth service."""
+        self.remove_members_role(instance.user_id)
+        instance.delete()
 
 
 class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
@@ -73,17 +132,7 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
     def perform_create(self, serializer):
         """Create member with user_id from auth token."""
         user_id = self.request.userinfo.user_id
-        if Member.objects.filter(user_id=user_id).exists():
-            raise PermissionDenied('User is already registered as a member.')
-        self.sync_user_data_with_auth(user_id, serializer.validated_data)
-        extra_fields = {
-            'user_id': user_id,
-            'email': self.request.userinfo.email,
-            'membership_start': localdate(),
-        }
-        if 'tags' in serializer.validated_data:
-            extra_fields['tags'] = serializer.validated_data['tags']
-        serializer.save(**extra_fields)
+        super().perform_create(serializer, user_id)
 
 
 class MemberProfileViewSet(
@@ -118,7 +167,9 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
     ordering_fields = member_fields
 
 
-class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
+class MembersAdminViewSet(MemberMixin, mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                          mixins.DestroyModelMixin):
     """
     API for admins to manage members.
 
@@ -131,17 +182,22 @@ class MembersViewSet(MemberMixin, viewsets.ModelViewSet):
     ordering_fields = member_fields
 
 
-class MembersSudoViewSet(MemberMixin, viewsets.ModelViewSet):
+class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
     """
-    API for admins to manage members.
+    API for admins to create members.
 
     Requires the role 'members_admin'.
     """
 
-    serializer_class = serializers.MemberSudoSerializer
+    serializer_class = serializers.MemberAdminCreateSerializer
     permission_classes = [IsMembersAdmin]
     filterset_fields = filterset_fields
     ordering_fields = member_fields
+
+    def perform_create(self, serializer):
+        """Create a keycloak user before creating a member."""
+        user_id = self.get_or_create_user(serializer.validated_data)
+        super().perform_create(serializer, user_id)
 
 
 class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):

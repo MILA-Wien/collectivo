@@ -35,13 +35,32 @@ class KeycloakAuthManager(AuthManager, KeycloakAdmin):
         """Return attributes of the user model."""
         return ('first_name', 'last_name', 'email')
 
+    def create_user(self, first_name, last_name, email,
+                    email_verified=False, exist_ok=False):
+        """Create a keycloak user."""
+        payload = {
+            'firstName': first_name,
+            'lastName': last_name,
+            'email': email,
+            'username': email,
+            'enabled': True,
+            'emailVerified': email_verified,
+        }
+        try:
+            user = super().create_user(payload, exist_ok=exist_ok)
+        except Exception as e:
+            raise ParseError(f'Could not create user: {e}')
+        return user
+
     def update_user(self, user_id, first_name=None,
-                    last_name=None, email=None):
+                    last_name=None, email=None,
+                    email_verified=None):
         """Update a keycloak user."""
         payload = {
             'firstName': first_name,
             'lastName': last_name,
             'email': email,
+            'emailVerified': email_verified,
         }
         payload = {k: v for k, v in payload.items() if v is not None}
         try:
