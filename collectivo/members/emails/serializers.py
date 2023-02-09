@@ -63,7 +63,8 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
 
         model = models.EmailCampaign
         fields = '__all__'
-        read_only_fields = ('status', 'status_message', 'created', 'sent')
+        read_only_fields = (
+            'status', 'status_message', 'created', 'sent', 'automation')
 
     def validate(self, attrs):
         """Adjust data before validation."""
@@ -139,3 +140,13 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
             tasks.append(send_mails_async.s(batch))
         tasks.append(send_mails_async_end.s())
         chain(*tasks)()
+
+
+class EmailAutomationSerializer(serializers.ModelSerializer):
+    """Serializer for email automations."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.EmailAutomation
+        fields = '__all__'

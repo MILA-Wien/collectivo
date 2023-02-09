@@ -7,10 +7,12 @@ from collectivo.members.models import Member
 from django.core import mail
 from .models import EmailCampaign
 from unittest.mock import patch
+from collectivo.members.tests.test_members import TEST_MEMBER_POST, MEMBERS_URL
 
 TEMPLATES_URL = reverse('collectivo:collectivo.members.emails:template-list')
 CAMPAIGNS_URL = reverse('collectivo:collectivo.members.emails:campaign-list')
 DESIGNS_URL = reverse('collectivo:collectivo.members.emails:design-list')
+AUTO_URL = reverse('collectivo:collectivo.members.emails:automation-list')
 
 
 def run_mocked_celery_chain(mocked_chain):
@@ -23,7 +25,7 @@ def run_mocked_celery_chain(mocked_chain):
         return task.result
 
 
-class MembersEmailAPITests(TestCase):
+class EmailsTests(TestCase):
     """Test the members emails API."""
 
     def setUp(self):
@@ -78,3 +80,31 @@ class MembersEmailAPITests(TestCase):
         self.assertEqual(res.status_code, 201)
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)
+
+    @patch('collectivo.members.emails.serializers.chain')
+    def test_new_member_automation(self, chain):
+        """Test that a new member gets an automatic email."""
+        # Create automation
+        template = self.client.post(TEMPLATES_URL, self.template_data)
+        automation = {
+            'trigger': 'new_member',
+            'template': template.data['id'],
+        }
+        res = self.client.post(AUTO_URL, automation)
+        self.assertEqual(res.status_code, 201)
+
+        # Create a new member
+        member = {
+            **TEST_MEMBER_POST,
+            'email': 'test_user_not_member@example.com'
+        }
+        res = self.client.post(MEMBERS_URL, member)
+        self.assertEqual(res.status_code, 201)
+
+        # Check that the email was sent automatically
+        run_mocked_celery_chain(chain)
+        obj = EmailCampaign.objects.get(template=template.data['id'])
+        self.assertEqual(obj.status, 'success')
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            mail.outbox[0].recipients()[0], 'test_member_01@example.com')
