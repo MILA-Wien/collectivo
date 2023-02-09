@@ -35,7 +35,7 @@ class GeneralShift(models.Model):
         default=3,
     )
     end_date_time = models.DateTimeField()
-    required_users = models.PositiveSmallIntegerField(default="2")
+    required_users = models.PositiveSmallIntegerField(default=2)
     shift_day = models.CharField(
         help_text=(
             "Shift days are necessary for fixed shifts to register"
@@ -55,19 +55,12 @@ class GeneralShift(models.Model):
     )
     additional_info_general = models.TextField(max_length=300)
 
-    # individual_shifts = models.ManyToManyField(
-    #     "IndividualShift",
-    #     related_name="%(class)s_individual_shifts",
-    #     blank=True,
-    # )  # %(class) to avoid error:
-    # https://stackoverflow.com/a/22538875/19932351
-
 
 class IndividualShift(models.Model):
     """A shift to be done by a single user."""
 
     assigned_user = models.ForeignKey(
-        "ShiftUser", on_delete=models.SET_NULL, blank=True, null=True
+        "ShiftUser", on_delete=models.SET_NULL, blank=True, null=True, default=None
     )
     general_shift = models.ForeignKey(GeneralShift, on_delete=models.CASCADE)
 
