@@ -60,20 +60,22 @@ class IndividualShift(models.Model):
     """A shift to be done by a single user."""
 
     assigned_user = models.ForeignKey(
-        "ShiftUser", on_delete=models.SET_NULL, blank=True, null=True, default=None
+        "ShiftUser",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        default=None,
     )
     general_shift = models.ForeignKey(GeneralShift, on_delete=models.CASCADE)
 
-    attended = models.BooleanField(
-        default=False
-    )  # how to require only shift admins to change this?
+    # TODO add roles to users and check if user is allowed to change this
+    attended = models.BooleanField(default=False)
     additional_info_individual = models.TextField(max_length=300)
 
 
 class ShiftUser(models.Model):
     """A user that can be assigned to a shift."""
 
+    # TODO should be set by keycloak and collectivo
     username = models.CharField(max_length=30, blank=True)
-    creator = models.BooleanField(
-        default=False
-    )  # should be set by keycloak and collectivo
+    creator = models.BooleanField(default=False)

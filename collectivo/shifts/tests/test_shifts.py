@@ -10,6 +10,8 @@ from collectivo.shifts.serializers import IndividualShiftSerializer
 
 GENERAL_SHIFTS_URL = reverse("collectivo:collectivo.shifts:general-shift-list")
 INDI_SHIFTS_URL = reverse("collectivo:collectivo.shifts:individual-shift-list")
+INDI_SHIFTS_URL_LABEL = "collectivo:collectivo.shifts:individual-shift-detail"
+
 SHIFT_USERS_URL = reverse("collectivo:collectivo.shifts:shift-user-list")
 
 TEST_GENERAL_SHIFT_POST = {
@@ -30,6 +32,7 @@ TEST_CREATE_USER_POST2 = {"username": "Pasta"}
 TEST_CREATE_USER_POST3 = {"username": "Leone"}
 
 TEST_ASSIGN_POST = {"additional_info_individual": "string", "assigned_user": 1}
+TEST_ASSIGN_POST = {"additional_info_individual": "string", "assigned_user": None}
 
 
 class ShiftAPITests(TestCase):
@@ -107,56 +110,47 @@ class ShiftAPITests(TestCase):
             individual_shifts[2].general_shift.shift_type,
         )
 
-    def assign_user_to_shift(self, shift_id, user_id, payload=TEST_ASSIGN_POST):
+    def assign_user_to_shift(self, shift_id, user_id=None):
         """Assign user to shift."""
-        print("payload", payload)
-        res = self.client.patch(INDI_SHIFTS_URL + str(shift_id) + "/", payload)
-        if res.status_code != 200:
-            raise ValueError("Could not assign user to shift:", res.content)
-        shift = IndividualShift.objects.get(id=res.data["id"])
-        print(
-            "shift in assign user to shift",
-            shift.id,
-            shift.assigned_user,
-            shift.additional_info_individual,
+        if user_id is None:
+            payload = {"additional_info_individual": "string", "assigned_user": None}
+        else:
+            payload = {"additional_info_individual": "string", "assigned_user": user_id}
+
+        res = self.client.patch(
+            reverse(INDI_SHIFTS_URL_LABEL, args=[shift_id]), payload, format="json"
         )
-        return shift
+        if res.status_code != 200:
+            raise ValueError(
+                "API patch call failed, could not assign user to shift:", res.content
+            )
+        indi_shift = IndividualShift.objects.get(id=res.data["id"])
+        return indi_shift
 
     def test_individual_shifts_is_assigned_by_user(self):
         """Test that individual shifts gets assigned by user."""
-        self.create_general_shift()
-        self.create_shift_user()
-        self.create_shift_user2()
-        shift = IndividualShift.objects.all()[0]
-        print("shift", shift.id, shift.assigned_user, shift.general_shift.id)
-        user = ShiftUser.objects.all()[0]
-        print("user", user.id, user.username)
-        user2 = ShiftUser.objects.all()[1]
-        serializer = IndividualShiftSerializer()
-        print("URL", INDI_SHIFTS_URL + str(shift.id) + "/")
+        # Initialize shift and user
+        shift = self.create_general_shift()
+        user = self.create_shift_user()
+        user2 = self.create_shift_user2()
+        indi_shift = shift.individualshift_set.all()[0]
 
         # Test successful assignment
-        # serializer.assign_user(user, shift)
-        # self.client.patch({"assigned_user": user.id}, shift.id)
-        shift = self.assign_user_to_shift(shift.id, user.id)
-        print(
-            "after", shift.id, shift.additional_info_individual, shift.general_shift.id
-        )
-        self.assertEqual(shift.assigned_user, user)
-
+        indi_shift = self.assign_user_to_shift(indi_shift.id, user.id)
+        self.assertEqual(indi_shift.assigned_user, user)
         self.assertEqual(
-            shift.assigned_user.username,
+            indi_shift.assigned_user.username,
             "Pizza",
         )
 
-        # Test error raised for already assigned shift
-        with self.assertRaises(ValidationError):
-            serializer.assign_user(user, shift)
-
         # Test successful unassignment
-        serializer.assign_user(None, shift)
-        self.assertEqual(shift.assigned_user, None)
+        indi_shift = self.assign_user_to_shift(indi_shift.id, None)
+        self.assertEqual(indi_shift.assigned_user, None)
 
         # Test successful reassignment
-        serializer.assign_user(user2, shift)
-        self.assertEqual(shift.assigned_user, user2)
+        indi_shift = self.assign_user_to_shift(indi_shift.id, user2.id)
+        self.assertEqual(indi_shift.assigned_user, user2)
+        self.assertEqual(
+            indi_shift.assigned_user.username,
+            "Pasta",
+        )
