@@ -15,7 +15,7 @@ SHIFT_USERS_URL = reverse("collectivo:collectivo.shifts:shift-user-list")
 TEST_GENERAL_SHIFT_POST = {
     "shift_title": "my_shift",
     "first_shift_date": "2023-02-07",
-    "shift_type": "fixed",
+    "shift_type": "regular",
     "shift_week": "A",
     "starting_date_time": "2023-02-07T09:33:16.836Z",
     "duration": 0,
@@ -24,10 +24,21 @@ TEST_GENERAL_SHIFT_POST = {
     "shift_day": "Monday",
     "additional_info_general": "string",
 }
+TEST_GENERAL_SHIFT_POST2 = {
+    "shift_title": "my_shift",
+    "first_shift_date": "2023-02-07",
+    "shift_type": "once",
+    "shift_week": "A",
+    "starting_date_time": "2023-02-10T09:33:16.836Z",
+    "duration": 0,
+    "end_date_time": "2023-02-10T09:33:16.836Z",
+    "required_users": 4,
+    "shift_day": "Monday",
+    "additional_info_general": "string",
+}
 
 TEST_CREATE_USER_POST = {"username": "Pizza", "creator": True}
 TEST_CREATE_USER_POST2 = {"username": "Pasta"}
-TEST_CREATE_USER_POST3 = {"username": "Leone"}
 
 
 class ShiftAPITests(TestCase):
@@ -156,3 +167,33 @@ class ShiftAPITests(TestCase):
             indi_shift.assigned_user.username,
             "Pasta",
         )
+
+    def get_general_shifts(self):
+        """Get all general shifts."""
+        res = self.client.get(
+            # TODO add reverse to url so dates can be passed with args
+            # reverse(
+            #     "collectivo:collectivo.shifts:general-shift-list",
+            #     args={
+            #         "starting_date_time__gte": "2023-02-07",
+            #         "end_date_time__lte": "2023-02-08",
+            #     },
+            # )
+            GENERAL_SHIFTS_URL
+            + "?starting_date_time__gte=2023-02-07"
+            + "&end_date_time__lte=2023-02-08"
+        )
+        if res.status_code != 200:
+            raise ValueError(
+                "API get call failed, could not get general shifts:",
+                res.content,
+            )
+        return res
+
+    def test_to_get_multiple_general_shifts(self):
+        """Test that multiple general shifts can be retrieved."""
+        self.create_general_shift()
+        self.create_general_shift(payload=TEST_GENERAL_SHIFT_POST2)
+
+        res = self.get_general_shifts()
+        print("RES", res.content)

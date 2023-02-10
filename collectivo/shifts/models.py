@@ -9,14 +9,14 @@ class GeneralShift(models.Model):
     first_shift_date = models.DateField(blank=True, null=True)
     shift_type = models.CharField(
         help_text=(
-            "Type of shift. Fixed shifts are set automatically every month to "
-            "one or many users. Open shifts are not addressed to a user yet."
+            "Type of shift. Either shifts happen on a regular basis. "
+            "Or they happen only once."
         ),
         default="fixed",
-        max_length=5,
+        max_length=30,
         choices=[
-            ("fixed", "fixed"),
-            ("open", "open"),
+            ("regular", "regular"),
+            ("once", "once"),
         ],
     )
     shift_week = models.CharField(
