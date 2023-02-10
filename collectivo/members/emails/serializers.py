@@ -36,6 +36,16 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class EmailAutomationSerializer(serializers.ModelSerializer):
+    """Serializer for email automations."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.EmailAutomation
+        fields = "__all__"
+
+
 class EmailCampaignSerializer(serializers.ModelSerializer):
     """Serializer for email campaigns (email sending orders)."""
 
@@ -138,13 +148,3 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
             tasks.append(send_mails_async.s(batch))
         tasks.append(send_mails_async_end.s())
         chain(*tasks)()
-
-
-class EmailAutomationSerializer(serializers.ModelSerializer):
-    """Serializer for email automations."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.EmailAutomation
-        fields = "__all__"

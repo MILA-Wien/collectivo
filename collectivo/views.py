@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.fields import empty
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from collections import OrderedDict
 from collectivo.version import __version__
 from collectivo.auth.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiResponse
@@ -72,7 +73,20 @@ class SchemaMixin:
                 data[field_name]["input_type"] = 'textarea'
             for attr in field_attrs:
                 if hasattr(field_obj, attr):
-                    value = getattr(field_obj, attr)
+                    # Get choices from model field instead of serializer
+                    # This is because serializer does not always have choices
+                    if attr == 'choices' and hasattr(field_obj, 'get_queryset'):
+                        model = self.get_serializer_class().Meta.model
+                        field = getattr(model, field_name)
+                        value = OrderedDict([
+                            (
+                                field_obj.to_representation(item),
+                                field_obj.display_value(item)
+                            )
+                            for item in field.get_queryset()
+                        ])
+                    else:
+                        value = getattr(field_obj, attr)
                     if value is not empty and value is not None:
                         data[field_name][attr] = value
             if hasattr(serializer, 'schema_attrs') and \

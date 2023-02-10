@@ -78,4 +78,4 @@ class EmailAutomation(models.Model):
 
     def __str__(self):
         """Return a string representation of the object."""
-        return f"Email automation ({self.id}, {self.trigger})"
+        return f"{self.trigger} ({self.id})"
