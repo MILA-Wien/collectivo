@@ -4,6 +4,7 @@ from django.core import mail
 from celery.utils.log import get_task_logger
 import time
 from collectivo.members.models import Member
+from collectivo.members.emails.models import EmailCampaign
 
 
 logger = get_task_logger(__name__)
@@ -13,13 +14,13 @@ logger = get_task_logger(__name__)
 def send_mails_async(results, emails):
     """Send a mass email."""
     connection = mail.get_connection()
-    campaign = results['campaign']
+    campaign = results["campaign"]
 
     try:
         time.sleep(1)  # TODO Get this number from the settings
-        results['n_sent'] += connection.send_messages(emails)
+        results["n_sent"] += connection.send_messages(emails)
     except Exception as e:
-        campaign.status = 'failure'
+        campaign.status = "failure"
         campaign.status_message = str(e)
         campaign.save()
         logger.error("Error sending emails: %s", e)
@@ -38,12 +39,15 @@ def send_mails_async(results, emails):
 @shared_task
 def send_mails_async_end(results):
     """Document results of sending emails in the database."""
-    campaign = results['campaign']
-    if results['n_sent'] != campaign.recipients.count():
-        campaign.status = 'failure'
-        campaign.status_message = 'Not all emails were sent' \
+    campaign = results["campaign"]
+    campaign = EmailCampaign.objects.get(id=campaign.id)  # Refresh from DB
+    if results["n_sent"] != campaign.recipients.count():
+        campaign.status = "failure"
+        campaign.status_message = (
+            "Not all emails were sent"
             f'({results["n_sent"]}/{campaign.recipients.count()})'
+        )
         # TODO Send an email to the admins
     else:
-        campaign.status = 'success'
+        campaign.status = "success"
     campaign.save()

@@ -5,7 +5,7 @@ from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
 from collectivo.members.models import Member
 from django.core import mail
-from .models import EmailCampaign
+from .models import EmailCampaign, EmailAutomation
 from unittest.mock import patch
 from collectivo.members.tests.test_members import (
     TEST_MEMBER_POST,
@@ -95,8 +95,8 @@ class EmailsTests(TestCase):
             "trigger": "new_member",
             "template": template.data["id"],
         }
-        res = self.client.post(AUTO_URL, automation)
-        self.assertEqual(res.status_code, 201)
+        automation_res = self.client.post(AUTO_URL, automation)
+        self.assertEqual(automation_res.status_code, 201)
 
         # Create a new member
         member = {
@@ -109,6 +109,8 @@ class EmailsTests(TestCase):
         # Check that the email was sent automatically
         run_mocked_celery_chain(chain)
         obj = EmailCampaign.objects.get(template=template.data["id"])
+        automation = EmailAutomation.objects.get(pk=automation_res.data["id"])
+        self.assertEqual(obj.automation, automation)
         self.assertEqual(obj.status, "success")
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(

@@ -112,6 +112,7 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         try:
             from collectivo.members.emails.models import EmailAutomation
             from collectivo.members.emails.views import EmailCampaignViewSet
+            from collectivo.members.emails.models import EmailCampaign
             from collectivo.utils import register_viewset
 
             automations = EmailAutomation.objects.filter(trigger="new_member")
@@ -124,7 +125,12 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
                     "send": True,
                 }
                 res = register_viewset(EmailCampaignViewSet, payload=campaign)
-                print(res)
+
+                # Add automation to campaign for documentation
+                campaign = EmailCampaign.objects.get(id=res.data["id"])
+                campaign.automation = automation
+                campaign.save()
+
         except ImportError:
             # Email Module not installed
             pass
