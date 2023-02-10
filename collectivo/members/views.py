@@ -48,20 +48,6 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         auth_manager = get_auth_manager()
         auth_manager.delete_realm_roles_of_user(user_id, self.members_role())
 
-    def sync_user_data(self, user_id, data):
-        """Synchronize user data with auth service if user_id exists."""
-        if user_id is None:
-            return
-        auth_manager = get_auth_manager()
-        auth_manager.assign_realm_roles(user_id, self.members_role())
-
-    def remove_members_role(self, user_id):
-        """Remove members_user role from user."""
-        if user_id is None:
-            return
-        auth_manager = get_auth_manager()
-        auth_manager.delete_realm_roles_of_user(user_id, self.members_role())
-
     def get_or_create_user(self, data):
         """Create a user in the auth service."""
         auth_manager = get_auth_manager()
