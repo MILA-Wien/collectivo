@@ -13,25 +13,26 @@ INDI_SHIFTS_URL_LABEL = "collectivo:collectivo.shifts:individual-shift-detail"
 SHIFT_USERS_URL = reverse("collectivo:collectivo.shifts:shift-user-list")
 
 TEST_GENERAL_SHIFT_POST = {
-    "shift_title": "my_shift",
+    "shift_title": "first_regular_shift",
     "first_shift_date": "2023-02-07",
     "shift_type": "regular",
     "shift_week": "A",
     "starting_date_time": "2023-02-07T09:33:16.836Z",
     "duration": 0,
-    "end_date_time": "2023-02-07T09:33:16.836Z",
+    "end_date_time": "2023-02-07T12:33:16.836Z",
     "required_users": 4,
     "shift_day": "Monday",
     "additional_info_general": "string",
 }
 TEST_GENERAL_SHIFT_POST2 = {
-    "shift_title": "my_shift",
-    "first_shift_date": "2023-02-07",
+    "shift_title": "second_unique_shift",
+    "first_shift_date": "2023-02-10",
     "shift_type": "once",
     "shift_week": "A",
     "starting_date_time": "2023-02-10T09:33:16.836Z",
     "duration": 0,
-    "end_date_time": "2023-02-10T09:33:16.836Z",
+    "end_date_time": "2023-02-10T12:33:16.836Z",
+    # TODO add "end_time": "12:00",
     "required_users": 4,
     "shift_day": "Monday",
     "additional_info_general": "string",
@@ -76,7 +77,7 @@ class ShiftAPITests(TestCase):
     def test_create_general_shift(self):
         """Test creating a general shift."""
         shift = self.create_general_shift()
-        self.assertEqual(shift.shift_title, "my_shift")
+        self.assertEqual(shift.shift_title, "first_regular_shift")
         self.assertEqual(shift.shift_day, "Monday")
 
     def test_amount_of_individual_shifts_based_on_required_users(self):
@@ -89,13 +90,13 @@ class ShiftAPITests(TestCase):
         shift = self.create_general_shift()
         self.assertEqual(
             IndividualShift.objects.filter(
-                general_shift__shift_title="my_shift"
+                general_shift__shift_title="first_regular_shift"
             ).count(),
             shift.required_users,
         )
         self.assertEqual(
             IndividualShift.objects.filter(
-                general_shift__shift_title="my_shift"
+                general_shift__shift_title="first_regular_shift"
             ).count(),
             4,
         )

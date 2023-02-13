@@ -1,4 +1,8 @@
 """Models of the shift module."""
+import datetime
+
+from dateutil.relativedelta import relativedelta
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -10,13 +14,13 @@ class GeneralShift(models.Model):
     shift_type = models.CharField(
         help_text=(
             "Type of shift. Either shifts happen on a regular basis. "
-            "Or they happen only once."
+            "Or they are unique and happen only once."
         ),
         default="fixed",
         max_length=30,
         choices=[
             ("regular", "regular"),
-            ("once", "once"),
+            ("unique", "unique"),
         ],
     )
     shift_week = models.CharField(
@@ -29,12 +33,14 @@ class GeneralShift(models.Model):
             ("C", "C"),
             ("D", "D"),
         ],
+        blank=True,
+        null=True,
     )
-    starting_date_time = models.DateTimeField()
+    shift_starting_time = models.TimeField(default=datetime.now())
     duration = models.FloatField(
         default=3,
     )
-    end_date_time = models.DateTimeField()
+    shift_end_time = models.TimeField(default=datetime.now() + relativedelta(hours=3))
     required_users = models.PositiveSmallIntegerField(default=2)
     shift_day = models.CharField(
         help_text=(
@@ -52,8 +58,25 @@ class GeneralShift(models.Model):
             ("Saturday", "Saturday"),
             ("Sunday", "Sunday"),
         ],
+        blank=True,
+        null=True,
     )
-    additional_info_general = models.TextField(max_length=300)
+    additional_info_general = models.TextField(
+        max_length=300,
+        blank=True,
+        null=True,
+    )
+    starting_search_date = models.DateField(blank=True, null=True)
+    ending_search_date = models.DateField(blank=True, null=True)
+    shift_date_list = (
+        ArrayField(
+            models.DateField(blank=True, null=True),
+        ),
+    )
+    shift_user_list = ArrayField(
+        models.CharField(max_length=30, blank=True, null=True),
+    )
+    shift_appointment = models.DateTimeField(blank=True, null=True)
 
 
 class IndividualShift(models.Model):
