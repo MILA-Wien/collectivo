@@ -37,7 +37,7 @@ class Shift(models.Model):
         blank=True,
         null=True,
     )
-    shift_end_time = models.TimeField(blank=True, null=True)
+    shift_ending_time = models.TimeField(blank=True, null=True)
     required_users = models.PositiveSmallIntegerField(default=2)
     shift_day = models.CharField(
         help_text=(

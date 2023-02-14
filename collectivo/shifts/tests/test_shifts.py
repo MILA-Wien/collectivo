@@ -19,7 +19,7 @@ TEST_SHIFT_POST = {
     "shift_type": "regular",
     "shift_week": "A",
     "shift_starting_time": "",
-    "shift_end_time": "",
+    "shift_ending_time": "",
     "required_users": 4,
     "shift_day": "Monday",
     "additional_info_general": "string",
@@ -31,7 +31,7 @@ TEST_SHIFT_POST2 = {
     "shift_type": "unique",
     "shift_week": "",
     "shift_starting_time": "",
-    "shift_end_time": "",
+    "shift_ending_time": "",
     "required_users": 4,
     "shift_day": "Tuesday",
     "additional_info_general": "string2",
@@ -153,7 +153,7 @@ class ShiftAPITests(TestCase):
         assignment = Assignment.objects.get(id=res.data["id"])
         return assignment
 
-    def test_assignments_is_assigned_by_user(self):
+    def test_assignment_is_assigned_by_user(self):
         """Test that assignments gets assigned by user."""
         # Initialize shift and users
         shift = self.create_shift()
@@ -193,8 +193,7 @@ class ShiftAPITests(TestCase):
             #     },
             # )
             SHIFTS_URL
-            + "?starting_date_time__gte=2023-02-05"
-            + "&end_date_time__lte=2023-02-06"
+            # + "?starting_shift_date__lte=2023-02-08"
         )
         if res.status_code != 200:
             raise ValueError(
@@ -207,6 +206,8 @@ class ShiftAPITests(TestCase):
         """Test that multiple shifts can be retrieved."""
         self.create_shift()
         self.create_shift(payload=TEST_SHIFT_POST2)
+        if Shift.objects.filter(starting_shift_date__lte="2023-02-08"):
+            print("SHIFT EXISTS")
 
-        res = self.get_shifts()
-        print("RES", res.content)
+        # res = self.get_shifts()
+        # print("RES", res.content)

@@ -12,16 +12,16 @@ class ShiftViewSet(viewsets.ModelViewSet):
     queryset = models.Shift.objects.all()
     serializer_class = serializers.ShiftSerializer
     filterset_fields = {
-        "shift_title": ["exact"],
-        "first_shift_date": ["gte", "lte", "exact", "gt", "lt"],
+        "shift_title": ["exact", "contains"],
+        "starting_shift_date": ["gte", "lte", "exact", "gt", "lt"],
+        "ending_shift_date": ["gte", "lte", "exact", "gt", "lt"],
         "shift_type": ["exact"],
         "shift_week": ["exact"],
-        "starting_date_time": ["gte"],
-        "duration": ["exact"],
-        "end_date_time": ["lte"],
-        "required_users": ["exact"],
+        "shift_starting_time": ["gte", "lte", "exact", "gt", "lt"],
+        "shift_ending_time": ["gte", "lte", "exact", "gt", "lt"],
+        "required_users": ["gte", "lte", "exact", "gt", "lt"],
         "shift_day": ["exact"],
-        "additional_info_general": ["exact"],
+        "additional_info_general": ["exact", "contains"],
     }
 
     # list(rrule(MONTHLY, byweekday=MO(1),
