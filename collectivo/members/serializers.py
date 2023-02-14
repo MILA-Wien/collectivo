@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 from . import models
+import copy
 
 conditions = {
     "sepa": {
@@ -235,6 +236,9 @@ field_settings = {
     },
 }
 
+field_settings_admin_create = copy.deepcopy(field_settings)
+field_settings_admin_create["shares_number"]["kwargs"]["required"] = True
+
 # Boolean fields that will be converted to tags
 register_fields = [
     f for f, s in field_settings.items() if "create" in s["permissions"]
@@ -388,9 +392,10 @@ class MemberAdminCreateSerializer(MemberRegisterSerializer):
         fields = register_fields + register_tag_fields + ["email"]
         read_only_fields = ["id", "user_id"]  # Return the id after creation
         extra_kwargs = {
-            field: field_settings[field]["kwargs"]
+            field: field_settings_admin_create[field]["kwargs"]
             for field in fields
-            if field in field_settings and "kwargs" in field_settings[field]
+            if field in field_settings_admin_create
+            and "kwargs" in field_settings_admin_create[field]
         }
 
     def _convert_shares_tarif(self, attrs):
