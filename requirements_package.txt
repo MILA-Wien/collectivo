@@ -4,4 +4,3 @@ django-filter==22.1
 drf-spectacular>=0.24.2,<0.25
 python-keycloak>=2.5.0,<2.6
 PyJWT>=2.5.0
-python-dateutil

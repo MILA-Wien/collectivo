@@ -1,16 +1,13 @@
 """Models of the shift module."""
-import datetime
-
-from dateutil.relativedelta import relativedelta
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
-class GeneralShift(models.Model):
+class Shift(models.Model):
     """A shift to be done by the collective."""
 
     shift_title = models.CharField(max_length=30, blank=True)
-    first_shift_date = models.DateField(blank=True, null=True)
+    starting_shift_date = models.DateField(blank=True, null=True)
+    ending_shift_date = models.DateField(blank=True, null=True)
     shift_type = models.CharField(
         help_text=(
             "Type of shift. Either shifts happen on a regular basis. "
@@ -36,11 +33,11 @@ class GeneralShift(models.Model):
         blank=True,
         null=True,
     )
-    shift_starting_time = models.TimeField(default=datetime.now())
-    duration = models.FloatField(
-        default=3,
+    shift_starting_time = models.TimeField(
+        blank=True,
+        null=True,
     )
-    shift_end_time = models.TimeField(default=datetime.now() + relativedelta(hours=3))
+    shift_end_time = models.TimeField(blank=True, null=True)
     required_users = models.PositiveSmallIntegerField(default=2)
     shift_day = models.CharField(
         help_text=(
@@ -66,20 +63,9 @@ class GeneralShift(models.Model):
         blank=True,
         null=True,
     )
-    starting_search_date = models.DateField(blank=True, null=True)
-    ending_search_date = models.DateField(blank=True, null=True)
-    shift_date_list = (
-        ArrayField(
-            models.DateField(blank=True, null=True),
-        ),
-    )
-    shift_user_list = ArrayField(
-        models.CharField(max_length=30, blank=True, null=True),
-    )
-    shift_appointment = models.DateTimeField(blank=True, null=True)
 
 
-class IndividualShift(models.Model):
+class Assignment(models.Model):
     """A shift to be done by a single user."""
 
     assigned_user = models.ForeignKey(
@@ -89,7 +75,7 @@ class IndividualShift(models.Model):
         null=True,
         default=None,
     )
-    general_shift = models.ForeignKey(GeneralShift, on_delete=models.CASCADE)
+    shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
 
     # TODO add roles to users and check if user is allowed to change this
     attended = models.BooleanField(default=False)

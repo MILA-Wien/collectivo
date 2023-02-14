@@ -4,35 +4,46 @@ from django.urls import reverse
 
 from collectivo.auth.clients import CollectivoAPIClient
 from collectivo.auth.userinfo import UserInfo
-from collectivo.shifts.models import GeneralShift, IndividualShift, ShiftUser
+from collectivo.shifts.models import Assignment, Shift, ShiftUser
 
-GENERAL_SHIFTS_URL = reverse("collectivo:collectivo.shifts:general-shift-list")
-INDI_SHIFTS_URL = reverse("collectivo:collectivo.shifts:individual-shift-list")
-INDI_SHIFTS_URL_LABEL = "collectivo:collectivo.shifts:individual-shift-detail"
+SHIFTS_URL = reverse("collectivo:collectivo.shifts:shift-list")
+ASSIGNMENT_URL = reverse("collectivo:collectivo.shifts:assignment-list")
+ASSIGNMENT_URL_LABEL = "collectivo:collectivo.shifts:assignment-detail"
 
 SHIFT_USERS_URL = reverse("collectivo:collectivo.shifts:shift-user-list")
 
-TEST_GENERAL_SHIFT_POST = {
+TEST_SHIFT_POST = {
     "shift_title": "first_regular_shift",
-    "first_shift_date": "2023-02-07",
+    "starting_shift_date": "2023-02-10",
+    "ending_shift_date": "",
     "shift_type": "regular",
     "shift_week": "A",
-    "starting_date_time": "2023-02-07T09:33:16.836Z",
-    "duration": 0,
-    "end_date_time": "2023-02-07T12:33:16.836Z",
+    "shift_starting_time": "",
+    "shift_end_time": "",
     "required_users": 4,
     "shift_day": "Monday",
     "additional_info_general": "string",
 }
-TEST_GENERAL_SHIFT_POST2 = {
-    "shift_title": "second_unique_shift",
-    "first_shift_date": "2023-02-10",
-    "shift_type": "once",
+TEST_SHIFT_POST2 = {
+    "shift_title": "first_unique_shift",
+    "starting_shift_date": "2023-02-07",
+    "ending_shift_date": "",
+    "shift_type": "unique",
+    "shift_week": "",
+    "shift_starting_time": "",
+    "shift_end_time": "",
+    "required_users": 4,
+    "shift_day": "Tuesday",
+    "additional_info_general": "string2",
+}
+TEST_SHIFT_POST3 = {
+    "shift_title": "second_regular_shift",
+    "starting_shift_date": "2023-01-15",
+    "ending_shift_date": "2023-10-15",
+    "shift_type": "regular",
     "shift_week": "A",
-    "starting_date_time": "2023-02-10T09:33:16.836Z",
-    "duration": 0,
-    "end_date_time": "2023-02-10T12:33:16.836Z",
-    # TODO add "end_time": "12:00",
+    "shift_starting_time": "",
+    "shift_end_time": "",
     "required_users": 4,
     "shift_day": "Monday",
     "additional_info_general": "string",
@@ -50,12 +61,12 @@ class ShiftAPITests(TestCase):
         self.client = CollectivoAPIClient()
         self.client.force_authenticate(UserInfo(is_authenticated=True))
 
-    def create_general_shift(self, payload=TEST_GENERAL_SHIFT_POST):
+    def create_shift(self, payload=TEST_SHIFT_POST):
         """Create a sample member."""
-        res = self.client.post(GENERAL_SHIFTS_URL, payload)
+        res = self.client.post(SHIFTS_URL, payload)
         if res.status_code != 201:
             raise ValueError("Could not register shift:", res.content)
-        shift = GeneralShift.objects.get(id=res.data["id"])
+        shift = Shift.objects.get(id=res.data["id"])
         return shift
 
     def create_shift_user(self, payload=TEST_CREATE_USER_POST):
@@ -74,47 +85,47 @@ class ShiftAPITests(TestCase):
         shift_user = ShiftUser.objects.get(id=res.data["id"])
         return shift_user
 
-    def test_create_general_shift(self):
-        """Test creating a general shift."""
-        shift = self.create_general_shift()
+    def test_create_shift(self):
+        """Test creating a shift."""
+        shift = self.create_shift()
         self.assertEqual(shift.shift_title, "first_regular_shift")
         self.assertEqual(shift.shift_day, "Monday")
 
-    def test_amount_of_individual_shifts_based_on_required_users(self):
+    def test_amount_of_assignments_based_on_required_users(self):
         """
-        Test creating a general shift.
+        Test creating a shift.
 
-        Test that individual shifts are created based
-        on the required users attribute in general shifts.
+        Test that assignments are created based
+        on the required users attribute in shifts.
         """
-        shift = self.create_general_shift()
+        shift = self.create_shift()
         self.assertEqual(
-            IndividualShift.objects.filter(
-                general_shift__shift_title="first_regular_shift"
+            Assignment.objects.filter(
+                shift__shift_title="first_regular_shift",
             ).count(),
             shift.required_users,
         )
         self.assertEqual(
-            IndividualShift.objects.filter(
-                general_shift__shift_title="first_regular_shift"
+            Assignment.objects.filter(
+                shift__shift_title="first_regular_shift",
             ).count(),
             4,
         )
-        individual_shifts = IndividualShift.objects.all()
-        self.assertEqual(individual_shifts[0].attended, False)
-        self.assertEqual(individual_shifts[3].additional_info_individual, "")
+        assignments = Assignment.objects.all()
+        self.assertEqual(assignments[0].attended, False)
+        self.assertEqual(assignments[3].additional_info_individual, "")
 
-    def test_individual_shift_gets_attributes_from_general_shift(self):
-        """Test that individual shifts get atttributes from general shifts."""
-        general_shift = self.create_general_shift()
-        individual_shifts = IndividualShift.objects.all()
+    def test_assignment_gets_attributes_from_shift(self):
+        """Test that assignments get atttributes from shifts."""
+        shift = self.create_shift()
+        assignments = Assignment.objects.all()
         self.assertEqual(
-            general_shift.shift_title,
-            individual_shifts[0].general_shift.shift_title,
+            shift.shift_title,
+            assignments[0].shift.shift_title,
         )
         self.assertEqual(
-            general_shift.shift_type,
-            individual_shifts[2].general_shift.shift_type,
+            shift.shift_type,
+            assignments[2].shift.shift_type,
         )
 
     def assign_user_to_shift(self, shift_id, user_id=None):
@@ -131,70 +142,71 @@ class ShiftAPITests(TestCase):
             }
 
         res = self.client.patch(
-            reverse(INDI_SHIFTS_URL_LABEL, args=[shift_id]), payload
+            reverse(ASSIGNMENT_URL_LABEL, args=[shift_id]),
+            payload,
         )
         if res.status_code != 200:
             raise ValueError(
                 "API patch call failed, could not assign user to shift:",
                 res.content,
             )
-        indi_shift = IndividualShift.objects.get(id=res.data["id"])
-        return indi_shift
+        assignment = Assignment.objects.get(id=res.data["id"])
+        return assignment
 
-    def test_individual_shifts_is_assigned_by_user(self):
-        """Test that individual shifts gets assigned by user."""
-        # Initialize shift and use
-        shift = self.create_general_shift()
+    def test_assignments_is_assigned_by_user(self):
+        """Test that assignments gets assigned by user."""
+        # Initialize shift and users
+        shift = self.create_shift()
         user = self.create_shift_user()
         user2 = self.create_shift_user2()
-        indi_shift = shift.individualshift_set.all()[0]
+        assignment = shift.assignment_set.all()[0]
 
         # Test successful assignment
-        indi_shift = self.assign_user_to_shift(indi_shift.id, user.id)
-        self.assertEqual(indi_shift.assigned_user, user)
+        assignment = self.assign_user_to_shift(assignment.id, user.id)
+        self.assertEqual(assignment.assigned_user, user)
         self.assertEqual(
-            indi_shift.assigned_user.username,
+            assignment.assigned_user.username,
             "Pizza",
         )
 
         # Test successful unassignment
-        indi_shift = self.assign_user_to_shift(indi_shift.id, None)
-        self.assertEqual(indi_shift.assigned_user, None)
+        assignment = self.assign_user_to_shift(assignment.id, None)
+        self.assertEqual(assignment.assigned_user, None)
 
         # Test successful reassignment
-        indi_shift = self.assign_user_to_shift(indi_shift.id, user2.id)
-        self.assertEqual(indi_shift.assigned_user, user2)
+        assignment = self.assign_user_to_shift(assignment.id, user2.id)
+        self.assertEqual(assignment.assigned_user, user2)
         self.assertEqual(
-            indi_shift.assigned_user.username,
+            assignment.assigned_user.username,
             "Pasta",
         )
 
-    def get_general_shifts(self):
-        """Get all general shifts."""
+    def get_shifts(self):
+        """Get all shifts."""
         res = self.client.get(
             # TODO add reverse to url so dates can be passed with args
             # reverse(
-            #     "collectivo:collectivo.shifts:general-shift-list",
+            #     "collectivo:collectivo.shifts:shift-list",
             #     args={
             #         "starting_date_time__gte": "2023-02-07",
             #         "end_date_time__lte": "2023-02-08",
             #     },
             # )
-            GENERAL_SHIFTS_URL
-            + "?starting_date_time__gte=2023-02-07"
-            + "&end_date_time__lte=2023-02-08"
+            SHIFTS_URL
+            + "?starting_date_time__gte=2023-02-05"
+            + "&end_date_time__lte=2023-02-06"
         )
         if res.status_code != 200:
             raise ValueError(
-                "API get call failed, could not get general shifts:",
+                "API get call failed, could not get shifts:",
                 res.content,
             )
         return res
 
-    def test_to_get_multiple_general_shifts(self):
-        """Test that multiple general shifts can be retrieved."""
-        self.create_general_shift()
-        self.create_general_shift(payload=TEST_GENERAL_SHIFT_POST2)
+    def test_to_get_multiple_shifts(self):
+        """Test that multiple shifts can be retrieved."""
+        self.create_shift()
+        self.create_shift(payload=TEST_SHIFT_POST2)
 
-        res = self.get_general_shifts()
+        res = self.get_shifts()
         print("RES", res.content)

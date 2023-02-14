@@ -8,14 +8,14 @@ app_name = "collectivo.shifts"
 
 router = DefaultRouter()
 router.register(
-    "general-shifts",
-    views.GeneralShiftViewSet,
-    basename="general-shift",
+    "shifts",
+    views.ShiftViewSet,
+    basename="shift",
 )
 router.register(
-    "individual-shifts",
-    views.IndividualShiftViewSet,
-    basename="individual-shift",
+    "assignments",
+    views.AssignmentViewSet,
+    basename="assignment",
 )
 router.register("shift-users", views.ShiftUserViewSet, basename="shift-user")
 

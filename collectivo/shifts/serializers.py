@@ -1,35 +1,35 @@
 """Serializers of the collectivo user experience module."""
 from rest_framework import serializers
 
-from .models import GeneralShift, IndividualShift, ShiftUser
+from .models import Assignment, Shift, ShiftUser
 
 
-class GeneralShiftSerializer(serializers.ModelSerializer):
-    """Serializer for general shift."""
+class ShiftSerializer(serializers.ModelSerializer):
+    """Serializer for shift."""
 
     class Meta:
         """Serializer settings."""
 
-        model = GeneralShift
+        model = Shift
         fields = "__all__"
 
     def create(self, validated_data):
-        """Create a new general shift."""
-        general_shift = GeneralShift.objects.create(**validated_data)
+        """Create a new shift."""
+        shift = Shift.objects.create(**validated_data)
         required_users = validated_data.get("required_users")
         for i in range(required_users):
-            IndividualShift.objects.create(general_shift=general_shift)
+            Assignment.objects.create(shift=shift)
 
-        return general_shift
+        return shift
 
 
-class IndividualShiftSerializer(serializers.ModelSerializer):
+class AssignmentSerializer(serializers.ModelSerializer):
     """Serializer for individual shift."""
 
     class Meta:
         """Serializer settings."""
 
-        model = IndividualShift
+        model = Assignment
         fields = "__all__"
 
 
