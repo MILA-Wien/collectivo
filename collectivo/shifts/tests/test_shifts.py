@@ -181,33 +181,16 @@ class ShiftAPITests(TestCase):
             "Pasta",
         )
 
-    def get_shifts(self):
-        """Get all shifts."""
-        res = self.client.get(
-            # TODO add reverse to url so dates can be passed with args
-            # reverse(
-            #     "collectivo:collectivo.shifts:shift-list",
-            #     args={
-            #         "starting_date_time__gte": "2023-02-07",
-            #         "end_date_time__lte": "2023-02-08",
-            #     },
-            # )
-            SHIFTS_URL
-            # + "?starting_shift_date__lte=2023-02-08"
-        )
-        if res.status_code != 200:
-            raise ValueError(
-                "API get call failed, could not get shifts:",
-                res.content,
-            )
-        return res
-
     def test_to_get_multiple_shifts(self):
         """Test that multiple shifts can be retrieved."""
         self.create_shift()
         self.create_shift(payload=TEST_SHIFT_POST2)
-        if Shift.objects.filter(starting_shift_date__lte="2023-02-08"):
-            print("SHIFT EXISTS")
+        self.create_shift(payload=TEST_SHIFT_POST3)
 
-        # res = self.get_shifts()
-        # print("RES", res.content)
+        res = self.client.get(
+            SHIFTS_URL
+            + "?starting_shift_date__gte=2023-02-01&"
+            + "starting_shift_date__lte=2023-02-28&"
+            + "shift_type=regular"
+        )
+        print("res.data", res.data)

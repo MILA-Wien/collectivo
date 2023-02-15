@@ -1,9 +1,37 @@
 """Views of the user experience module."""
 
+import django_filters
+from dateutil.parser import parse
+from dateutil.rrule import MO, MONTHLY, rrule
 from rest_framework import viewsets
 from rest_framework.response import Response
 
 from . import models, serializers
+
+
+class ShiftFilter(django_filters.FilterSet):
+    """Class to filter shifts."""
+
+    # Commenting next line out, due to error:
+    # Unsupported lookup 'icontains' for CharField
+    # shift_title__icontains =
+    # django_filters.CharFilter(lookup_expr="icontains")
+    min_date = django_filters.DateFilter(
+        field_name="starting_shift_date", lookup_expr="gte"
+    )
+    max_date = django_filters.DateFilter(
+        field_name="starting_shift_date", lookup_expr="lte"
+    )
+    required_user = django_filters.NumberFilter(
+        field_name="required_users", lookup_expr="gte"
+    )
+    shift_type = django_filters.CharFilter(field_name="shift_type")
+
+    class Meta:
+        """Meta class."""
+
+        model = models.Shift
+        fields = ["shift_week"]
 
 
 class ShiftViewSet(viewsets.ModelViewSet):
@@ -11,80 +39,87 @@ class ShiftViewSet(viewsets.ModelViewSet):
 
     queryset = models.Shift.objects.all()
     serializer_class = serializers.ShiftSerializer
-    filterset_fields = {
-        "shift_title": ["exact", "contains"],
-        "starting_shift_date": ["gte", "lte", "exact", "gt", "lt"],
-        "ending_shift_date": ["gte", "lte", "exact", "gt", "lt"],
-        "shift_type": ["exact"],
-        "shift_week": ["exact"],
-        "shift_starting_time": ["gte", "lte", "exact", "gt", "lt"],
-        "shift_ending_time": ["gte", "lte", "exact", "gt", "lt"],
-        "required_users": ["gte", "lte", "exact", "gt", "lt"],
-        "shift_day": ["exact"],
-        "additional_info_general": ["exact", "contains"],
-    }
+    filterset_class = ShiftFilter
 
     # list(rrule(MONTHLY, byweekday=MO(1),
     # until=NOW+relativedelta(years=+2), dtstart=NOW))
 
+    def get_queryset(self):
+        """Manipulate queryset to filter."""
+        queryset = models.Shift.objects.all()
+        shift_title = self.request.query_params.get("shift_title__icontains")
+        if shift_title is not None:
+            queryset = queryset.filter(shift_title__icontains=shift_title)
+        min_date = self.request.query_params.get("starting_shift_date__gte")
+        if min_date is not None:
+            queryset = queryset.filter(starting_shift_date__gte=min_date)
+        max_date = self.request.query_params.get("starting_shift_date__lte")
+        if max_date is not None:
+            queryset = queryset.filter(starting_shift_date__lte=max_date)
+        shift_type = self.request.query_params.get("shift_type")
+        if shift_type is not None:
+            queryset = queryset.filter(shift_type=shift_type)
+        return queryset
+
     def list(self, request):
         """List all shifts."""
-        # key_list = []
-        # if request.query_params:
-        #     for key, value in request.query_params.items():
-        #         key_list.append(key)
-        #     print("keylist", key_list)
+        queryset = self.get_queryset()
 
-        # for shift in self.queryset:
-        #     if shift.shift_type == "once":
-        #         print("shift", shift.id, shift.shift_title, shift.shift_type)
+        queryset_regular = models.Shift.objects.filter(shift_type="regular")
 
-        # Step 1: Select shifts with starting date <
-        # request.query_params["first_shift_date__gte"]
-
-        response = []
-        for shift in self.queryset:
-            # if-clause to check if shift has an ending date
-            if shift.ending_shift_date:
-                # if-clause to check if shift is in range
-                if (
-                    shift.starting_shift_date
-                    >= request.query_params["first_shift_date__gte"]
-                    and shift.starting_shift_date
-                    <= request.query_params["ending_shift_date__lte"]
-                ):
-                    if shift.shift_type == "unique":
-                        # if shift is unique and in range, append to response
-                        response.append(shift)
-                        print("Appended unique response", response)
-                    elif shift.shift_type == "regular":
-                        # if shift is regular and in range,
-                        # add virtual shifts within range
-                        # TODO: add virtual shifts
-                        pass
-                    else:
-                        # if shift is neither unique nor regular, raise error
-                        raise ValueError(
-                            "Shift type must be either unique or regular.",
+        if request.query_params.get(
+            "starting_shift_date__gte"
+        ) and request.query_params.get("starting_shift_date__lte"):
+            min_date = request.query_params.get("starting_shift_date__gte")
+            # check if there are regular shifts that started before min_date
+            if queryset_regular.filter(starting_shift_date__lte=min_date):
+                queryset_regular = queryset_regular.filter(
+                    starting_shift_date__lte=min_date
+                )
+                for shift in queryset_regular:
+                    # 1. calculate when regular shift occurs during this month
+                    print([x for x in range(1, 52, 4)])
+                    print(
+                        list(
+                            rrule(
+                                MONTHLY,
+                                byweekday=MO,
+                                byweekno=[x for x in range(1, 52, 4)],
+                                dtstart=parse("20230201T090000"),
+                                until=parse("20230228T090000"),
+                            )
                         )
-            else:
-                # if shift has no ending date,
-                # it has to be a regular shift with an open ending
-                # TODO add virtual shifts within range
-                pass
+                    )
+                    # TODO use parameters from shift
+                    occurences = list(
+                        rrule(
+                            MONTHLY,
+                            byweekday=MO,
+                            byweekno=[x for x in range(1, 52, 4)],
+                            dtstart=parse("20230201T090000"),
+                            until=parse("20230228T090000"),
+                        )
+                    )
 
-                response.append(shift)
-        print("queryset", self.queryset[0])
-        print("serializer_class", self.serializer_class)
-        for key, value in request.query_params.items():
-            print("request para", key, value)
+                    print("occurence date", occurences[0].date())
+                    # 2. create virtual shift for each occurrence
+                    shift.starting_shift_date = occurences[0].date()
+                    print("query?", shift)
+                    print("shift date NOW", shift.starting_shift_date)
+                    print("queryset", queryset)
+                    # 3. Append virtual shift to queryset
+                    # TODO add shift with correct date instead of old shift
+                    queryset = queryset | models.Shift.objects.filter(
+                        pk=shift.pk,
+                    )
+                    print("querysetNOW", queryset)
+                # 4. Append neq queryset to serializer with new queryset
+                serializer_class = serializers.ShiftSerializer(
+                    queryset,
+                    many=True,
+                )
 
-        print("request", request.query_params)
-        self.serializer_class = serializers.ShiftSerializer(
-            self.queryset,
-            many=True,
-        )
-        return Response(self.serializer_class.data)
+        return Response(serializer_class.data)
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
