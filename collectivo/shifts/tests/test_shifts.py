@@ -194,3 +194,15 @@ class ShiftAPITests(TestCase):
             + "shift_type=regular"
         )
         print("res.data", res.data)
+        print("content", res.content)
+
+
+# sample json content
+# content b'[{"id":5,"shift_title":"first_regular_shift",
+# "starting_shift_date":"2023-02-10",
+# "ending_shift_date":null,"shift_type":"regular","shift_week":"A","shift_starting_time":null,"
+# shift_ending_time":null,"required_users":4,"shift_day":"Monday","additional_info_general":"string"},
+# {"id":7,"shift_title":"second_regular_shift","starting_shift_date":"2023-01-15",
+# "ending_shift_date":"2023-10-15",
+# "shift_type":"regular","shift_week":"A","shift_starting_time":null,"shift_ending_time":null,
+# "required_users":4,"shift_day":"Monday","additional_info_general":"string"}]

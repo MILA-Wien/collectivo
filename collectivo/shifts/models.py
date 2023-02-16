@@ -45,7 +45,7 @@ class Shift(models.Model):
             "i.e. every monday on Week A"
         ),
         max_length=10,
-        default="Monday",
+        default="MO",
         choices=[
             ("Monday", "Monday"),
             ("Tuesday", "Tuesday"),

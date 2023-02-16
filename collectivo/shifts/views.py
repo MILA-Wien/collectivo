@@ -1,8 +1,10 @@
 """Views of the user experience module."""
 
+from datetime import datetime, time
+
 import django_filters
 from dateutil.parser import parse
-from dateutil.rrule import MO, MONTHLY, rrule
+from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, rrule
 from rest_framework import viewsets
 from rest_framework.response import Response
 
@@ -63,63 +65,93 @@ class ShiftViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """List all shifts."""
+        # 1. Append unique shifts that are in bound of range
+        # Get filtered queryset from get_queryset()
         queryset = self.get_queryset()
+        response = []
+        for shift in queryset:
+            response.append(serializers.ShiftSerializer(shift).data)
+        print("Response with unique shifts", response)
 
+        # 2. Append regular shifts that are in bound of range
+        # Get queryset of regular shifts
         queryset_regular = models.Shift.objects.filter(shift_type="regular")
 
+        # Check if params are set that user filters by min/max_date
         if request.query_params.get(
             "starting_shift_date__gte"
         ) and request.query_params.get("starting_shift_date__lte"):
             min_date = request.query_params.get("starting_shift_date__gte")
-            # check if there are regular shifts that started before min_date
+
+            max_date = request.query_params.get("starting_shift_date__lte")
+
+            # Check if there are regular shifts that started before min_date
             if queryset_regular.filter(starting_shift_date__lte=min_date):
+                # Filter queryset to only include regular shifts
+                # that started before min_date
                 queryset_regular = queryset_regular.filter(
                     starting_shift_date__lte=min_date
                 )
+                # Calculate when regular shift occurs during min/max_date
                 for shift in queryset_regular:
-                    # 1. calculate when regular shift occurs during this month
-                    print([x for x in range(1, 52, 4)])
+                    # TODO using parameters from shift
+                    week_dict = {"A": 1, "B": 2, "C": 3, "D": 4}
+                    weekday_dict = {
+                        "Monday": MO,
+                        "Tuesday": TU,
+                        "Wednesday": WE,
+                        "Thursday": TH,
+                        "Friday": FR,
+                        "Saturday": SA,
+                        "Sunday": SU,
+                    }
+                    week_number = week_dict[shift.shift_week]
+                    weekday = weekday_dict[shift.shift_day]
+                    print("Weeek number", week_number)
+                    print("Weekday", weekday)
                     print(
+                        "Occurences list",
                         list(
                             rrule(
                                 MONTHLY,
-                                byweekday=MO,
-                                byweekno=[x for x in range(1, 52, 4)],
-                                dtstart=parse("20230201T090000"),
-                                until=parse("20230228T090000"),
+                                byweekday=weekday,
+                                byweekno=[x for x in range(week_number, 52, 4)],
+                                dtstart=parse(
+                                    min_date + "T00:00:00",
+                                ),
+                                until=parse(
+                                    max_date + "T00:00:00",
+                                ),
                             )
-                        )
+                        ),
                     )
-                    # TODO use parameters from shift
+
                     occurences = list(
                         rrule(
                             MONTHLY,
-                            byweekday=MO,
-                            byweekno=[x for x in range(1, 52, 4)],
-                            dtstart=parse("20230201T090000"),
-                            until=parse("20230228T090000"),
+                            byweekday=weekday,
+                            byweekno=[x for x in range(week_number, 52, 4)],
+                            dtstart=parse(
+                                min_date + "T00:00:00",
+                            ),
+                            until=parse(
+                                max_date + "T00:00:00",
+                            ),
                         )
                     )
 
-                    print("occurence date", occurences[0].date())
-                    # 2. create virtual shift for each occurrence
-                    shift.starting_shift_date = occurences[0].date()
-                    print("query?", shift)
-                    print("shift date NOW", shift.starting_shift_date)
-                    print("queryset", queryset)
-                    # 3. Append virtual shift to queryset
-                    # TODO add shift with correct date instead of old shift
-                    queryset = queryset | models.Shift.objects.filter(
-                        pk=shift.pk,
-                    )
-                    print("querysetNOW", queryset)
-                # 4. Append neq queryset to serializer with new queryset
-                serializer_class = serializers.ShiftSerializer(
-                    queryset,
-                    many=True,
-                )
+                    # Create virtual shift by adding 1-2 occurrence(s) to shift
+                    for occurence in occurences:
+                        print("occurence", occurence)
+                        # Assign date of occurence to shift
+                        shift.starting_shift_date = occurence.date()
+                        # Append virtual shift to list
+                        response.append(
+                            serializers.ShiftSerializer(shift).data,
+                        )
 
-        return Response(serializer_class.data)
+                # 4. Return list of shifts including virtual shifts
+                return Response(response)
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
