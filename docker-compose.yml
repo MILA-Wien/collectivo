@@ -145,8 +145,8 @@ services:
       - collectivo-db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: collectivo_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: badpassword
+      POSTGRES_USER: ${COLLECTIVO_DB_USER}
+      POSTGRES_PASSWORD: ${COLLECTIVO_DB_PASSWORD}
 
   # A frontend web application.
   # TODO: Not working
