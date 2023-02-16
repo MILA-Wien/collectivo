@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   # A django app that is runs collectivo.
   collectivo:
     container_name: collectivo-app
@@ -10,21 +9,19 @@ services:
       context: .
     ports:
       - "8000:8000"
-    # Synchronize source code inside and outside the docker container.
-    # The collectivo app is placed inside the test app (see Dockerfile).
+    # Synchronize source code inside and outside the docker container,
+    # and place the collectivo package inside the collectivo app.
     volumes:
       - ./collectivo_app:/collectivo_app
       - ./collectivo:/collectivo_app/collectivo
       - ./docker/static:/collectivo_app/static
-    # Wait for database to be ready (this command will work only on linux),
-    # migrate the database changes and start a production-ready server.
-    # To start a development server instead, use docker-compose.dev.yml.
+    # Wait for database to be ready (this command only works on linux),
+    # migrate the database changes and start a development server.
     command: > #
-       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
-              while ! nc -z keycloak 8080; do sleep 1; done &&
-              python manage.py migrate &&
-              gunicorn collectivo_app.wsgi:application --bind 0.0.0.0:8000
-              "
+      sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
+             while ! nc -z keycloak 8080; do sleep 1; done &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     env_file:
       - .env
     depends_on:
@@ -97,7 +94,7 @@ services:
   # A frontend web application.
   collectivo-ux:
     container_name: collectivo-ux
-    image: milawien/collectivo-ux:v0.3.1
+    image: milawien/collectivo-ux:latest
     restart: always
     environment:
       VITE_APP_API: http://collectivo.local:8000
@@ -118,8 +115,7 @@ services:
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import:ro
       - ./docker/keycloak/export:/tmp/export
-    command:
-      start-dev --import-realm
+    command: start-dev --import-realm
     ports:
       - "8080:8080"
 
