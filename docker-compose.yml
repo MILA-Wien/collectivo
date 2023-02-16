@@ -156,7 +156,7 @@ services:
     restart: always
     environment:
       VITE_APP_API: http://collectivo.local:8000
-      VITE_KEYCLOAK_URL: http://keycloak.local:8080
+      VITE_KEYCLOAK_URL: http://keycloak:8080
     ports:
       - "8001:80"
 
