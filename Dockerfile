@@ -25,8 +25,6 @@ WORKDIR /collectivo_app
 EXPOSE 8000
 
 # Install requirements and remove temporary files
-# TODO Add something like the following if folder exists
-# /py/bin/pip install -r /extensions/requirements.txt && \
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     /py/bin/pip install -r /tmp/requirements.txt && \

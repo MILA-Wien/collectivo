@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  # A django app that is runs collectivo.
+  # A django app that runs collectivo.
   collectivo:
     container_name: collectivo-app
     restart: "no"
@@ -17,7 +17,7 @@ services:
       - ./docker/static:/collectivo_app/static
     # Wait for database to be ready (this command only works on linux),
     # migrate the database changes and start a development server.
-    command: > #
+    command: >
       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
              while ! nc -z keycloak 8080; do sleep 1; done &&
              python manage.py migrate &&
@@ -82,6 +82,7 @@ services:
       - collectivo
       - redis
 
+  # Another celery worker for chron jobs.
   celery-beat:
     container_name: celery-beat
     build:
