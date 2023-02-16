@@ -149,7 +149,6 @@ services:
       POSTGRES_PASSWORD: ${COLLECTIVO_DB_PASSWORD}
 
   # A frontend web application.
-  # TODO: Not working
   collectivo-ux:
     container_name: collectivo-ux
     image: milawien/collectivo-ux:latest
