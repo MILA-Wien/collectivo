@@ -91,94 +91,103 @@ class ShiftViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def create_virtual_shifts(self, queryset, response, min_date, max_date):
+        """Create virtual shifts for regular shifts."""
+        # Create dictionaries for translation to rrule parameters
+        week_dict = {"A": 1, "B": 2, "C": 3, "D": 4}
+        weekday_dict = {
+            "Monday": MO,
+            "Tuesday": TU,
+            "Wednesday": WE,
+            "Thursday": TH,
+            "Friday": FR,
+            "Saturday": SA,
+            "Sunday": SU,
+        }
+        # Loop through all shifts in queryset
+        for shift in queryset.iterator():
+            # Assign week number and weekday from shift
+            week_number = week_dict[shift.shift_week]
+            weekday = weekday_dict[shift.shift_day]
+            # Calculate occurrences in given date range
+            occurrences = list(
+                rrule(
+                    MONTHLY,
+                    byweekday=weekday,
+                    byweekno=[
+                        x
+                        for x in range(
+                            week_number,
+                            52,
+                            4,
+                        )
+                    ],
+                    dtstart=parse(
+                        min_date + "T00:00:00",
+                    ),
+                    until=parse(
+                        max_date + "T00:00:00",
+                    ),
+                )
+            )
+            # Loop 1-2 times in monthly scenario for occurrences
+            for occurrence in occurrences:
+                # Assign date of occurrence to shift
+                shift.starting_shift_date = occurrence.date()
+                # Append virtual shift to list
+                response.append(
+                    serializers.ShiftSerializer(shift).data,
+                )
+        return response
+
     def list(self, request):
         """List all shifts."""
-        # 1. Append unique shifts that are in bound of range
         # Get filtered queryset from get_queryset()
         queryset = self.get_queryset()
         response = []
+        # !! Assumes both parameters are always given, if not error occurs !!
+        min_date = request.query_params.get("starting_shift_date__gte")
+        max_date = request.query_params.get("starting_shift_date__lte")
+        # Get all regular shifts
+        queryset_regular = models.Shift.objects.filter(
+            shift_type="regular",
+        )
 
-        # Add shifts from filtered queryset to response
-        if queryset.exists():
-            for shift in queryset.iterator():
+        # 1. Append unique shifts that are in bound of range
+        if queryset.filter(shift_type="unique").exists():
+            queryset_unique = queryset.filter(shift_type="unique")
+            for shift in queryset_unique.iterator():
                 response.append(serializers.ShiftSerializer(shift).data)
 
-        if request.query_params.get(
-            "starting_shift_date__gte"
-        ) and request.query_params.get("starting_shift_date__lte"):
-            # 2. Append regular shifts that are in bound of range
-            # Get queryset of regular shifts
-            queryset_regular = models.Shift.objects.filter(
-                shift_type="regular",
+        # 2. Append regular shifts that are in bound of range
+        if queryset.filter(shift_type="regular").exists():
+            queryset = queryset.filter(shift_type="regular")
+            response = self.create_virtual_shifts(
+                queryset, response, min_date, max_date
             )
-            # Filter queryset to all parameters besides starting_shift_date
-            # since we want to calculate the occurence of the regular shift
-            # TODO use filter class instead of manually filtering
+
+        # 3. Append regular shifts that started before min_date
+        # and fulfill all other parameters
+        # TODO use filter class instead of manually filtering
+        if (
+            queryset_regular.filter(
+                starting_shift_date__lt=min_date,
+            ).exists()
+            and self.custom_filter(queryset_regular).exists()
+        ):
+
             queryset_regular = self.custom_filter(queryset_regular)
-            if queryset_regular.exists():
-                # Check if user filters by min/max_date and
-                min_date = request.query_params.get("starting_shift_date__gte")
-
-                max_date = request.query_params.get("starting_shift_date__lte")
-
-                # Check if regular shifts exist that started before min_date
-                if queryset_regular.filter(
-                    starting_shift_date__lte=min_date,
-                ).exists():
-                    # Filter queryset to only include regular shifts
-                    # that started before min_date
-                    queryset_regular3 = queryset_regular.filter(
-                        starting_shift_date__lte=min_date
-                    )
-                    # Calculate when regular shift occurs during min/max_date
-                    for shift in queryset_regular3:
-                        week_dict = {"A": 1, "B": 2, "C": 3, "D": 4}
-                        weekday_dict = {
-                            "Monday": MO,
-                            "Tuesday": TU,
-                            "Wednesday": WE,
-                            "Thursday": TH,
-                            "Friday": FR,
-                            "Saturday": SA,
-                            "Sunday": SU,
-                        }
-                        # Assign week number and weekday from shift
-                        week_number = week_dict[shift.shift_week]
-                        weekday = weekday_dict[shift.shift_day]
-                        occurences = list(
-                            rrule(
-                                MONTHLY,
-                                byweekday=weekday,
-                                byweekno=[
-                                    x
-                                    for x in range(
-                                        week_number,
-                                        52,
-                                        4,
-                                    )
-                                ],
-                                dtstart=parse(
-                                    min_date + "T00:00:00",
-                                ),
-                                until=parse(
-                                    max_date + "T00:00:00",
-                                ),
-                            )
-                        )
-
-                        # Loop 1 or 2 times through each occurrence
-                        for occurence in occurences:
-                            # Assign date of occurence to shift
-                            shift.starting_shift_date = occurence.date()
-                            # Append virtual shift to list
-                            response.append(
-                                serializers.ShiftSerializer(shift).data,
-                            )
+            queryset_regular = queryset_regular.filter(
+                starting_shift_date__lt=min_date,
+            )
+            response = self.create_virtual_shifts(
+                queryset_regular,
+                response,
+                min_date,
+                max_date,
+            )
 
         # 4. Return list of shifts including virtual shifts
-        # for shift in response[0]:
-        #     print("SHIT", shift.id)
-        print(response)
         return Response(response)
 
 
