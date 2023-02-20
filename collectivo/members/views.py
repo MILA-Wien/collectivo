@@ -9,6 +9,7 @@ from .permissions import IsMembersAdmin
 from . import models, serializers
 from .models import Member
 from django.utils.timezone import localdate
+from keycloak.exceptions import KeycloakDeleteError
 
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,13 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         if user_id is None:
             return
         auth_manager = get_auth_manager()
-        auth_manager.delete_realm_roles_of_user(user_id, self.members_role())
+        try:
+            auth_manager.delete_realm_roles_of_user(
+                user_id, self.members_role()
+            )
+        except KeycloakDeleteError:
+            # Role was not assigned to user
+            pass
 
     def get_or_create_user(self, data):
         """Create a user in the auth service."""
