@@ -17,9 +17,22 @@ logger = logging.getLogger(__name__)
 member_fields = [field.name for field in models.Member._meta.get_fields()]
 
 filterset_fields = {
-    "first_name": ("contains",),
-    "last_name": ("contains",),
-    "person_type": ("exact",),
+    "user_id": ["exact"],
+    "email": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "first_name": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "last_name": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "person_type": ["exact"],
+    "gender": ["exact"],
+    "address_street":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_number":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_stair":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_door":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_postcode":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_city":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "address_country":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "phone":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
+    "children":["exact", "gt", "gte", "lt", "lte"],
+    "coshopper":["exact", "gt", "gte", "lt", "lte"],
 }
 
 
@@ -200,7 +213,7 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
 
     serializer_class = serializers.MemberSummarySerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = "__all__"
+    filterset_fields = filterset_fields
     ordering_fields = "__all__"
 
 
