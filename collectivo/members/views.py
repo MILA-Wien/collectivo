@@ -193,8 +193,8 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
 
     serializer_class = serializers.MemberSummarySerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
-    ordering_fields = member_fields
+    filterset_fields = "__all__"
+    ordering_fields = "__all__"
 
 
 class MembersAdminViewSet(
