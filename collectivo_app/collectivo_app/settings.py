@@ -21,7 +21,13 @@ DEVELOPMENT = get_env_bool("DEVELOPMENT", False)
 if os.environ.get("ALLOWED_HOSTS") is not None:
     ALLOWED_HOSTS = string_to_list(os.environ.get("ALLOWED_HOSTS"))
 elif DEVELOPMENT:
-    ALLOWED_HOSTS = ["*", "0.0.0.0", "127.0.0.1", "localhost", "collectivo.local"]
+    ALLOWED_HOSTS = [
+        "*",
+        "0.0.0.0",
+        "127.0.0.1",
+        "localhost",
+        "collectivo.local",
+    ]
 else:
     raise CollectivoError(
         "You must set the environment variable "
@@ -29,6 +35,7 @@ else:
     )
 
 # Choose built-in collectivo extensions from environment
+
 _built_in_extensions = ["members", "shifts"]
 _sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
@@ -78,7 +85,7 @@ MIDDLEWARE = [
 ]
 
 if DEVELOPMENT:
-    INSTALLED_APPS += ["collectivo.devtools"]
+    INSTALLED_APPS += ["collectivo.devtools", "django_extensions"]
 
 ROOT_URLCONF = "collectivo_app.urls"
 
@@ -105,7 +112,9 @@ WSGI_APPLICATION = "collectivo_app.wsgi.application"
 # https://pypi.org/project/django-cors-headers/
 
 if os.environ.get("CORS_ALLOWED_ORIGINS"):
-    CORS_ALLOWED_ORIGINS = string_to_list(os.environ.get("CORS_ALLOWED_ORIGINS"))
+    CORS_ALLOWED_ORIGINS = string_to_list(
+        os.environ.get("CORS_ALLOWED_ORIGINS")
+    )
 elif DEVELOPMENT:
     CORS_ORIGIN_ALLOW_ALL = True
 
@@ -141,7 +150,9 @@ CELERY_TASK_ACCEPT_CONTENT = ["pickle"]
 CELERY_RESULT_ACCEPT_CONTENT = ["pickle"]
 CELERY_EVENT_ACCEPT_CONTENT = ["pickle"]
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_BACKEND", "redis://127.0.0.1:6379/0"
+)
 
 
 # Password validation
@@ -230,7 +241,11 @@ SPECTACULAR_SETTINGS = {
     # Allow for authentication via token in the SwaggerUI interface
     "APPEND_COMPONENTS": {
         "securitySchemes": {
-            "ApiKeyAuth": {"type": "apiKey", "in": "header", "name": "Authorization"}
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+            }
         }
     },
     "SECURITY": [
