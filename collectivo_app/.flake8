@@ -4,6 +4,7 @@ exclude =
     __pycache__,
     manage.py,
     settings.py,
+extend-ignore = E203, D202  # black compatibility
 
 [bandit]
 exclude = tests

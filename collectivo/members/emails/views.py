@@ -27,3 +27,11 @@ class EmailCampaignViewSet(SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.EmailCampaignSerializer
     queryset = models.EmailCampaign.objects.all()
+
+
+class EmailAutomationViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage email automations."""
+
+    permission_classes = [IsMembersAdmin]
+    serializer_class = serializers.EmailAutomationSerializer
+    queryset = models.EmailAutomation.objects.all()

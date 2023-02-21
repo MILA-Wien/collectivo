@@ -9,46 +9,131 @@ and a frontend ([collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)) ap
 Different community tools can be added to collectivo through extensions.
 
 Folders:
+
 - `collectivo` - A django package, the core of the framework.
 - `collectivo_app` - A django app that can be used to run collectivo.
 
-## Development
-
-To run and test the app with docker:
-
-* Install docker and docker-compose (Version >= 20.10)
-* Clone the repository with `git clone https://github.com/MILA-Wien/collectivo.git`
-* Add the following line to your `/etc/hosts/` file: `127.0.0.1 keycloak collectivo.local`
-* Copy `.env.example` to `.env`
-    - Optional: Fill out the email variables if you want to test the email features
-* To start a local instance of collectivo, run: `docker compose up -d`
-    - Optional: To set up a development server for the backend, use `docker compose -f docker-compose.dev.yml up -d`
-    - Optional: To set up a development server for the frontend, follow the instructions at [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)
-* To open the API docs, go to `collectivo.local:8000/api/docs/`
-* To open the frontend, go to `collectivo.local:8001`
-    - Optional: If you set up a development server for the frontend, go to `collectivo.local:5137`
-* To perform tests and linting, run: `docker compose run --rm collectivo sh -c "python manage.py test && flake8"`
-
 ## Installation
 
-To install collectivo, there are two ways:
+There are two ways to install collectivo:
 
-- Using docker
-    - Copy `.env.example` to `.env`
-- Using collectivo as a Django app within your existing Django project
-    - Add `collectivo` to the requirements of your Django project
-    - Add collectivo modules to your installed apps like in `collectivo_app/collectivo_app/settings.py`
+- Using the collectivo docker image
+  - For an example, see https://github.com/MILA-Wien/collectivo-mila
+- Using the collectivo python package
+  - Add `collectivo` to the requirements of an existing Django project
+  - Adopt the settings from `collectivo_app/collectivo_app/settings.py`
 
-## API
+### Extensions
+
+To install a built-in extension:
+
+- If you are using the docker image, add it to the environment variable `COLLECTIVO_EXTENSIONS`.
+- If you are using the python package, add it to `INSTALLED_APPS`.
+
+The following extensions are currently being developed:
+
+- `members`: a membership database.
+- `payments`: manage payments.
+- `emails`: send automated emails.
+- `shifts`: a shift management system.
+
+### Customization
+
+The docker image of collectivo can be combined with custom settings and extensions.
+Here is an example of a file structure with various customizations:
+
+```
+- docker_compose.yml
+- collectivo_custom/
+    - requirements.txt
+    - settings.py
+    - urls.py
+    - my_extension/
+        - apps.py
+        - ...
+```
+
+To place such a folder within the collectivo app, add a volume to `docker-compose.yml`:
+
+```yml
+collectivo:
+  volumes:
+    - ./collectivo_custom:/collectivo_app/collectivo_custom
+```
+
+The file `requirements.txt` can be used to add additional python packages to the container.
+To install them, add the following command to `docker-compose.yml`:
+
+```yml
+command: >
+  sh -c "pip install -r collectivo_custom/requirements.txt &&
+         ..."
+```
+
+The file `settings.py` can be used to replace the default settings in `django_app/settings.py`
+by defining the environmental variable `COLLECTIVO_SETTINGS` in `docker-compose.yml`:
+
+```yml
+environment:
+  COLLECTIVO_SETTINGS: collectivo_custom.settings
+```
+
+The default settings can be imported in the new `settings.py` file to only change specific variables:
+
+```python
+from collectivo_app.settings import *
+```
+
+The file `urls.py` can be used to override the default url patterns in `django_app/urls.py` by ading the following to the new `settings.py`:
+
+```python
+ROOT_URLCONF = 'collectivo_custom.urls'
+```
+
+Finally, the folder `my_extension\` represents a custom extension, that can be installed in the new `settings.py` file as follows:
+
+```python
+INSTALLED_APPS.append('collectivo_custom.my_extension')
+```
+
+## Development
+
+To set up a development system of collectivo on your local machine:
+
+- Install docker and docker-compose (Version >= 20.10)
+- Clone the repository with `git clone https://github.com/MILA-Wien/collectivo.git`
+- Copy `.env.example` and rename it to `.env`
+- Add the following line to your `/etc/hosts/` file: `127.0.0.1 keycloak collectivo.local`
+- Start a local instance of collectivo with `docker compose up -d`
+- Perform tests and linting with `docker compose run --rm collectivo sh -c "python manage.py test && flake8"`
+
+The development system will be accessible via the following paths:
+
+- Frontend: `http://collectivo.local:8001`
+- Backend (API docs): `http://collectivo.local:8000/api/docs/`
+- Keycloak (Console): `http://keycloak:8080/admin/master/console/`
+
+The following test users can be used to log in on the development system:
+
+- `test_superuser@example.com`
+- `test_member_01@example.com`, `test_member_02@example.com`, `test_member_03@example.com`
+- `test_user_not_verified@example.com`
+- `test_user_not_member@example.com`
+
+The password for all users is `Test123!`.
+
+To set up a development server for the frontend, follow the instructions at [collectivo-ux](https://github.com/MILA-Wien/collectivo-ux/)
+
+## API Documentation
 
 The API is documented automatically with SWAGGER UI and can be viewed via `/api/docs/`.
 The API uses [AcceptHeaderVersioning](https://www.django-rest-framework.org/api-guide/versioning/#acceptheaderversioning). The version of the API is the same as the version of collectivo.
 
-### Schemas
+### Schemas (Work in progress)
 
-Each endpoint has now an endpoint /schema with information about the fields.
+Each endpoint has an endpoint /schema with information about the fields.
 
-The schema has the following possible attributes:
+Each entry of the schema has the following possible attributes:
 
 ```python
 'field_type', 'input_type',
@@ -64,24 +149,7 @@ The condition is structured as follows: `{'field': x, 'condition':'exact', 'valu
 
 The `input_type` is currently generated automatically from the `field_type` and states default html input types.
 
-
-## Built-in extensions
-
-To install a built-in extension:
-
-- If you are using the docker image, add it to the environment variable `COLLECTIVO_EXTENSIONS`.
-- If you are using a custom django app, add it to `INSTALLED_APPS`.
-
-### devtools
-
-The devtools extension sets up the following test users:
-
-- `test_superuser@example.com`
-- `test_member_01@example.com`, `test_member_02@example.com`, `test_member_03@example.com`
-- `test_user_not_verified@example.com`
-- `test_user_not_member@example.com`
-
-The password for all users is `Test123!`.
+## Core modules
 
 ### auth
 
@@ -108,57 +176,5 @@ KEYCLOAK = {
 ```
 
 Further information:
+
 - To export the keycloak realm including users run `docker compose exec -u 0 keycloak /opt/keycloak/bin/kc.sh export --dir /tmp/export --realm collectivo --users realm_file` Note: exporting the realm via the gui doesn't include the users. The exported files is then in the `./docker/keycloak/export` folder.
-
-### members extension
-
-The members extension can be used to manage member data.
-
-- Roles:
-    - `members_user`
-    - `members_admin`
-- API:
-    - `/members/register`: Users that are not yet members can sign up as members. They then automatically receive the role `members_user`.
-    - `/members/profile`: Members can manage their own data (required role: `members_user`).
-    - `/members/members`: Manage the data of all users (required role: `members_admin` or `superuser`).
-    - `/members/summary`: Get summary data of all users (required role: `members_admin` or `superuser`).
-
-## Custom settings and extensions
-
-When using the collectivo docker image,
-a folder with custom settings and extensions can be added as a volume.
-
-Here is an example of a folder with custom settings, url patterns, and an extension:
-
-```
-- collectivo_extensions/
-    - requirements.txt
-    - settings.py
-    - urls.py
-    - my_extension/
-        - apps.py
-        - ...
-```
-
-The following configuration in `docker-compose.yml`
-places this folder within the collectivo app
-and defines the custom settings to override the default settings.
-
-```yml
-  collectivo:
-    environment:
-        COLLECTIVO_SETTINGS: collectivo_extensions.settings
-    volumes:
-      - ./collectivo_extensions:/collectivo-app/collectivo_extensions
-```
-
-The following configuration of `collectivo_extensions/settings.py`
-copies the default settings and adds the custom url patterns and extension.
-
-```python
-from collectivo_app.settings import *
-INSTALLED_APPS.append('collectivo_extensions.my_extension')
-ROOT_URLCONF = 'collectivo_extensions.urls'
-```
-
-TODO: How to handle requirements.txt?

@@ -49,13 +49,14 @@ class MemberAddon(models.Model):
     person_type = models.CharField(
         max_length=20,
         choices=[
-            ('child', 'child'),
-            ('coshopper', 'coshopper'),
-        ]
+            ("child", "child"),
+            ("coshopper", "coshopper"),
+        ],
     )
     birth_date = models.DateField(null=True)
     membership_card = models.ForeignKey(
-        'MemberCard', null=True, blank=True, on_delete=models.SET_NULL)
+        "MemberCard", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
 
 class Member(models.Model):
@@ -69,22 +70,22 @@ class Member(models.Model):
 
     # Personal data
     person_type = models.CharField(
-        help_text='Type of person.',
+        help_text="Type of person.",
         max_length=20,
-        default='natural',
+        default="natural",
         choices=[
-            ('natural', 'natural'),
-            ('legal', 'legal'),
-        ]
+            ("natural", "natural"),
+            ("legal", "legal"),
+        ],
     )
     gender = models.CharField(
         max_length=20,
-        default='diverse',
+        default="diverse",
         choices=[
-            ('diverse', 'diverse'),
-            ('female', 'female'),
-            ('male', 'male'),
-        ]
+            ("diverse", "diverse"),
+            ("female", "female"),
+            ("male", "male"),
+        ],
     )
     address_street = models.CharField(max_length=255, null=True, blank=True)
     address_number = models.CharField(max_length=255, null=True, blank=True)
@@ -97,10 +98,15 @@ class Member(models.Model):
 
     # Personal data (only for active members)
     children = models.ManyToManyField(
-        'MemberAddon', related_name="children", blank=True)
+        "MemberAddon", related_name="children", blank=True
+    )
     coshopper = models.ForeignKey(
-        'MemberAddon', related_name="coshoppers",
-        null=True, blank=True, on_delete=models.SET_NULL)
+        "MemberAddon",
+        related_name="coshoppers",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
     # Personal data (only for natural people)
     birthday = models.DateField(null=True, blank=True)
@@ -118,39 +124,42 @@ class Member(models.Model):
     membership_type = models.CharField(
         max_length=20,
         choices=[
-            ('active', 'active'),
-            ('investing', 'investing'),
-        ]
+            ("active", "active"),
+            ("investing", "investing"),
+            ("no member", "no member"),
+        ],
     )
     membership_card = models.ForeignKey(
-        'MemberCard', null=True, blank=True, on_delete=models.SET_NULL)
+        "MemberCard", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     # Membership - Coop shares
     shares_number = models.IntegerField(null=True, blank=True)
     shares_payment_date = models.DateField(null=True, blank=True)
     shares_payment_type = models.CharField(
-        max_length=20, null=True,
-        help_text='Type of payment.',
-        choices=[
-            ('sepa', 'sepa'),
-            ('transfer', 'transfer')
-        ]
+        max_length=20,
+        null=True,
+        help_text="Type of payment.",
+        choices=[("sepa", "sepa"), ("transfer", "transfer")],
     )
     bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
     bank_account_owner = models.CharField(
-        max_length=255, null=True, blank=True)
+        max_length=255, null=True, blank=True
+    )
 
     # Survey data
     survey_contact = models.TextField(null=True, blank=True)
     survey_motivation = models.TextField(null=True, blank=True)
     groups_interested = models.ManyToManyField(
-        'MemberGroup', related_name="groups_interested", blank=True)
-    skills = models.ManyToManyField('MemberSkill', blank=True)
+        "MemberGroup", related_name="groups_interested", blank=True
+    )
+    skills = models.ManyToManyField("MemberSkill", blank=True)
 
     # Other
-    tags = models.ManyToManyField('MemberTag', blank=True)
+    tags = models.ManyToManyField("MemberTag", blank=True)
     groups = models.ManyToManyField(
-        'MemberGroup', related_name="groups", blank=True)
+        "MemberGroup", related_name="groups", blank=True
+    )
     admin_notes = models.TextField(null=True, blank=True)
 
     def __str__(self):

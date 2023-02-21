@@ -1,19 +1,3 @@
-# Build webcomponents for test-extension
-FROM node:18 AS build-env
-
-# Create app directory
-WORKDIR /app
-ENV TZ=Europe/Vienna
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Install app dependencies
-COPY /collectivo/devtools/components/package.json package.json
-RUN yarn
-COPY /collectivo/devtools/components/ .
-
-# If you are building your code for production
-RUN yarn build
-
 # Use Python runtime as parent image
 FROM python:3.9-alpine3.13
 
@@ -34,9 +18,6 @@ COPY ./collectivo_app /collectivo_app
 # Copy source code of the collectivo app into the test app
 COPY ./collectivo /collectivo_app/collectivo
 
-# Copy source code of the test-extension into the test app
-COPY --from=build-env /app/dist /collectivo/devtools/static/devtools
-
 # Move working directory into the test app
 WORKDIR /collectivo_app
 
@@ -44,8 +25,6 @@ WORKDIR /collectivo_app
 EXPOSE 8000
 
 # Install requirements and remove temporary files
-# TODO Add something like the following if folder exists
-# /py/bin/pip install -r /extensions/requirements.txt && \
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     /py/bin/pip install -r /tmp/requirements.txt && \
@@ -66,8 +45,8 @@ RUN mkdir -p /collectivo_app/static | true && \
     chown -R django-user:django-user /collectivo_app && \
     chmod -R 755 /collectivo_app/static
 
-# Create a static folder for microfrontends
-RUN mkdir -p /collectivo_app/test_extension/static/test_extension
+# Allow django-user to access the virtual environment
+RUN chown -R django-user:django-user /py
 
 # Switch to the new user
 USER django-user

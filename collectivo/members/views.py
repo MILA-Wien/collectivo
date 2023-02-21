@@ -9,6 +9,7 @@ from .permissions import IsMembersAdmin
 from . import models, serializers
 from .models import Member
 from django.utils.timezone import localdate
+from keycloak.exceptions import KeycloakDeleteError
 
 
 logger = logging.getLogger(__name__)
@@ -16,9 +17,9 @@ logger = logging.getLogger(__name__)
 member_fields = [field.name for field in models.Member._meta.get_fields()]
 
 filterset_fields = {
-    'first_name': ('contains', ),
-    'last_name': ('contains', ),
-    'person_type': ('exact', ),
+    "first_name": ("contains",),
+    "last_name": ("contains",),
+    "person_type": ("exact",),
 }
 
 
@@ -30,9 +31,9 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
     def members_role(self):
         """Return representation of the members_user role."""
         auth_manager = get_auth_manager()
-        role = 'members_user'
-        role_id = auth_manager.get_realm_role(role)['id']
-        return {'id': role_id, 'name': role}
+        role = "members_user"
+        role_id = auth_manager.get_realm_role(role)["id"]
+        return {"id": role_id, "name": role}
 
     def assign_members_role(self, user_id):
         """Assign members_user role to user."""
@@ -46,19 +47,26 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         if user_id is None:
             return
         auth_manager = get_auth_manager()
-        auth_manager.delete_realm_roles_of_user(user_id, self.members_role())
+        try:
+            auth_manager.delete_realm_roles_of_user(
+                user_id, self.members_role()
+            )
+        except KeycloakDeleteError:
+            # Role was not assigned to user
+            pass
 
     def get_or_create_user(self, data):
         """Create a user in the auth service."""
         auth_manager = get_auth_manager()
-        user_id = auth_manager.get_user_id(data['email'])
+        user_id = auth_manager.get_user_id(data["email"])
         if user_id is None:
             user_data = {
-                k: v for k, v in data.items()
+                k: v
+                for k, v in data.items()
                 if k in auth_manager.get_user_fields()
             }
             auth_manager.create_user(**user_data)
-            user_id = auth_manager.get_user_id(data['email'])
+            user_id = auth_manager.get_user_id(data["email"])
         return user_id
 
     def sync_user_data(self, user_id, data):
@@ -73,18 +81,18 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         auth_manager = get_auth_manager()
         userinfo = auth_manager.get_user(user_id)
 
-        first_name = data.get('first_name')
-        last_name = data.get('last_name')
-        email = data.get('email')
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        email = data.get("email")
 
         payload = {}
-        if first_name and userinfo['firstName'] != first_name:
-            payload['first_name'] = first_name
-        if last_name and userinfo['lastName'] != last_name:
-            payload['last_name'] = last_name
-        if email and userinfo['email'] != email:
-            payload['email'] = email
-            payload['email_verified'] = False
+        if first_name and userinfo["firstName"] != first_name:
+            payload["first_name"] = first_name
+        if last_name and userinfo["lastName"] != last_name:
+            payload["last_name"] = last_name
+        if email and userinfo["email"] != email:
+            payload["email"] = email
+            payload["email_verified"] = False
 
         if payload != {}:
             auth_manager.update_user(user_id=user_id, **payload)
@@ -95,22 +103,50 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
     def perform_create(self, serializer, user_id):
         """Create member and synchronize user data with auth service."""
         if Member.objects.filter(user_id=user_id).exists():
-            raise PermissionDenied('User is already registered as a member.')
+            raise PermissionDenied("User is already registered as a member.")
         userinfo = self.sync_user_data(user_id, serializer.validated_data)
         self.assign_members_role(user_id)
         extra_fields = {
-            'user_id': user_id,
-            'email': userinfo['email'],
-            'membership_start': localdate(),
+            "user_id": user_id,
+            "email": userinfo["email"],
+            "membership_start": localdate(),
         }
-        if 'tags' in serializer.validated_data:
-            extra_fields['tags'] = serializer.validated_data['tags']
+        if "tags" in serializer.validated_data:
+            extra_fields["tags"] = serializer.validated_data["tags"]
         serializer.save(**extra_fields)
+
+        # Send welcome mail
+        try:
+            from collectivo.members.emails.models import EmailAutomation
+            from collectivo.members.emails.views import EmailCampaignViewSet
+            from collectivo.members.emails.models import EmailCampaign
+            from collectivo.utils import register_viewset
+
+            automations = EmailAutomation.objects.filter(trigger="new_member")
+
+            for automation in automations:
+                member = serializer.instance
+                campaign = {
+                    "recipients": [member.id],
+                    "template": automation.template.id,
+                    "send": True,
+                }
+                res = register_viewset(EmailCampaignViewSet, payload=campaign)
+
+                # Add automation to campaign for documentation
+                campaign = EmailCampaign.objects.get(id=res.data["id"])
+                campaign.automation = automation
+                campaign.save()
+
+        except ImportError:
+            # Email Module not installed
+            pass
 
     def perform_update(self, serializer):
         """Update member and synchronize user data with auth service."""
         self.sync_user_data(
-            serializer.instance.user_id, serializer.validated_data)
+            serializer.instance.user_id, serializer.validated_data
+        )
         serializer.save()
 
     def perform_destroy(self, instance):
@@ -136,7 +172,8 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
 
 
 class MemberProfileViewSet(
-        MemberMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
+    MemberMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin
+):
     """
     API for members to manage themselves.
 
@@ -151,7 +188,7 @@ class MemberProfileViewSet(
         try:
             return self.queryset.get(user_id=self.request.userinfo.user_id)
         except Member.DoesNotExist:
-            raise PermissionDenied('User is not registered as a member.')
+            raise PermissionDenied("User is not registered as a member.")
 
 
 class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
@@ -167,9 +204,13 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
     ordering_fields = member_fields
 
 
-class MembersAdminViewSet(MemberMixin, mixins.ListModelMixin,
-                          mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                          mixins.DestroyModelMixin):
+class MembersAdminViewSet(
+    MemberMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
     """
     API for admins to manage members.
 
@@ -211,12 +252,13 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
         """Prevent deletion if assigned to members."""
         if instance.member_set.all().exists():
             raise ValidationError(
-                'Cannot delete tag that is assigned to members.')
+                "Cannot delete tag that is assigned to members."
+            )
         return super().perform_destroy(instance)
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action == 'list':
+        if self.action == "list":
             return [IsAuthenticated()]
         return [IsMembersAdmin()]
 
@@ -229,7 +271,7 @@ class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action == 'list':
+        if self.action == "list":
             return [IsAuthenticated()]
         return [IsMembersAdmin()]
 
@@ -243,6 +285,6 @@ class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action == 'list':
+        if self.action == "list":
             return [IsAuthenticated()]
         return [IsMembersAdmin()]

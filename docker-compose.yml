@@ -1,8 +1,7 @@
 version: "3.9"
 
 services:
-
-  # A django app that is runs collectivo.
+  # A django app that runs collectivo.
   collectivo:
     container_name: collectivo-app
     restart: "no"
@@ -10,23 +9,40 @@ services:
       context: .
     ports:
       - "8000:8000"
-    # Synchronize source code inside and outside the docker container.
-    # The collectivo app is placed inside the test app (see Dockerfile).
+    # Synchronize source code inside and outside the docker container,
+    # and place the collectivo package inside the collectivo app.
     volumes:
       - ./collectivo_app:/collectivo_app
       - ./collectivo:/collectivo_app/collectivo
       - ./docker/static:/collectivo_app/static
-    # Wait for database to be ready (this command will work only on linux),
-    # migrate the database changes and start a production-ready server.
-    # To start a development server instead, use docker-compose.dev.yml.
-    command: > #
-       sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
-              while ! nc -z keycloak 8080; do sleep 1; done &&
-              python manage.py migrate &&
-              gunicorn collectivo_app.wsgi:application --bind 0.0.0.0:8000
-              "
-    env_file:
-      - .env
+    # Wait for database to be ready (this command only works on linux),
+    # migrate the database changes and start a development server.
+    command: >
+      sh -c "while ! nc -z collectivo-db 5432; do sleep 1; done &&
+             while ! nc -z keycloak 8080; do sleep 1; done &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      DB_HOST: collectivo-db
+      DB_NAME: collectivo_db
+      DB_USER: ${COLLECTIVO_DB_USER}
+      DB_PASS: ${COLLECTIVO_DB_PASSWORD}
+      SECRET_KEY: ${COLLECTIVO_SECRET_KEY}
+      KEYCLOAK_CLIENT_ID: collectivo
+      KEYCLOAK_REALM_NAME: collectivo
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
+      COLLECTIVO_EXTENSIONS: members
+      DEBUG: 1
+      DEVELOPMENT: 1
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USE_SSL: ${EMAIL_USE_SSL}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
     depends_on:
       - collectivo-db
       - keycloak
@@ -41,12 +57,32 @@ services:
       - ./collectivo_app:/collectivo_app
       - ./collectivo:/collectivo_app/collectivo
       - ./docker/static:/collectivo_app/static
-    env_file:
-      - .env
+    environment:
+      DB_HOST: collectivo-db
+      DB_NAME: collectivo_db
+      DB_USER: ${COLLECTIVO_DB_USER}
+      DB_PASS: ${COLLECTIVO_DB_PASSWORD}
+      SECRET_KEY: ${COLLECTIVO_SECRET_KEY}
+      KEYCLOAK_CLIENT_ID: collectivo
+      KEYCLOAK_REALM_NAME: collectivo
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
+      COLLECTIVO_EXTENSIONS: members
+      DEBUG: 1
+      DEVELOPMENT: 1
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USE_SSL: ${EMAIL_USE_SSL}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
     depends_on:
       - collectivo
       - redis
 
+  # Another celery worker for chron jobs.
   celery-beat:
     container_name: celery-beat
     build:
@@ -56,8 +92,27 @@ services:
       - ./collectivo_app:/collectivo_app
       - ./collectivo:/collectivo_app/collectivo
       - ./docker/static:/collectivo_app/static
-    env_file:
-      - .env
+    environment:
+      DB_HOST: collectivo-db
+      DB_NAME: collectivo_db
+      DB_USER: ${COLLECTIVO_DB_USER}
+      DB_PASS: ${COLLECTIVO_DB_PASSWORD}
+      SECRET_KEY: ${COLLECTIVO_SECRET_KEY}
+      KEYCLOAK_CLIENT_ID: collectivo
+      KEYCLOAK_REALM_NAME: collectivo
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
+      COLLECTIVO_EXTENSIONS: members
+      DEBUG: 1
+      DEVELOPMENT: 1
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USE_SSL: ${EMAIL_USE_SSL}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
     depends_on:
       - collectivo
       - redis
@@ -91,17 +146,17 @@ services:
       - collectivo-db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: collectivo_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: badpassword
+      POSTGRES_USER: ${COLLECTIVO_DB_USER}
+      POSTGRES_PASSWORD: ${COLLECTIVO_DB_PASSWORD}
 
   # A frontend web application.
   collectivo-ux:
     container_name: collectivo-ux
-    image: milawien/collectivo-ux:v0.3.1
+    image: milawien/collectivo-ux:latest
     restart: always
     environment:
       VITE_APP_API: http://collectivo.local:8000
-      VITE_KEYCLOAK_URL: http://keycloak.local:8080
+      VITE_KEYCLOAK_URL: http://keycloak:8080
     ports:
       - "8001:80"
 
@@ -118,8 +173,7 @@ services:
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import:ro
       - ./docker/keycloak/export:/tmp/export
-    command:
-      start-dev --import-realm
+    command: start-dev --import-realm
     ports:
       - "8080:8080"
 

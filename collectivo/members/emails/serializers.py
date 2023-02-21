@@ -15,69 +15,76 @@ from django.utils import timezone
 class EmailDesignSerializer(serializers.ModelSerializer):
     """Serializer for email designs."""
 
-    schema_attrs = {
-        'body': {
-            'input_type': 'html'
-        }
-    }
+    schema_attrs = {"body": {"input_type": "html"}}
 
     class Meta:
         """Serializer settings."""
 
         model = models.EmailDesign
-        fields = '__all__'
+        fields = "__all__"
 
 
 class EmailTemplateSerializer(serializers.ModelSerializer):
     """Serializer for email templates."""
 
-    schema_attrs = {
-        'body': {
-            'input_type': 'html'
-        }
-    }
+    schema_attrs = {"body": {"input_type": "html"}}
 
     class Meta:
         """Serializer settings."""
 
         model = models.EmailTemplate
-        fields = '__all__'
+        fields = "__all__"
+
+
+class EmailAutomationSerializer(serializers.ModelSerializer):
+    """Serializer for email automations."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.EmailAutomation
+        fields = "__all__"
 
 
 class EmailCampaignSerializer(serializers.ModelSerializer):
     """Serializer for email campaigns (email sending orders)."""
 
-    schema_attrs = {
-        'body': {
-            'input_type': 'html'
-        }
-    }
+    schema_attrs = {"body": {"input_type": "html"}}
 
     send = serializers.BooleanField(
-        write_only=True, required=False,
+        write_only=True,
+        required=False,
         help_text="Should the campaign be sent now? "
-                  "Otherwise it will be saved as a draft.")
+        "Otherwise it will be saved as a draft.",
+    )
 
     class Meta:
         """Serializer settings."""
 
         model = models.EmailCampaign
-        fields = '__all__'
-        read_only_fields = ('status', 'status_message', 'created', 'sent')
+        fields = "__all__"
+        read_only_fields = (
+            "status",
+            "status_message",
+            "created",
+            "sent",
+            "automation",
+        )
 
     def validate(self, attrs):
         """Adjust data before validation."""
+
         # Save send value for later use in view
-        self._send = attrs.pop('send', False)
+        self._send = attrs.pop("send", False)
 
         # Prevent editing of sent campaigns
-        if self.instance and self.instance.status != 'draft':
+        if self.instance and self.instance.status != "draft":
             raise ValidationError("Only drafts can be edited.")
 
-        if attrs.get('template') is None:
+        if attrs.get("template") is None:
             raise ValidationError("Template is required.")
 
-        if attrs.get('recipients') is None or attrs.get('recipients') == []:
+        if attrs.get("recipients") is None or attrs.get("recipients") == []:
             raise ValidationError("Recipients are required.")
 
         # Data together with instance data if objects already exists
@@ -85,14 +92,16 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         data.update(attrs)
 
         # Prevent sending to members with broken emails tag
-        recipients = data.get('recipients')
+        recipients = data.get("recipients")
         tag = MemberTag.objects.get_or_create(
-            label='Email broken', built_in=True)[0]
+            label="Email broken", built_in=True
+        )[0]
         if recipients is not None:
             for recipient in recipients:
                 if tag in recipient.tags.all():
                     raise ValidationError(
-                        f"Recipient {recipient.id} has tag 'broken_email'.")
+                        f"Recipient {recipient.id} has tag 'broken_email'."
+                    )
 
         return super().validate(attrs)
 
@@ -106,33 +115,33 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         """Send emails to recipients."""
         campaign = self.instance
         campaign.sent = timezone.now()
-        campaign.status = 'pending'
+        campaign.status = "pending"
         campaign.save()
 
         # Prepare the emails
         template = campaign.template
-        recipients = self.validated_data['recipients']
+        recipients = self.validated_data["recipients"]
         subject = template.subject
         body = template.body
         if template.design is not None:
-            body = template.design.body.replace('{{content}}', template.body)
+            body = template.design.body.replace("{{content}}", template.body)
         from_email = settings.DEFAULT_FROM_EMAIL
         emails = []
         for recipient in recipients:
-            body_html = Template(body)\
-                .render(Context({'member': recipient}))
+            body_html = Template(body).render(Context({"member": recipient}))
             body_text = html2text(body_html)
             email = EmailMultiAlternatives(
-                subject, body_text, from_email, [recipient.email])
+                subject, body_text, from_email, [recipient.email]
+            )
             email.attach_alternative(body_html, "text/html")
             emails.append(email)
 
         # Split recipients into batches
         n = 20  # TODO Get this number from the settings
-        batches = [emails[i:i+n] for i in range(0, len(emails), n)]
+        batches = [emails[i : i + n] for i in range(0, len(emails), n)]
 
         # Create a chain of async tasks to send the emails
-        results = {'n_sent': 0, 'campaign': campaign}
+        results = {"n_sent": 0, "campaign": campaign}
         tasks = []
         tasks.append(send_mails_async.s(results, batches.pop(0)))
         for batch in batches:

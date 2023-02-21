@@ -52,8 +52,30 @@ class EmailCampaign(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     sent = models.DateTimeField(null=True)
     recipients = models.ManyToManyField('members.Member')
+    automation = models.ForeignKey(
+        'emails.EmailAutomation', on_delete=models.SET_NULL,
+        null=True, blank=True)
 
     def __str__(self):
         """Return a string representation of the object."""
         return "Email campaign "\
             f"({self.id}, {self.status}, {self.template.name})"
+
+
+class EmailAutomation(models.Model):
+    """A rule to automatically send emails to members."""
+
+    template = models.ForeignKey(
+        'emails.EmailTemplate',
+        on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    trigger = models.CharField(
+        max_length=10,
+        choices=[
+            ('new_member', 'new_member'),
+        ]
+    )
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return f"{self.trigger} ({self.id})"
