@@ -199,6 +199,18 @@ class ShiftViewSet(viewsets.ModelViewSet):
             )
 
         # 4. Return list of shifts including virtual shifts
+
+        # Print each entry of assignments in response
+        for shift in response:
+            print("ASSIGNMENTS", shift["assignments"])
+
+        print(
+            "TEST",
+            response
+            # models.Shift.objects.filter(
+            #     assignment__assigned_user__username="Pizza",
+            # ).values("assignment__assigned_user__username"),
+        )
         return Response(response)
 
 

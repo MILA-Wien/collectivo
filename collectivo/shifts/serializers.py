@@ -7,6 +7,8 @@ from .models import Assignment, Shift, ShiftUser
 class ShiftSerializer(serializers.ModelSerializer):
     """Serializer for shift."""
 
+    assignments = serializers.SerializerMethodField()
+
     class Meta:
         """Serializer settings."""
 
@@ -21,6 +23,11 @@ class ShiftSerializer(serializers.ModelSerializer):
             Assignment.objects.create(shift=shift)
 
         return shift
+
+    def get_assignments(self, obj):
+        """Get all assignments for a shift."""
+        assignments = Assignment.objects.filter(shift=obj)
+        return AssignmentSerializer(assignments, many=True).data
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

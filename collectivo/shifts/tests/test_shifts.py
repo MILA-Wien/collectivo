@@ -124,12 +124,10 @@ class ShiftAPITests(TestCase):
         """Assign user to shift."""
         if user_id is None:
             payload = {
-                "additional_info_individual": "string",
                 "assigned_user": "",
             }
         else:
             payload = {
-                "additional_info_individual": "string",
                 "assigned_user": user_id,
             }
 
@@ -308,3 +306,21 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.data[1]["shift_title"], "first_regular_shift")
         # self.assertEqual(res.data[3]["starting_shift_date"], "2023-09-19")
         # self.assertEqual(res.data[3]["shift_title"], "first_unique_shift")
+
+    def test_to_get_assigned_users_from_shift(self):
+        """Test retrieving assigned users from shift."""
+        shift = self.create_shift(payload=TEST_SHIFT_POST)
+        user = self.create_shift_user(payload=TEST_CREATE_USER_POST)
+        assignment = shift.assignment_set.all()[0]
+
+        # Test successful assignment
+        assignment = self.assign_user_to_shift(assignment.id, user.id)
+
+        res = self.client.get(
+            SHIFTS_URL
+            + "?starting_shift_date__gte=2023-02-01&"
+            + "starting_shift_date__lte=2023-02-28&"
+            + "shift_type=regular"
+        )
+
+        self.assertEqual(len(res.data), 1)
