@@ -21,7 +21,7 @@ filterset_fields = {
     "email": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
     "first_name": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
     "last_name": ["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
-    "person_type": ["exact"],
+    "person_type": ["exact", "contains"],
     "gender": ["exact"],
     "address_street":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
     "address_number":["exact", "icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"],
