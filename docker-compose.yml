@@ -41,8 +41,8 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     depends_on:
       - collectivo-db
       - keycloak
@@ -76,8 +76,8 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     depends_on:
       - collectivo
       - redis
@@ -111,8 +111,8 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     depends_on:
       - collectivo
       - redis
