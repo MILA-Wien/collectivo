@@ -17,7 +17,7 @@ TEST_SHIFT_POST = {
     "starting_shift_date": "2023-02-10",
     "ending_shift_date": "",
     "shift_type": "regular",
-    "shift_week": "A",
+    "shift_week": "C",
     "shift_starting_time": "",
     "shift_ending_time": "",
     "required_users": 4,
@@ -39,7 +39,7 @@ TEST_SHIFT_POST2 = {
 TEST_SHIFT_POST3 = {
     "shift_title": "second_regular_shift",
     "starting_shift_date": "2023-01-01",
-    "ending_shift_date": "2023-10-15",
+    "ending_shift_date": "2023-10-08",
     "shift_type": "regular",
     "shift_week": "A",
     "shift_starting_time": "",
@@ -77,7 +77,7 @@ class ShiftAPITests(TestCase):
         shift_user = ShiftUser.objects.get(id=res.data["id"])
         return shift_user
 
-    def test_a_create_shift(self):
+    def test_create_shift(self):
         """Test creating a shift."""
         shift = self.create_shift(payload=TEST_SHIFT_POST)
         self.assertEqual(shift.shift_title, "first_regular_shift")
@@ -173,7 +173,7 @@ class ShiftAPITests(TestCase):
             "Pasta",
         )
 
-    def test_b_to_filter_no_shifts(self):
+    def test_to_filter_no_shifts(self):
         """Test to filter no shifts by using weird params."""
         self.create_shift(payload=TEST_SHIFT_POST)
         self.create_shift(payload=TEST_SHIFT_POST2)
@@ -191,7 +191,7 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 0)
 
-    def test_b_to_filter_unique_shift(self):
+    def test_to_filter_unique_shift(self):
         """Test to filter unique shifts."""
         self.create_shift(payload=TEST_SHIFT_POST)
         self.create_shift(payload=TEST_SHIFT_POST2)
@@ -208,7 +208,7 @@ class ShiftAPITests(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]["shift_title"], "first_unique_shift")
 
-    def test_b_to_filter_regular_shift(self):
+    def test_to_filter_regular_shift(self):
         """Test only one shift is returned due to filters."""
         self.create_shift(payload=TEST_SHIFT_POST)
         self.create_shift(payload=TEST_SHIFT_POST2)
@@ -226,7 +226,7 @@ class ShiftAPITests(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]["shift_title"], "first_regular_shift")
 
-    def test_b_to_filter_virtually_created_regular_shifts(self):
+    def test_to_filter_virtually_created_regular_shifts(self):
         """Test virtually creating shifts.
 
         Because one regular shift is not in specified date range.
@@ -247,8 +247,9 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.data[0]["shift_title"], "first_unique_shift")
         self.assertEqual(res.data[1]["shift_title"], "first_regular_shift")
         self.assertEqual(res.data[2]["shift_title"], "second_regular_shift")
+        self.assertEqual(res.data[1]["starting_shift_date"], "2023-02-13")
 
-    def test_b_creating_two_shifts_with_same_id(self):
+    def test_creating_two_shifts_with_same_id(self):
         """Test creating two shifts with same id.
 
         Due to possibility of two occurrences of same shift in a month.
@@ -269,18 +270,41 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.data[1]["starting_shift_date"], "2023-01-30")
         self.assertEqual(res.data[0]["id"], res.data[1]["id"])
 
-    # def test_to_filter_regular_shifts_ending_within_date_range(self):
-    #     """Test that multiple shifts can be retrieved."""
-    #     self.create_shift(payload=TEST_SHIFT_POST)
-    #     self.create_shift(payload=TEST_SHIFT_POST2)
-    #     self.create_shift(payload=TEST_SHIFT_POST3)
+    def test_to_filter_regular_shifts_within_own_date_range(self):
+        """Test that multiple shifts can be retrieved."""
+        payload = TEST_SHIFT_POST.copy()
+        payload2 = TEST_SHIFT_POST2.copy()
+        # set ending_shift_date so that no occurrences are created
+        payload2["ending_shift_date"] = "2023-09-18"
+        payload2["shift_type"] = "regular"
+        payload2["shift_week"] = "B"
+        payload3 = TEST_SHIFT_POST3.copy()
+        payload3["starting_shift_date"] = "2023-09-10"
+        payload4 = TEST_SHIFT_POST.copy()
+        # set starting_shift_date so that no occurrences are created
+        payload4["starting_shift_date"] = "2023-09-06"
+        payload4["ending_shift_date"] = "2023-09-30"
+        payload4["shift_title"] = "third_regular_shift"
+        payload4["shift_week"] = "D"
 
-    #     res = self.client.get(
-    #         SHIFTS_URL
-    #         + "?starting_shift_date__gte=2023-02-01&"
-    #         + "starting_shift_date__lte=2023-02-28"
-    #     )
+        self.create_shift(payload)
+        self.create_shift(payload2)
+        self.create_shift(payload3)
+        self.create_shift(payload4)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(len(res.data), 3)
-    #     self.assertEqual(res.data[2]["shift_title"], "second_regular_shift")
+        res = self.client.get(
+            SHIFTS_URL
+            + "?starting_shift_date__gte=2023-09-01&"
+            + "starting_shift_date__lte=2023-09-30"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(res.data), 2)
+        self.assertEqual(res.data[0]["starting_shift_date"], "2023-09-11")
+        self.assertEqual(res.data[0]["shift_title"], "second_regular_shift")
+        # self.assertEqual(res.data[1]["starting_shift_date"], "2023-09-04")
+        # self.assertEqual(res.data[1]["shift_title"], "third_regular_shift")
+        self.assertEqual(res.data[1]["starting_shift_date"], "2023-09-25")
+        self.assertEqual(res.data[1]["shift_title"], "first_regular_shift")
+        # self.assertEqual(res.data[3]["starting_shift_date"], "2023-09-19")
+        # self.assertEqual(res.data[3]["shift_title"], "first_unique_shift")

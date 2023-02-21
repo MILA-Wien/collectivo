@@ -1,5 +1,7 @@
 """Views of the user experience module."""
 
+from datetime import datetime
+
 import django_filters
 from dateutil.parser import parse
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, rrule
@@ -14,24 +16,12 @@ class ShiftFilter(django_filters.FilterSet):
 
     # Commenting next line out, due to error:
     # Unsupported lookup 'icontains' for CharField
-    # shift_title__icontains =
-    # django_filters.CharFilter(lookup_expr="icontains")
-    min_date = django_filters.DateFilter(
-        field_name="starting_shift_date", lookup_expr="gte"
-    )
-    max_date = django_filters.DateFilter(
-        field_name="starting_shift_date", lookup_expr="lte"
-    )
-    required_user = django_filters.NumberFilter(
-        field_name="required_users", lookup_expr="gte"
-    )
-    shift_type = django_filters.CharFilter(field_name="shift_type")
 
     class Meta:
         """Meta class."""
 
         model = models.Shift
-        fields = ["shift_week"]
+        fields = "__all__"
 
 
 class ShiftViewSet(viewsets.ModelViewSet):
@@ -109,6 +99,22 @@ class ShiftViewSet(viewsets.ModelViewSet):
             # Assign week number and weekday from shift
             week_number = week_dict[shift.shift_week]
             weekday = weekday_dict[shift.shift_day]
+
+            # Check if starting shift date is after min_date
+            if (
+                shift.starting_shift_date
+                and shift.starting_shift_date
+                > datetime.strptime(min_date, "%Y-%m-%d").date()
+            ):
+                min_date = shift.starting_shift_date.strftime("%Y-%m-%d")
+
+            # Check if ending shift date is before max_date
+            if (
+                shift.ending_shift_date
+                and shift.ending_shift_date
+                < datetime.strptime(max_date, "%Y-%m-%d").date()
+            ):
+                max_date = shift.ending_shift_date.strftime("%Y-%m-%d")
             # Calculate occurrences in given date range
             occurrences = list(
                 rrule(
@@ -130,14 +136,19 @@ class ShiftViewSet(viewsets.ModelViewSet):
                     ),
                 )
             )
-            # Loop 1-2 times in monthly scenario for occurrences
-            for occurrence in occurrences:
-                # Assign date of occurrence to shift
-                shift.starting_shift_date = occurrence.date()
-                # Append virtual shift to list
-                response.append(
-                    serializers.ShiftSerializer(shift).data,
-                )
+
+            if not occurrences:
+                # If no occurrences in shift, continue to next shift
+                continue
+            else:
+                # Loop 1-2 times in monthly scenario for occurrences
+                for occurrence in occurrences:
+                    # Assign date of occurrence to shift
+                    shift.starting_shift_date = occurrence.date()
+                    # Append virtual shift to list
+                    response.append(
+                        serializers.ShiftSerializer(shift).data,
+                    )
         return response
 
     def list(self, request):
