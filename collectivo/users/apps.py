@@ -8,7 +8,7 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.extensions.models import Extension
     from collectivo.menus.models import Menu, MenuItem
     from collectivo.users.models import Role
-    from .populate import create_groups_and_roles
+    from .setup import create_groups_and_roles
 
     name = "users"
 

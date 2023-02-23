@@ -12,7 +12,7 @@ class DashboardTile(models.Model):
     )
     component_name = models.CharField(max_length=255)
     order = models.FloatField(default=1)
-    required_role = models.ForeignKey(
-        "users.Role", null=True, on_delete=models.SET_NULL
-    )
+    # required_role = models.ForeignKey(
+    #     "users.Role", null=True, on_delete=models.SET_NULL
+    # )
     blocked_role = models.CharField(max_length=255, null=True)

@@ -1,6 +1,12 @@
 """Manager class to connect collectivo to an authentication service."""
 from keycloak import KeycloakAdmin, KeycloakOpenID
-from keycloak.exceptions import KeycloakPutError, KeycloakDeleteError
+from keycloak.exceptions import (
+    KeycloakPutError,
+    KeycloakDeleteError,
+    KeycloakGetError,
+    KeycloakError,
+    KeycloakPostError,
+)
 from collectivo.users.exceptions import (
     AuthDeleteError,
     AuthGetError,
@@ -224,17 +230,24 @@ class KeycloakAuthService:
         except KeycloakPutError as e:
             raise AuthUpdateError(f"Could not update user {user_id}: {e}")
 
-    def add_user_to_group(self, user_id, group_name):
-        """Add a user to a keycloak group."""
-        group_id = self.get_group_by_path(f"/{group_name}")["id"]
-        self.group_user_add(user_id, group_id)
+    def create_role(self, name: str) -> None:
+        """Create a keycloak role."""
+        payload = {"name": name}
+        try:
+            self.admin.create_realm_role(payload)
+        except KeycloakPostError as e:
+            raise AuthCreateError(f"Could not create role {name}: {e}")
 
-    def remove_user_from_group(self, user_id, group_name):
-        """Remove a user from an authorization group."""
-        group_id = self.get_group_by_path(f"/{group_name}")["id"]
-        self.group_user_remove(user_id, group_id)
+    def update_role(self, name: str, new_name: str) -> None:
+        """Update a keycloak role."""
+        try:
+            self.admin.update_realm_role(name, {"name": new_name})
+        except KeycloakPutError as e:
+            raise AuthUpdateError(f"Could not update role {name}: {e}")
 
-    def assign_role_to_user(self, user_id, role_name):
-        """Add a role to a user."""
-        role_id = self.get_role_by_name(role_name)["id"]
-        self.assign_client_role(user_id, role_id)
+    def delete_role(self, name: str) -> None:
+        """Delete a keycloak role."""
+        try:
+            self.admin.delete_realm_role(name)
+        except KeycloakDeleteError as e:
+            raise AuthDeleteError(f"Could not delete role {name}: {e}")

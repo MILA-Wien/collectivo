@@ -94,7 +94,30 @@ class Role(models.Model):
     """A role that can be assigned to users
     (synced with auth service)."""
 
+    role_id = models.UUIDField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+
+    def get_or_create_role(self):
+        """Return existing role id or create new role."""
+        auth_service = AuthService()
+        role_id = auth_service.get_role_id(self.name)
+        if role_id is None:
+            role_id = auth_service.create_realm_role(self.name)
+        return role_id
+
+    def update_role(self):
+        """Update role."""
+        auth_service = AuthService()
+        auth_service.update_realm_role(self.role_id, self.name)
+
+    def save(self, *args, **kwargs):
+        """Save model and synchronize with auth service."""
+        if settings.COLLECTIVO["auth.sync"]:
+            if self.role_id is None:
+                self.role_id = self.get_or_create_role()
+            else:
+                self.update_role()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         """Return string representation."""
