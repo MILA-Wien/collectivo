@@ -14,8 +14,8 @@ SHIFT_USERS_URL = reverse("collectivo:collectivo.shifts:shift-user-list")
 
 TEST_SHIFT_POST = {
     "shift_title": "first_regular_shift",
-    "starting_shift_date": "2023-02-10",
-    "ending_shift_date": "",
+    "shift_starting_date": "2023-02-10",
+    "shift_ending_date": "",
     "shift_type": "regular",
     "shift_week": "C",
     "shift_starting_time": "",
@@ -26,8 +26,8 @@ TEST_SHIFT_POST = {
 }
 TEST_SHIFT_POST2 = {
     "shift_title": "first_unique_shift",
-    "starting_shift_date": "2023-02-07",
-    "ending_shift_date": "",
+    "shift_starting_date": "2023-02-07",
+    "shift_ending_date": "",
     "shift_type": "unique",
     "shift_week": "",
     "shift_starting_time": "",
@@ -38,8 +38,8 @@ TEST_SHIFT_POST2 = {
 }
 TEST_SHIFT_POST3 = {
     "shift_title": "second_regular_shift",
-    "starting_shift_date": "2023-01-01",
-    "ending_shift_date": "2023-10-08",
+    "shift_starting_date": "2023-01-01",
+    "shift_ending_date": "2023-10-08",
     "shift_type": "regular",
     "shift_week": "A",
     "shift_starting_time": "",
@@ -179,8 +179,8 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-02-01&"
-            + "starting_shift_date__lte=2023-02-28&"
+            + "?shift_starting_date__gte=2023-02-01&"
+            + "shift_starting_date__lte=2023-02-28&"
             + "shift_type=regular&"
             + "shift_week=Q&"
             + "additional_info_general=weird"
@@ -197,8 +197,8 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-02-01&"
-            + "starting_shift_date__lte=2023-02-28&"
+            + "?shift_starting_date__gte=2023-02-01&"
+            + "shift_starting_date__lte=2023-02-28&"
             + "shift_type=unique"
         )
 
@@ -214,8 +214,8 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-02-01&"
-            + "starting_shift_date__lte=2023-02-28&"
+            + "?shift_starting_date__gte=2023-02-01&"
+            + "shift_starting_date__lte=2023-02-28&"
             + "shift_type=regular&"
             + "additional_info_general=first_string"
         )
@@ -236,8 +236,8 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-02-01&"
-            + "starting_shift_date__lte=2023-02-28"
+            + "?shift_starting_date__gte=2023-02-01&"
+            + "shift_starting_date__lte=2023-02-28"
         )
 
         self.assertEqual(res.status_code, 200)
@@ -245,7 +245,7 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.data[0]["shift_title"], "first_unique_shift")
         self.assertEqual(res.data[1]["shift_title"], "first_regular_shift")
         self.assertEqual(res.data[2]["shift_title"], "second_regular_shift")
-        self.assertEqual(res.data[1]["starting_shift_date"], "2023-02-13")
+        self.assertEqual(res.data[1]["shift_starting_date"], "2023-02-13")
 
     def test_creating_two_shifts_with_same_id(self):
         """Test creating two shifts with same id.
@@ -258,30 +258,30 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-01-01&"
-            + "starting_shift_date__lte=2023-01-31"
+            + "?shift_starting_date__gte=2023-01-01&"
+            + "shift_starting_date__lte=2023-01-31"
         )
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 2)
-        self.assertEqual(res.data[0]["starting_shift_date"], "2023-01-02")
-        self.assertEqual(res.data[1]["starting_shift_date"], "2023-01-30")
+        self.assertEqual(res.data[0]["shift_starting_date"], "2023-01-02")
+        self.assertEqual(res.data[1]["shift_starting_date"], "2023-01-30")
         self.assertEqual(res.data[0]["id"], res.data[1]["id"])
 
     def test_to_filter_regular_shifts_within_own_date_range(self):
         """Test that multiple shifts can be retrieved."""
         payload = TEST_SHIFT_POST.copy()
         payload2 = TEST_SHIFT_POST2.copy()
-        # set ending_shift_date so that no occurrences are created
-        payload2["ending_shift_date"] = "2023-09-18"
+        # set shift_ending_date so that no occurrences are created
+        payload2["shift_ending_date"] = "2023-09-18"
         payload2["shift_type"] = "regular"
         payload2["shift_week"] = "B"
         payload3 = TEST_SHIFT_POST3.copy()
-        payload3["starting_shift_date"] = "2023-09-10"
+        payload3["shift_starting_date"] = "2023-09-10"
         payload4 = TEST_SHIFT_POST.copy()
-        # set starting_shift_date so that no occurrences are created
-        payload4["starting_shift_date"] = "2023-09-06"
-        payload4["ending_shift_date"] = "2023-09-30"
+        # set shift_starting_date so that no occurrences are created
+        payload4["shift_starting_date"] = "2023-09-06"
+        payload4["shift_ending_date"] = "2023-09-30"
         payload4["shift_title"] = "third_regular_shift"
         payload4["shift_week"] = "D"
 
@@ -292,19 +292,19 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-09-01&"
-            + "starting_shift_date__lte=2023-09-30"
+            + "?shift_starting_date__gte=2023-09-01&"
+            + "shift_starting_date__lte=2023-09-30"
         )
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 2)
-        self.assertEqual(res.data[0]["starting_shift_date"], "2023-09-11")
+        self.assertEqual(res.data[0]["shift_starting_date"], "2023-09-11")
         self.assertEqual(res.data[0]["shift_title"], "second_regular_shift")
-        # self.assertEqual(res.data[1]["starting_shift_date"], "2023-09-04")
+        # self.assertEqual(res.data[1]["shift_starting_date"], "2023-09-04")
         # self.assertEqual(res.data[1]["shift_title"], "third_regular_shift")
-        self.assertEqual(res.data[1]["starting_shift_date"], "2023-09-25")
+        self.assertEqual(res.data[1]["shift_starting_date"], "2023-09-25")
         self.assertEqual(res.data[1]["shift_title"], "first_regular_shift")
-        # self.assertEqual(res.data[3]["starting_shift_date"], "2023-09-19")
+        # self.assertEqual(res.data[3]["shift_starting_date"], "2023-09-19")
         # self.assertEqual(res.data[3]["shift_title"], "first_unique_shift")
 
     def test_to_get_assigned_users_from_shift(self):
@@ -318,8 +318,8 @@ class ShiftAPITests(TestCase):
 
         res = self.client.get(
             SHIFTS_URL
-            + "?starting_shift_date__gte=2023-02-01&"
-            + "starting_shift_date__lte=2023-02-28&"
+            + "?shift_starting_date__gte=2023-02-01&"
+            + "shift_starting_date__lte=2023-02-28&"
             + "shift_type=regular"
         )
 

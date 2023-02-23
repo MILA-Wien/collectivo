@@ -32,7 +32,7 @@ class ShiftViewSet(viewsets.ModelViewSet):
     filterset_class = ShiftFilter
 
     def custom_filter(self, queryset):
-        """Filter all parameters excluding starting_shift_date."""
+        """Filter all parameters excluding shift_starting_date."""
         # TODO use integrated filter instead of manual filter
         shift_title = self.request.query_params.get("shift_title__icontains")
         if shift_title is not None:
@@ -70,12 +70,12 @@ class ShiftViewSet(viewsets.ModelViewSet):
         """Manipulate queryset to filter."""
         queryset = models.Shift.objects.all()
 
-        min_date = self.request.query_params.get("starting_shift_date__gte")
+        min_date = self.request.query_params.get("shift_starting_date__gte")
         if min_date is not None:
-            queryset = queryset.filter(starting_shift_date__gte=min_date)
-        max_date = self.request.query_params.get("starting_shift_date__lte")
+            queryset = queryset.filter(shift_starting_date__gte=min_date)
+        max_date = self.request.query_params.get("shift_starting_date__lte")
         if max_date is not None:
-            queryset = queryset.filter(starting_shift_date__lte=max_date)
+            queryset = queryset.filter(shift_starting_date__lte=max_date)
 
         queryset = self.custom_filter(queryset)
 
@@ -102,19 +102,19 @@ class ShiftViewSet(viewsets.ModelViewSet):
 
             # Check if starting shift date is after min_date
             if (
-                shift.starting_shift_date
-                and shift.starting_shift_date
+                shift.shift_starting_date
+                and shift.shift_starting_date
                 > datetime.strptime(min_date, "%Y-%m-%d").date()
             ):
-                min_date = shift.starting_shift_date.strftime("%Y-%m-%d")
+                min_date = shift.shift_starting_date.strftime("%Y-%m-%d")
 
             # Check if ending shift date is before max_date
             if (
-                shift.ending_shift_date
-                and shift.ending_shift_date
+                shift.shift_ending_date
+                and shift.shift_ending_date
                 < datetime.strptime(max_date, "%Y-%m-%d").date()
             ):
-                max_date = shift.ending_shift_date.strftime("%Y-%m-%d")
+                max_date = shift.shift_ending_date.strftime("%Y-%m-%d")
             # Calculate occurrences in given date range
             occurrences = list(
                 rrule(
@@ -144,7 +144,7 @@ class ShiftViewSet(viewsets.ModelViewSet):
                 # Loop 1-2 times in monthly scenario for occurrences
                 for occurrence in occurrences:
                     # Assign date of occurrence to shift
-                    shift.starting_shift_date = occurrence.date()
+                    shift.shift_starting_date = occurrence.date()
                     # Append virtual shift to list
                     response.append(
                         serializers.ShiftSerializer(shift).data,
@@ -157,8 +157,8 @@ class ShiftViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         response = []
         # !! Assumes both parameters are always given, if not error occurs !!
-        min_date = request.query_params.get("starting_shift_date__gte")
-        max_date = request.query_params.get("starting_shift_date__lte")
+        min_date = request.query_params.get("shift_starting_date__gte")
+        max_date = request.query_params.get("shift_starting_date__lte")
         # Get all regular shifts
         queryset_regular = models.Shift.objects.filter(
             shift_type="regular",
@@ -182,14 +182,14 @@ class ShiftViewSet(viewsets.ModelViewSet):
         # TODO use filter class instead of manually filtering
         if (
             queryset_regular.filter(
-                starting_shift_date__lt=min_date,
+                shift_starting_date__lt=min_date,
             ).exists()
             and self.custom_filter(queryset_regular).exists()
         ):
 
             queryset_regular = self.custom_filter(queryset_regular)
             queryset_regular = queryset_regular.filter(
-                starting_shift_date__lt=min_date,
+                shift_starting_date__lt=min_date,
             )
             response = self.create_virtual_shifts(
                 queryset_regular,
@@ -198,19 +198,7 @@ class ShiftViewSet(viewsets.ModelViewSet):
                 max_date,
             )
 
-        # 4. Return list of shifts including virtual shifts
-
-        # Print each entry of assignments in response
-        for shift in response:
-            print("ASSIGNMENTS", shift["assignments"])
-
-        print(
-            "TEST",
-            response
-            # models.Shift.objects.filter(
-            #     assignment__assigned_user__username="Pizza",
-            # ).values("assignment__assigned_user__username"),
-        )
+        # 4. Return list of shifts including shifts with virtual dates
         return Response(response)
 
 

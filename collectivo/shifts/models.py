@@ -6,8 +6,8 @@ class Shift(models.Model):
     """A shift to be done by the collective."""
 
     shift_title = models.CharField(max_length=30, blank=True)
-    starting_shift_date = models.DateField(blank=True, null=True)
-    ending_shift_date = models.DateField(blank=True, null=True)
+    shift_starting_date = models.DateField(blank=True, null=True)
+    shift_ending_date = models.DateField(blank=True, null=True)
     shift_type = models.CharField(
         help_text=(
             "Type of shift. Either shifts happen on a regular basis. "
