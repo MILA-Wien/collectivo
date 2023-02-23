@@ -3,11 +3,13 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
-class AuthConfig(AppConfig):
+class UsersConfig(AppConfig):
     """Configuration class of the users module."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.users"
+    description = """Manage users of collectivo through an external
+    authentication service."""
 
     def ready(self):
         """

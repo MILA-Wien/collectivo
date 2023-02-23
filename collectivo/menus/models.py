@@ -1,27 +1,39 @@
 """Models of the user experience module."""
 from django.db import models
+from collectivo.models import RegisterMixin
 
 
-class Menu(models.Model):
+class Menu(models.Model, RegisterMixin):
     """A menu to be displayed in the user interface."""
 
-    menu_id = models.CharField(max_length=255, unique=True, primary_key=True)
-    extension = models.ForeignKey(
-        "extensions.Extension", on_delete=models.CASCADE, null=True
-    )
+    class Meta:
+        unique_together = ("name", "extension")
 
-
-# TODO Advanced validators for requirements with if-clauses
-# TODO Item_id only has to be unique per extension
-class MenuItem(models.Model):
-    """An item to be displayed in a menu."""
-
-    item_id = models.CharField(max_length=255, unique=True, primary_key=True)
-    menu_id = models.ForeignKey("menus.Menu", on_delete=models.CASCADE)
-    label = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     extension = models.ForeignKey(
         "extensions.Extension", on_delete=models.CASCADE
     )
+
+    items = models.ManyToManyField("menus.MenuItem")
+
+
+class MenuItem(models.Model, RegisterMixin):
+    """An item to be displayed in a menu."""
+
+    class Meta:
+        unique_together = ("name", "extension")
+
+    name = models.CharField(max_length=255)
+    extension = models.ForeignKey(
+        "extensions.Extension", on_delete=models.CASCADE
+    )
+
+    label = models.CharField(max_length=255)
+    sub_items = models.ManyToManyField("self")
+    required_role = models.ForeignKey(
+        "users.Role", null=True, on_delete=models.SET_NULL
+    )
+
     action = models.CharField(
         max_length=50,
         null=True,
@@ -37,10 +49,8 @@ class MenuItem(models.Model):
     )
     component_name = models.CharField(max_length=255, null=True)
     link_source = models.URLField(null=True)
+
     order = models.FloatField(default=1)
-    parent_item = models.ForeignKey(
-        "menus.MenuItem", on_delete=models.CASCADE, null=True
-    )
     style = models.CharField(
         max_length=50,
         default="normal",
@@ -48,9 +58,7 @@ class MenuItem(models.Model):
             ("normal", "normal"),
         ],
     )
-    required_role = models.ForeignKey(
-        "users.Role", null=True, on_delete=models.SET_NULL
-    )
+
     icon_name = models.CharField(max_length=255, null=True)
     icon_path = models.URLField(null=True)
 

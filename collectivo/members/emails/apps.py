@@ -11,31 +11,31 @@ def post_migrate_callback(sender, **kwargs):
     import logging
 
     logger = logging.getLogger(__name__)
-    name = 'members'
+    name = "members"
 
-    register_menuitem(
-        item_id='menus_admin_menu_item',
-        menu_id='main_menu',
-        label='Emails',
-        extension=name,
-        action='component',
-        component_name='emails',
-        required_role='members_admin',
-        order=11,
-    )
+    # register_menuitem(
+    #     item_id='menus_admin_menu_item',
+    #     menu_id='main_menu',
+    #     label='Emails',
+    #     extension=name,
+    #     action='component',
+    #     component_name='emails',
+    #     required_role='members_admin',
+    #     order=11,
+    # )
 
     if settings.DEVELOPMENT:
         try:
             res = register_email_design(
                 name="Test design",
                 body='<html><body style="margin:0;padding:40px;word-spacing:'
-                     'normal;background-color:#fff;">{{content}}</body></html>'
+                'normal;background-color:#fff;">{{content}}</body></html>',
             )
             register_email_template(
                 name="Test template",
-                design=res.data['id'],
-                subject='Test email',
-                body='This is a test email to {{member.first_name}}.',
+                design=res.data["id"],
+                subject="Test email",
+                body="This is a test email to {{member.first_name}}.",
             )
         except Exception as e:
             logger.debug(e)
@@ -44,8 +44,8 @@ def post_migrate_callback(sender, **kwargs):
 class CollectivoUxConfig(AppConfig):
     """Configuration class of the emails module."""
 
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'collectivo.members.emails'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "collectivo.members.emails"
 
     def ready(self):
         """

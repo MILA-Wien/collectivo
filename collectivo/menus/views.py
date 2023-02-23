@@ -1,9 +1,11 @@
 """Views of the user experience module."""
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from . import models, serializers
 from collectivo.users.permissions import IsSuperuser, IsAuthenticated
 import logging
+from collectivo.extensions.models import Extension
+from collectivo.menus.models import Menu
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,7 @@ class MenuViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action == "list":
+        if self.action in ("list", "retrieve"):
             return [IsAuthenticated()]
         return [IsSuperuser()]
 
@@ -35,6 +37,16 @@ class MenuViewSet(viewsets.ModelViewSet):
             return serializers.MenuCreateSerializer
         return serializers.MenuSerializer
 
+    def get_queryset(self):
+        """Show only menus where user has required roles."""
+        extension = self.request.query_params.get("extension", None)
+        menu = self.request.query_params.get("menu", None)
+        queryset = models.Menu.objects.filter(
+            name=menu,
+            extension=Extension.objects.get(name=extension),
+        )
+        return queryset
+
 
 class MenuItemViewSet(viewsets.ModelViewSet):
     """Manage menu-items.
@@ -43,52 +55,9 @@ class MenuItemViewSet(viewsets.ModelViewSet):
     Only items where the user has the required roles are shown.
 
     All other views require the role 'superuser'.
-
-    Attributes:
-    - item_id (CharField):
-      A unique name to identify the item.
-      Can only be written to with POST.
-    - menu_id (ForeignKey of Menu):
-      The menu that the item belongs to.
-    - label (CharField):
-      Text to be displayed in the menu item.
-    - extension (ForeignKey of Extension):
-      The extension that the item belongs to.
-    - action (CharField, optional):
-      Action to be performed when the item is clicked.
-      If none is passed, no action will be performed.
-      <br/>Options:
-        - 'component': Load a webcomponent.
-        - 'link': Open a link.
-    - action_target (str, optional):
-      The location where the action will be performed.
-      Required if an action is passed.
-      <br/>Options:
-        - 'main': Main application window (default).
-        - 'blank': A new browser tab.
-    - component_name (str, optional):
-      Name of a registered component from the extensions' microfrontend.
-      The URL path after performing the action will be
-      '{base_url}/{extension}/{component name}'.
-      Required if action is 'component'.
-    - link_source (URLField, optional):
-      URL to be opened. Required if action is 'link'.
-    - order (FloatField, optional):
-      Items will be sorted from lowest to highest order (default 1.0).
-    - parent_item (ForeignKey of MenuItem, optional):
-      A menu item that this item will be subordinate to.
-    - style (CharField, optional):
-      Pre-set style options for the menu item.
-      <br/>Options:
-        - 'normal': The standard style (default).
-    - required_role (CharField, optional):
-      If passed, only users with this role will see the menu item.
-    - icon_name_prime (CharField, optional):
-      Name of a prime icon to be used by primevue frontend applications.
-      See: https://github.com/primefaces/primeicons
-    - icon_path (URLField, optional):
-      Path to an icon image.
     """
+
+    queryset = models.MenuItem.objects.all()
 
     def get_permissions(self):
         """Set permissions for this viewset."""

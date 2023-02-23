@@ -9,29 +9,29 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.extensions.utils import register_extension
     from collectivo.menus.utils import register_menuitem
 
-    name = 'extension_template'
+    name = "extension_template"
 
-    register_extension(
-        name=name,
-        version=__version__,
-        description='An extension to provide a starting page.'
-    )
+    # register_extension(
+    #     name=name,
+    #     version=__version__,
+    #     description='An extension to provide a starting page.'
+    # )
 
-    register_menuitem(
-        item_id='extension_template_menu_item',
-        menu_id='main_menu',
-        label='My Component',
-        extension=name,
-        action='component',
-        component_name='mycomponent',
-    )
+    # register_menuitem(
+    #     item_id='extension_template_menu_item',
+    #     menu_id='main_menu',
+    #     label='My Component',
+    #     extension=name,
+    #     action='component',
+    #     component_name='mycomponent',
+    # )
 
 
 class MembersConfig(AppConfig):
     """Configuration class for the dashboard extension."""
 
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'collectivo.extension_template'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "collectivo.extension_template"
 
     def ready(self):
         """

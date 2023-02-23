@@ -1,34 +1,29 @@
-"""Setup function for the users module."""
+"""Setup function for the users extension."""
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
 from collectivo.users.models import Role
+from collectivo.users.apps import UsersConfig
+from collectivo.version import __version__
 
 
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    name = "users"
+    extension = Extension.register(
+        name=UsersConfig.name,
+        description=UsersConfig.description,
+        version=__version__,
+    )
 
-    try:
-        extension = Extension.objects.get(name=name)
-    except Extension.DoesNotExist:
-        extension = Extension.objects.create(
-            name=name,
-            built_in=True,
-            description="API for user authentication.",
-        )
+    item = MenuItem.register(
+        name="logout",
+        label="Log out",
+        extension=extension,
+        action="component",
+        component_name="logout",
+        order=99,
+    )
 
-    try:
-        MenuItem.objects.get(item_id="auth_logout_button")
-    except MenuItem.DoesNotExist:
-        MenuItem.objects.create(
-            item_id="auth_logout_button",
-            menu_id=Menu.objects.get(menu_id="main_menu"),
-            label="Log out",
-            extension=extension,
-            action="component",
-            component_name="logout",
-            order=99,
-        )
+    Menu.objects.get(name="main_menu").items.add(item)
 
     Role.objects.get_or_create(name="superuser")

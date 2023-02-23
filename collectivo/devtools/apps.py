@@ -10,43 +10,41 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.menus.utils import register_menuitem
     from django.conf import settings
 
-    name = 'devtools'
+    name = "devtools"
 
     register_extension(
-        name=name,
-        version='0.0.1',
-        description='A test extension.'
+        name=name, version="0.0.1", description="A test extension."
     )
 
-    if getattr(settings, 'DEV_SHOW_TEST_MENU_ITEMS', False):
+    # if getattr(settings, 'DEV_SHOW_TEST_MENU_ITEMS', False):
 
-        register_menuitem(
-            item_id='show_nothing',
-            menu_id='main_menu',
-            label='Do nothing',
-            extension=name,
-            order=1000,
-        )
+    #     register_menuitem(
+    #         item_id='show_nothing',
+    #         menu_id='main_menu',
+    #         label='Do nothing',
+    #         extension=name,
+    #         order=1000,
+    #     )
 
-        register_menuitem(
-            item_id='show_HelloSingle2',
-            menu_id='main_menu',
-            label='Open test webcomponent',
-            extension=name,
-            action='component',
-            component_name='HelloSingle2',
-            order=1000,
-        )
+    #     register_menuitem(
+    #         item_id='show_HelloSingle2',
+    #         menu_id='main_menu',
+    #         label='Open test webcomponent',
+    #         extension=name,
+    #         action='component',
+    #         component_name='HelloSingle2',
+    #         order=1000,
+    #     )
 
-        register_menuitem(
-            item_id='show_iframe',
-            menu_id='main_menu',
-            label='Open test iframe',
-            extension=name,
-            action='link',
-            link_source='http://example.com',
-            order=1000,
-        )
+    #     register_menuitem(
+    #         item_id='show_iframe',
+    #         menu_id='main_menu',
+    #         label='Open test iframe',
+    #         extension=name,
+    #         action='link',
+    #         link_source='http://example.com',
+    #         order=1000,
+    #     )
 
     populate_keycloak_with_test_data()
 
@@ -54,8 +52,8 @@ def post_migrate_callback(sender, **kwargs):
 class TestExtensionConfig(AppConfig):
     """Configuration class for the devtools app."""
 
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'collectivo.devtools'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "collectivo.devtools"
 
     def ready(self):
         """

@@ -1,25 +1,14 @@
-"""Configuration file of the user experience module."""
+"""Configuration file of the menus module."""
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
-def post_migrate_callback(sender, **kwargs):
-    """Initialize extension after database is ready."""
-    from .utils import register_menu
-    from collectivo.extensions.utils import register_extension
+class MenusConfig(AppConfig):
+    """Configuration class of the menus module."""
 
-    name = 'menus'
-    description = 'API for user experience.'
-    register_extension(name=name, built_in=True, description=description)
-    register_menu(menu_id='main_menu', extension=name)
-    register_menu(menu_id='admin_menu', extension=name)
-
-
-class CollectivoUxConfig(AppConfig):
-    """Configuration class of the user experience module."""
-
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'collectivo.menus'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "collectivo.menus"
+    description = "Manage menus of collectivo."
 
     def ready(self):
         """
@@ -28,4 +17,6 @@ class CollectivoUxConfig(AppConfig):
         Database calls are performed after migrations, using the post_migrate
         signal. This signal only works if the app has a models.py module.
         """
-        post_migrate.connect(post_migrate_callback, sender=self)
+        from .setup import setup
+
+        post_migrate.connect(setup, sender=self)
