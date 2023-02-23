@@ -230,6 +230,13 @@ class KeycloakAuthService:
         except KeycloakPutError as e:
             raise AuthUpdateError(f"Could not update user {user_id}: {e}")
 
+    def get_role_id(self, name: str) -> str:
+        """Get a keycloak role."""
+        try:
+            return self.admin.get_realm_role(name)["id"]
+        except KeycloakGetError as e:
+            raise AuthGetError(f"Could not get id of role {name}: {e}")
+
     def create_role(self, name: str) -> None:
         """Create a keycloak role."""
         payload = {"name": name}

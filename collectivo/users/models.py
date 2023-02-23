@@ -14,7 +14,6 @@ class User(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     roles = models.ManyToManyField("Role", blank=True)
-    events = models.ManyToManyField("Event", blank=True)
     created = models.DateField(auto_now_add=True)
     is_authenticated = True
 
@@ -32,11 +31,10 @@ class User(models.Model):
 
         Get or create auth user if a new instance is created.
         Update auth user if an existing instance is updated."""
-        if settings.COLLECTIVO["auth.sync"]:
-            if self.user_id is None:
-                self.user_id = self.get_or_create_auth_user()
-            else:
-                self.update_auth_user()
+        if self.user_id is None:
+            self.user_id = self.get_or_create_auth_user()
+        else:
+            self.update_auth_user()
         super().save(*args, **kwargs)
 
     def save_without_sync(self, *args, **kwargs):
@@ -112,27 +110,15 @@ class Role(models.Model):
 
     def save(self, *args, **kwargs):
         """Save model and synchronize with auth service."""
-        if settings.COLLECTIVO["auth.sync"]:
-            if self.role_id is None:
-                self.role_id = self.get_or_create_role()
-            else:
-                self.update_role()
+        if self.role_id is None:
+            self.role_id = self.get_or_create_role()
+        else:
+            self.update_role()
         super().save(*args, **kwargs)
 
     def __str__(self):
         """Return string representation."""
         return f"Role ({self.name})"
-
-
-class Event(models.Model):
-    """An event that can be assigned to users
-    (not synced with auth service)."""
-
-    name = models.CharField(max_length=255, unique=True)
-
-    def __str__(self):
-        """Return string representation."""
-        return f"Event ({self.label})"
 
 
 class AnonymousUser:
@@ -143,7 +129,6 @@ class AnonymousUser:
     first_name: str = None
     last_name: str = None
     roles: list = EmptyManager(Role)
-    events: list = []
     created: str = None
     is_authenticated: bool = False
     is_superuser: bool = False
