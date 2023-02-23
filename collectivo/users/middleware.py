@@ -1,5 +1,6 @@
 """Middlewares of the authentication module."""
 from django.conf import settings
+from django.db import IntegrityError
 from django.http.response import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 from keycloak import KeycloakOpenID
@@ -78,18 +79,16 @@ class KeycloakMiddleware(MiddlewareMixin):
             return self.auth_failed(request, "Could not decode token", e)
 
         # Get or create user from token data
+        # User is authorized at this stage, so errors are only logged
         try:
             request.auth_user = User.objects.get(user_id=data.get("sub", None))
         except User.DoesNotExist:
-            logger.info(f"Creating new user {data.get('sub', None)}")
+            logger.debug(f"First-time user from keycloak: {data}")
             request.auth_user = User(user_id=data.get("sub", None))
-            logger.info(f"Success")
         except Exception as e:
-            return self.auth_failed(request, "Could not extract user", e)
+            return logger.debug(f"Could not retrieve user: {repr(e)}")
 
         try:
-            logger.info(f"Saving user {data}")
-            logger.info(f"User: {request.auth_user}")
             request.auth_user.email = data.get("email")
             request.auth_user.first_name = data.get("given_name")
             request.auth_user.last_name = data.get("family_name")
@@ -100,9 +99,10 @@ class KeycloakMiddleware(MiddlewareMixin):
                     Role.objects.get_or_create(name=role)[0]
                 )
             request.auth_user.save_without_sync()
-            logger.info(f"Saving success")
+        except IntegrityError:
+            pass  # Can happen if user is already saved in another thread
         except Exception as e:
-            return self.auth_failed(request, "Could not save user", e)
+            return logger.debug(f"Could not create user: {repr(e)}")
 
         # Return authenticated request
         return None
