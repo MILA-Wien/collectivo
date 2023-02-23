@@ -7,6 +7,14 @@ from collectivo.users.clients import AuthClient
 from collectivo.users.userinfo import UserInfo
 
 
+# EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
+# MENUS_URL = reverse("collectivo:collectivo.menus:menu-list")
+# ITEMS_URL = reverse(
+#     "collectivo:collectivo.menus:menuitem-list",
+#     kwargs={"menu_id": "main_menu"},
+# )
+
+
 class PublicMenusApiTests(TestCase):
     """Test the publicly available menus API."""
 

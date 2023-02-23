@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "collectivo",
+    "collectivo.core",
     "collectivo.menus",
     "collectivo.users",
     "collectivo.extensions",

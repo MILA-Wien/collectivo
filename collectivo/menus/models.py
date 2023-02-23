@@ -1,6 +1,7 @@
 """Models of the user experience module."""
 from django.db import models
 from collectivo.models import RegisterMixin
+from collectivo.extensions.models import Extension
 
 
 class Menu(models.Model, RegisterMixin):
@@ -65,3 +66,10 @@ class MenuItem(models.Model, RegisterMixin):
     def __str__(self):
         """Return string representation of the model."""
         return f"MenuItem ({self.item_id})"
+
+    def add_to_menu(self, menu_name, extension_name="collectivo.core"):
+        """Add this item to a menu."""
+        extension = Extension.objects.get(name=extension_name)
+        menu = Menu.objects.get(name=menu_name, extension=extension)
+        menu.items.add(self)
+        return self

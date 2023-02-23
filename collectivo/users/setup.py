@@ -23,7 +23,4 @@ def setup(sender, **kwargs):
         component_name="logout",
         order=99,
     )
-
-    Menu.objects.get(name="main_menu").items.add(item)
-
-    Role.objects.get_or_create(name="superuser")
+    item.add_to_menu("main")

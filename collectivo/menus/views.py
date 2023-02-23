@@ -14,20 +14,17 @@ logger = logging.getLogger(__name__)
 class MenuViewSet(viewsets.ModelViewSet):
     """Manage menus.
 
-    List view requires authentication.
-    All other views require the role 'superuser'.
+    GET requires authentication. All other views require the role 'superuser'.
 
-    Attributes:
-    - menu_id (CharField): A unique name to identify the menu.
-    - extension (ForeignKey of Extension):
-      The extension that the menu belongs to.
+    Menus can be filtered with the attributes 'menu' and 'extension'.
+    The main menu can filtered with `?extension=collectivo.core&menu=main`.
     """
 
     queryset = models.Menu.objects.all()
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action in ("list", "retrieve"):
+        if self.request.method == "GET":
             return [IsAuthenticated()]
         return [IsSuperuser()]
 
@@ -38,7 +35,7 @@ class MenuViewSet(viewsets.ModelViewSet):
         return serializers.MenuSerializer
 
     def get_queryset(self):
-        """Show only menus where user has required roles."""
+        """Allow filtering after extension and menu name."""
         extension = self.request.query_params.get("extension", None)
         menu = self.request.query_params.get("menu", None)
         queryset = models.Menu.objects.filter(

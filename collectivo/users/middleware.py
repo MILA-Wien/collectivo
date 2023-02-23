@@ -81,11 +81,15 @@ class KeycloakMiddleware(MiddlewareMixin):
         try:
             request.auth_user = User.objects.get(user_id=data.get("sub", None))
         except User.DoesNotExist:
+            logger.info(f"Creating new user {data.get('sub', None)}")
             request.auth_user = User(user_id=data.get("sub", None))
+            logger.info(f"Success")
         except Exception as e:
-            return self.auth_failed(request, "Could not extract userinfo", e)
+            return self.auth_failed(request, "Could not extract user", e)
 
         try:
+            logger.info(f"Saving user {data}")
+            logger.info(f"User: {request.auth_user}")
             request.auth_user.email = data.get("email")
             request.auth_user.first_name = data.get("given_name")
             request.auth_user.last_name = data.get("family_name")
@@ -96,8 +100,9 @@ class KeycloakMiddleware(MiddlewareMixin):
                     Role.objects.get_or_create(name=role)[0]
                 )
             request.auth_user.save_without_sync()
+            logger.info(f"Saving success")
         except Exception as e:
-            return self.auth_failed(request, "Could not extract userinfo", e)
+            return self.auth_failed(request, "Could not save user", e)
 
         # Return authenticated request
         return None
