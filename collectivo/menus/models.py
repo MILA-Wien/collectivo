@@ -1,7 +1,9 @@
-"""Models of the user experience module."""
+"""Models of the menus extension."""
 from django.db import models
-from collectivo.models import RegisterMixin
+
 from collectivo.extensions.models import Extension
+from collectivo.models import RegisterMixin
+from collectivo.users.models import Role
 
 
 class Menu(models.Model, RegisterMixin):
@@ -38,6 +40,7 @@ class MenuItem(models.Model, RegisterMixin):
     action = models.CharField(
         max_length=50,
         null=True,
+        default="component",
         choices=[
             ("component", "component"),
             ("link", "link"),
@@ -66,6 +69,21 @@ class MenuItem(models.Model, RegisterMixin):
     def __str__(self):
         """Return string representation of the model."""
         return f"MenuItem ({self.item_id})"
+
+    def register(
+        self,
+        name,
+        menu_name,
+        menu_extension_name="collectivo.core",
+        required_role_name=None,
+        **menu_item_kwargs,
+    ):
+        """Register a new menu item."""
+        role = Role.objects.get_or_create(name=required_role_name)
+        item = super().register(
+            name=name, required_role=role, **menu_item_kwargs
+        )
+        item.add_to_menu(menu_name, menu_extension_name)
 
     def add_to_menu(self, menu_name, extension_name="collectivo.core"):
         """Add this item to a menu."""

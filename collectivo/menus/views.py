@@ -1,12 +1,14 @@
 """Views of the user experience module."""
-from django.db.models import Q
-from rest_framework import viewsets, mixins
-from . import models, serializers
-from collectivo.users.permissions import IsSuperuser, IsAuthenticated
 import logging
+
+from django.db.models import Q
+from rest_framework import mixins, viewsets
+
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
+from collectivo.users.permissions import IsAuthenticated, IsSuperuser
 
+from . import models, serializers
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +39,9 @@ class MenuViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Allow filtering after extension and menu name."""
         extension = self.request.query_params.get("extension", None)
-        menu = self.request.query_params.get("menu", None)
+        menu_name = self.request.query_params.get("menu", None)
         queryset = models.Menu.objects.filter(
-            name=menu,
+            name=menu_name,
             extension=Extension.objects.get(name=extension),
         )
         return queryset

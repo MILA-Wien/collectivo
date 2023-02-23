@@ -1,7 +1,6 @@
 """Setup function for the users extension."""
 from collectivo.extensions.models import Extension
-from collectivo.menus.models import Menu, MenuItem
-from collectivo.users.models import Role
+from collectivo.menus.models import MenuItem
 from collectivo.users.apps import UsersConfig
 from collectivo.version import __version__
 

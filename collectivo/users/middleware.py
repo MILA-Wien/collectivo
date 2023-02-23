@@ -83,8 +83,8 @@ class KeycloakMiddleware(MiddlewareMixin):
         try:
             request.auth_user = User.objects.get(user_id=data.get("sub", None))
         except User.DoesNotExist:
-            logger.debug(f"First-time user from keycloak: {data}")
-            request.auth_user = User(user_id=data.get("sub", None))
+            logger.debug(f"First-time user from keycloak: {data.get('sub')}")
+            request.auth_user = User(user_id=data.get("sub"))
         except Exception as e:
             return logger.debug(f"Could not retrieve user: {repr(e)}")
 

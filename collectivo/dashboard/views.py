@@ -14,31 +14,15 @@ class DashboardTileViewSet(viewsets.ModelViewSet):
 
     Dashboard tiles refer to webcomponents
     that will be displayed in the dashboard.
-
-    Attributes:
-    - tile_id (CharField):
-      A unique name to identify the tile.
-    - extension (ForeignKey of Extension):
-      The extension that the menu belongs to.
-    - component_name (str):
-      Name of a registered component from the extensions' microfrontend.
-      The URL path after performing the action will be
-      '{base_url}/{extension}/{component name}'.
-    - order (FloatField):
-      Tiles will be sorted from lowest to highest order (default 1.0).
-    - required_role (CharField, optional):
-      If passed, only users with this role will see the tile.
-    - blocked_role (CharField, optional):
-      If passed, users with this role will not see the tile.
+    Only tiles where the user has the required role are shown.
     """
 
     def get_queryset(self):
         """Show only items where user has required roles."""
         user_roles = self.request.auth_user.roles.all()
-
         queryset = models.DashboardTile.objects.filter(
             Q(required_role__in=user_roles) | Q(required_role=None),
-            # TODO ~Q(blocked_role__in=user_roles),
+            ~Q(blocked_role__in=user_roles),
         )
         return queryset
 
