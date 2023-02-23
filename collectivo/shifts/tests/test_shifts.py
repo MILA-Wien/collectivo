@@ -324,3 +324,5 @@ class ShiftAPITests(TestCase):
         )
 
         self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data[0]["assignments"][3]["assigned_user"], 3)
+        self.assertEqual(res.data[0]["assigned_users"][0]["username"], "Pizza")
