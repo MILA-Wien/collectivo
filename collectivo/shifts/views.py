@@ -15,9 +15,6 @@ from . import models, serializers
 class ShiftFilter(django_filters.FilterSet):
     """Class to filter shifts."""
 
-    # Commenting next line out, due to error:
-    # Unsupported lookup 'icontains' for CharField
-
     class Meta:
         """Meta class."""
 
@@ -117,6 +114,8 @@ class ShiftViewSet(viewsets.ModelViewSet):
             ):
                 max_date = shift.shift_ending_date.strftime("%Y-%m-%d")
             # Calculate occurrences in given date range
+            # Docs rrule: https://dateutil.readthedocs.io/en/stable/rrule.html
+            # Docs range: https://docs.python.org/3/library/stdtypes.html#range
             occurrences = list(
                 rrule(
                     MONTHLY,

@@ -296,6 +296,8 @@ class ShiftAPITests(TestCase):
             + "shift_starting_date__lte=2023-09-30"
         )
 
+        # Comments are there to show when each shift would occur
+        # if shift_starting_date and shift_ending_date were not manipulated
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 2)
         self.assertEqual(res.data[0]["shift_starting_date"], "2023-09-11")
