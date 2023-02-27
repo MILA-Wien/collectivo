@@ -1,9 +1,11 @@
 """Models of the authentication module."""
-from django.db import models
-from django.conf import settings
-from collectivo.users.services import AuthService
-from django.db.models.manager import EmptyManager
 from uuid import UUID
+
+from django.conf import settings
+from django.db import models
+from django.db.models.manager import EmptyManager
+
+from collectivo.users.services import AuthService
 
 
 class User(models.Model):
@@ -150,9 +152,8 @@ class SuperUser:
     first_name: str = None
     last_name: str = None
     roles: list = EmptyManager(Role)
-    events: list = []
     created: str = None
-    is_authenticated: bool = False
+    is_authenticated: bool = True
     is_superuser: bool = True
 
     def __str__(self):

@@ -1,23 +1,25 @@
 """Manager class to connect collectivo to an authentication service."""
+from dataclasses import dataclass
+from typing import List
+from uuid import UUID
+
+from django.conf import settings
 from keycloak import KeycloakAdmin, KeycloakOpenID
 from keycloak.exceptions import (
-    KeycloakPutError,
     KeycloakDeleteError,
-    KeycloakGetError,
     KeycloakError,
+    KeycloakGetError,
     KeycloakPostError,
+    KeycloakPutError,
 )
+
 from collectivo.users.exceptions import (
+    AuthCreateError,
     AuthDeleteError,
     AuthGetError,
     AuthUpdateError,
-    AuthCreateError,
 )
-from django.conf import settings
 from collectivo.utils import get_object_from_settings
-from uuid import UUID
-from typing import List
-from dataclasses import dataclass
 
 
 @dataclass
@@ -235,7 +237,8 @@ class KeycloakAuthService:
         try:
             return self.admin.get_realm_role(name)["id"]
         except KeycloakGetError as e:
-            raise AuthGetError(f"Could not get id of role {name}: {e}")
+            self.create_role(name=name)
+            return self.admin.get_realm_role(name)["id"]
 
     def create_role(self, name: str) -> None:
         """Create a keycloak role."""
@@ -243,7 +246,7 @@ class KeycloakAuthService:
         try:
             self.admin.create_realm_role(payload)
         except KeycloakPostError as e:
-            raise AuthCreateError(f"Could not create role {name}: {e}")
+            raise AuthCreateError(f"Could not create role '{name}': {repr(e)}")
 
     def update_role(self, name: str, new_name: str) -> None:
         """Update a keycloak role."""

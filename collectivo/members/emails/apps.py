@@ -5,13 +5,13 @@ from django.db.models.signals import post_migrate
 
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
-    from collectivo.menus.utils import register_menuitem
-    from .utils import register_email_design, register_email_template
-    from django.conf import settings
     import logging
 
+    from django.conf import settings
+
+    from .utils import register_email_design, register_email_template
+
     logger = logging.getLogger(__name__)
-    name = "members"
 
     # register_menuitem(
     #     item_id='menus_admin_menu_item',

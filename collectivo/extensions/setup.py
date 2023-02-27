@@ -9,7 +9,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extensions_extension = Extension.register(
-        name=ExtensionsConfig.name,
+        name=ExtensionsConfig.name.split(".")[-1],
         description=ExtensionsConfig.description,
         version=__version__,
     )

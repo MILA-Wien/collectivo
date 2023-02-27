@@ -1,13 +1,14 @@
 """Populate collectivo & keycloak with test users."""
 import logging
-from collectivo.utils import register_viewset
-from collectivo.users.models import User
-from collectivo.users.services import AuthService
-from collectivo.users.exceptions import AuthDeleteError
-from collectivo.members.views import MembersAdminCreateViewSet
-from collectivo.members.models import Member
+
 from keycloak.exceptions import KeycloakGetError
 
+from collectivo.members.models import Member
+from collectivo.members.views import MembersAdminCreateViewSet
+from collectivo.users.exceptions import AuthDeleteError
+from collectivo.users.models import User
+from collectivo.users.services import AuthService
+from collectivo.utils import register_viewset
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ users = [
 
 def populate_keycloak_with_test_data():
     """Add users, groups, and roles to keycloak."""
-    logger.debug("Creating test-population")
+    logger.info("Development mode is active. Do not use this in production.")
     auth_manager = AuthService()
 
     for user in users:

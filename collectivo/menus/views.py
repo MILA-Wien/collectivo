@@ -19,7 +19,7 @@ class MenuViewSet(viewsets.ModelViewSet):
     GET requires authentication. All other views require the role 'superuser'.
 
     Menus can be filtered with the attributes 'menu' and 'extension'.
-    The main menu can filtered with `?extension=collectivo.core&menu=main`.
+    The main menu can filtered with `?extension=core&menu=main`.
     """
 
     queryset = models.Menu.objects.all()
@@ -40,10 +40,14 @@ class MenuViewSet(viewsets.ModelViewSet):
         """Allow filtering after extension and menu name."""
         extension = self.request.query_params.get("extension", None)
         menu_name = self.request.query_params.get("menu", None)
-        queryset = models.Menu.objects.filter(
-            name=menu_name,
-            extension=Extension.objects.get(name=extension),
-        )
+        queryset = models.Menu.objects.all()
+        if extension:
+            queryset = queryset.filter(
+                extension=Extension.objects.get(name=extension)
+            )
+        if menu_name:
+            queryset = queryset.filter(name=menu_name)
+
         return queryset
 
 
@@ -73,7 +77,9 @@ class MenuItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Show only items where user has required roles."""
         user_roles = self.request.auth_user.roles.all()
+        logger.info("user_roles" + user_roles)
         queryset = models.MenuItem.objects.filter(
             Q(required_role__in=user_roles) | Q(required_role=None)
         ).order_by("order")
+        logger.info("queryset" + queryset.all())
         return queryset

@@ -9,7 +9,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     dashboard_extension = Extension.register(
-        name=DashboardConfig.name,
+        name=DashboardConfig.name.split(".")[-1],
         description=DashboardConfig.description,
         version=__version__,
     )
@@ -19,6 +19,7 @@ def setup(sender, **kwargs):
         label="Dashboard",
         extension=dashboard_extension,
         component_name="dashboard",
+        icon_name="pi-home",
         menu_name="main",
         order=0,
     )
