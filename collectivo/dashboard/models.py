@@ -1,8 +1,10 @@
 """Models of the dashboard extension."""
 from django.db import models
 
+from collectivo.extensions.models import Extension
 from collectivo.models import RegisterMixin
 from collectivo.users.models import Role
+from collectivo.utils import get_instance
 
 
 class DashboardTile(models.Model, RegisterMixin):
@@ -39,17 +41,14 @@ class DashboardTile(models.Model, RegisterMixin):
     def register(
         cls,
         name: str,
-        required_role_name: str = None,
-        blocked_role_name: str = None,
-        **dashboard_tile_kwargs,
+        extension: str | Extension,
+        required_role: str | Role = None,
+        blocked_role: str | Role = None,
+        **payload,
     ):
         """Register a new dashboard tile."""
-        if required_role_name is not None:
-            dashboard_tile_kwargs[
-                "required_role"
-            ] = Role.objects.get_or_create(name=required_role_name)[0]
-        if blocked_role_name is not None:
-            dashboard_tile_kwargs["blocked_role"] = Role.objects.get_or_create(
-                name=blocked_role_name
-            )[0]
-        return super().register(name=name, **dashboard_tile_kwargs)
+        payload["extension"] = get_instance(Extension, extension)
+        payload["required_role"] = get_instance(Role, required_role)
+        payload["blocked_role"] = get_instance(Role, blocked_role)
+
+        return super().register(name=name, **payload)

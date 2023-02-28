@@ -24,10 +24,8 @@ class MenuViewSet(
 ):
     """Manage menus.
 
-    GET requires authentication. All other views require the role 'superuser'.
-
-    Menus can be filtered with the attributes 'menu' and 'extension'.
-    The main menu can filtered with `?extension=core&menu=main`.
+    Menus are not retrieved by ID, but by extension and menu name.
+    Requires authentication to read (GET), and the role 'superuser' to write.
     """
 
     queryset = models.Menu.objects.all()
@@ -54,27 +52,8 @@ class MenuViewSet(
 
 
 class MenuItemViewSet(viewsets.ModelViewSet):
-    """Manage menu-items.
-
-    List view requires authentication.
-    Only items where the user has the required roles are shown.
-
-    All other views require the role 'superuser'.
-    """
+    """Manage menu-items. Requires the role 'superuser'."""
 
     queryset = models.MenuItem.objects.all()
     serializer_class = serializers.MenuItemSerializer
-
-    def get_permissions(self):
-        """Set permissions for this viewset."""
-        if self.request.method == "GET":
-            return [IsAuthenticated()]
-        return [IsSuperuser()]
-
-    def get_queryset(self):
-        """Show only items where user has required roles."""
-        user_roles = self.request.auth_user.roles.all()
-        queryset = models.MenuItem.objects.filter(
-            Q(required_role__in=user_roles) | Q(required_role=None)
-        ).order_by("order")
-        return queryset
+    permission_classes = [IsSuperuser]

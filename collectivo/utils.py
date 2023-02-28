@@ -1,11 +1,12 @@
 """Utility functions of the collectivo package."""
-from django.test import RequestFactory
+import importlib
+import logging
+
 from django.conf import settings
+from django.db.models import Model
+from django.test import RequestFactory
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-import logging
-import importlib
-
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,13 @@ filter_lookups = [
 
 # Retrieve default models as defined in the settings
 # Can be used to access models without creating dependencies
+
+
+def get_instance(cls: Model, value: str | Model) -> Model:
+    """Get an instance of a model based on a string with the instance name."""
+    if isinstance(value, str):
+        return cls.objects.get_or_create(name=value)[0]
+    return value
 
 
 def get_object_from_settings(setting_name):

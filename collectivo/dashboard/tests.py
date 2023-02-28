@@ -1,20 +1,19 @@
 """Tests of the members API."""
 from django.test import TestCase
 from django.urls import reverse
-from collectivo.extensions.models import Extension
-from collectivo.users.clients import AuthClient
-from collectivo.users.userinfo import UserInfo
-from collectivo.menus.models import MenuItem
-from .models import DashboardTile
-from .utils import register_tile
 
+from collectivo.extensions.models import Extension
+from collectivo.menus.models import MenuItem
+from collectivo.users.clients import AuthClient
+
+from .models import DashboardTile
 
 TILES_URL = reverse("collectivo:collectivo.dashboard:tile-list")
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 EXTENSION_NAME = "dashboard"
 
 
-class DashboardRegistrationTests(TestCase):
+class DashboardSetupTests(TestCase):
     """Test that the dashboard extension is installed correctly."""
 
     def test_extension_exists(self):
@@ -24,11 +23,11 @@ class DashboardRegistrationTests(TestCase):
 
     def test_menu_items_exist(self):
         """Test that the menu items are registered."""
-        res = MenuItem.objects.filter(extension=EXTENSION_NAME)
+        res = MenuItem.objects.filter(extension__name=EXTENSION_NAME)
         self.assertEqual(len(res), 1)
 
 
-class PublicDashboardApiTests(TestCase):
+class DashboardPublicAPITests(TestCase):
     """Test the dashboard API available to public."""
 
     def setUp(self):
@@ -36,18 +35,17 @@ class PublicDashboardApiTests(TestCase):
         self.client = AuthClient()
 
     def test_access_menu_api_fails(self):
-        """Test that menu API cannot be accessed by public user."""
+        """Test that menu API cannot be accessed by a public user."""
         res = self.client.get(TILES_URL)
         self.assertEqual(res.status_code, 403)
 
 
-class PrivateDashboardApiTests(TestCase):
+class DashboardPrivateAPITests(TestCase):
     """Test the dashboard API available to users."""
 
     def setUp(self):
         """Prepare test case."""
-        self.client = AuthClient()
-        self.client.force_authenticate(UserInfo(is_authenticated=True))
+        self.client = AuthClient.as_user()
 
     def test_get_tile_fails(self):
         """Test that users can view tiles."""
@@ -60,76 +58,59 @@ class PrivateDashboardApiTests(TestCase):
         self.assertEqual(res.status_code, 403)
 
 
-class AdminMenusApiTests(TestCase):
+class DashboardAPITests(TestCase):
     """Test the dashboard API available to admins."""
 
     def setUp(self):
         """Prepare test case."""
         # Set up client with authenticated user
-        self.client = AuthClient()
-        user = UserInfo(
-            user_id="ac4339c5-56f6-4df5-a6c8-bcdd3683a56a",
-            roles=["superuser", "test_role", "test_role2"],
-            email="test_member_1@example.com",
-            is_authenticated=True,
+        self.client = AuthClient.as_user(
+            roles=["superuser", "test_role", "test_role2"]
         )
-        self.client.force_authenticate(user)
 
         # Register a test extension
         self.ext_name = "my_extension"
         self.client.post(EXTENSIONS_URL, {"name": self.ext_name})
 
-        # Define payloads for API calls
+        # Define payload for dashboard tile
         self.tile = {
-            "tile_id": "my_tile",
+            "name": "my_tile",
             "extension": self.ext_name,
             "component_name": "test_component",
         }
 
     def test_create_tile(self):
         """Test creating tile succeeded."""
-        self.client.post(TILES_URL, self.tile)
-        tile = DashboardTile.objects.filter(tile_id=self.tile["tile_id"])
+        DashboardTile.register(**self.tile)
+        tile = DashboardTile.objects.filter(name=self.tile["name"])
         self.assertTrue(tile.exists())
 
     def test_tile_correct_role(self):
         """Test tile should appear for user with required role."""
-        payload = {**self.tile, "required_role": "test_role"}
-        self.client.post(TILES_URL, payload)
-        res = self.client.get(TILES_URL, payload)
-        items = [i["tile_id"] for i in res.data]
+        DashboardTile.register(**self.tile, required_role="test_role")
+        res = self.client.get(TILES_URL)
+        items = [i["name"] for i in res.data]
         self.assertTrue("my_tile" in items)
 
     def test_tile_wrong_role(self):
         """Test menuitem should not appear for user without required role."""
-        payload = {**self.tile, "required_role": "wrong_role"}
-        self.client.post(TILES_URL, payload)
-        res = self.client.get(TILES_URL, payload)
-        items = [i["tile_id"] for i in res.data]
+        DashboardTile.register(**self.tile, required_role="wrong_role")
+        res = self.client.get(TILES_URL)
+        items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
 
     def test_tile_blocked_role(self):
         """Test menuitem should not appear for user with blocked role."""
-        payload = {**self.tile, "blocked_role": "test_role"}
-        self.client.post(TILES_URL, payload)
-        res = self.client.get(TILES_URL, payload)
-        items = [i["tile_id"] for i in res.data]
+        DashboardTile.register(**self.tile, blocked_role="test_role")
+        res = self.client.get(TILES_URL)
+        items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
 
     def test_tile_blocked_role_2(self):
         """Test menuitem should not appear for user with blocked role."""
-        payload = {
-            **self.tile,
-            "blocked_role": "test_role",
-            "required_role": "test_role2",
-        }
-        self.client.post(TILES_URL, payload)
-        res = self.client.get(TILES_URL, payload)
-        items = [i["tile_id"] for i in res.data]
+        DashboardTile.register(
+            **self.tile, blocked_role="test_role", required_role="test_role2"
+        )
+        res = self.client.get(TILES_URL)
+        items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
-
-    def test_create_tile_util(self):
-        """Test creating tile with utils."""
-        register_tile(**self.tile)
-        tile = DashboardTile.objects.filter(tile_id=self.tile["tile_id"])
-        self.assertTrue(tile.exists())
