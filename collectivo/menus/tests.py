@@ -55,18 +55,16 @@ class MenusAPITests(TestCase):
             required_role="test_role",
         )
 
-        self.menu_url = (
-            reverse(
-                "collectivo:collectivo.menus:menu-list",
-            )
-            + "?extension=menus&menu=test_menu"
+        self.menu_url = reverse(
+            "collectivo:collectivo.menus:menu-detail",
+            kwargs={"extension": self.extension.name, "menu": test_menu.name},
         )
 
     def test_get_menu_succeeds(self):
         """Test that menu is returned."""
         res = self.client.get(self.menu_url)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data[0]["name"], "test_menu")
+        self.assertEqual(res.data["name"], "test_menu")
 
     def test_get_menu_fails(self):
         """Test that menu API cannot be accessed by public user."""
@@ -79,16 +77,16 @@ class MenusAPITests(TestCase):
     def test_menu_item_order(self):
         """Test that menu items are returned in correct order."""
         res = self.client.get(self.menu_url)
-        items = [item["name"] for item in res.data[0]["items"]]
+        items = [item["name"] for item in res.data["items"]]
         self.assertEqual(items, [f"test_item_{order}" for order in [1, 2, 3]])
 
     def test_menu_item_correct_role(self):
         """Test menuitem should appear for user with correct role."""
         res = self.client.get(self.menu_url)
-        items = [item["name"] for item in res.data[0]["items"]]
+        items = [item["name"] for item in res.data["items"]]
         self.assertFalse("test_item_4" in items)
 
         self.client = AuthClient().as_user(roles=["test_role"])
         res = self.client.get(self.menu_url)
-        items = [item["name"] for item in res.data[0]["items"]]
+        items = [item["name"] for item in res.data["items"]]
         self.assertTrue("test_item_4" in items)

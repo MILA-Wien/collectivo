@@ -3,9 +3,11 @@ import logging
 
 from django.db.models import Q
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from collectivo.extensions.models import Extension
-from collectivo.menus.models import Menu
 from collectivo.users.permissions import IsAuthenticated, IsSuperuser
 
 from . import models, serializers
@@ -13,7 +15,13 @@ from . import models, serializers
 logger = logging.getLogger(__name__)
 
 
-class MenuViewSet(viewsets.ModelViewSet):
+class MenuViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
     """Manage menus.
 
     GET requires authentication. All other views require the role 'superuser'.
@@ -31,19 +39,18 @@ class MenuViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return [IsSuperuser()]
 
-    def get_queryset(self):
-        """Allow filtering after extension and menu name."""
-        extension = self.request.query_params.get("extension", None)
-        menu_name = self.request.query_params.get("menu", None)
-        queryset = models.Menu.objects.all()
-        if extension:
-            queryset = queryset.filter(
-                extension=Extension.objects.get(name=extension)
-            )
-        if menu_name:
-            queryset = queryset.filter(name=menu_name)
-
-        return queryset
+    @action(
+        methods=["GET"],
+        detail=False,
+        url_path="(?P<extension>\w+)/(?P<menu>\w+)",
+        url_name="detail",
+    )
+    def retrieve_with_params(self, request: Request, extension, menu):
+        """Get menu based on extension and menu name."""
+        queryset = self.get_queryset()
+        menu = queryset.get(extension__name=extension, name=menu)
+        serializer = self.get_serializer(menu)
+        return Response(serializer.data)
 
 
 class MenuItemViewSet(viewsets.ModelViewSet):

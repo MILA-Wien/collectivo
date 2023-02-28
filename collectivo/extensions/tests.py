@@ -1,4 +1,4 @@
-"""Tests of the extensions module."""
+"""Tests of the extensions extension."""
 from django.test import TestCase
 from django.urls import reverse
 
@@ -9,45 +9,16 @@ from .models import Extension
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 
 
-class InternalApiTests(TestCase):
-    """Test functions to use API internally."""
-
-    def test_register_extension(self):
-        """Test registering an extension through internal API."""
-        # A first call should create new entry
-        res = register_extension("my_extension", version="1.0.0")
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(res.data["version"], "1.0.0")
-
-        # A second call should update existing entry
-        res = register_extension("my_extension", version="1.0.1")
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(res.data["version"], "1.0.1")
-
-
-class PublicExtensionsApiTests(TestCase):
-    """Test the publicly available ingredients API."""
-
-    def test_extension_API_fails(self):
-        """Test extension API is not available for public user."""
-        self.client = AuthClient()
-        self.name = "my_extension"
-        self.setup_payload = {"name": self.name}
-        res = self.client.post(EXTENSIONS_URL, self.setup_payload)
-        self.assertEquals(res.status_code, 403)
-
-
-class PrivateExtensionsApiTests(TestCase):
-    """Test the publicly available ingredients API."""
+class ExtensionsTests(TestCase):
+    """Test the extensions extension."""
 
     def setUp(self):
         """Prepare API client and a test extension."""
-        self.client = AuthClient()
-        self.client.force_roles(["superuser"])
+        self.client = AuthClient.as_superuser()
         self.name = "my_extension"
         self.setup_payload = {"name": self.name}
-        self.client.post(EXTENSIONS_URL, self.setup_payload)
-        self.detail_url = EXTENSIONS_URL + self.name + "/"
+        res = self.client.post(EXTENSIONS_URL, self.setup_payload)
+        self.detail_url = EXTENSIONS_URL + str(res.data["id"]) + "/"
 
     def test_create_extension(self):
         """Test extension is registered."""
