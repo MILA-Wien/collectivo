@@ -1,5 +1,5 @@
 # Use Python runtime as parent image
-FROM python:3.9-alpine3.13
+FROM python:3.10-alpine3.17
 
 # Send stdout and sterr messages directly to the terminal
 ENV PYTHONUNBUFFERED 1

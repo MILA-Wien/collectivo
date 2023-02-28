@@ -1,11 +1,12 @@
 """Serializers of the collectivo user experience module."""
+from django.db.models import Q
 from rest_framework import serializers
 
 from .models import Menu, MenuItem
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
-    """Serializer for existing menu-item objects."""
+    """Serializer for menu items."""
 
     class Meta:
         """Serializer settings."""
@@ -16,7 +17,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 
 class MenuSerializer(serializers.ModelSerializer):
-    """Serializer for existing menu objects."""
+    """Serializer for menus."""
 
     items = serializers.SerializerMethodField()
 
@@ -28,5 +29,15 @@ class MenuSerializer(serializers.ModelSerializer):
         depth = 3
 
     def get_items(self, instance: Menu):
-        songs = instance.items.all().order_by("order")
-        return MenuItemSerializer(songs, many=True).data
+        """Return the items of the menu.
+
+        Items are filtered based on required roles and sorted based on order.
+        """
+        items = instance.items.all().order_by("order")
+        request = self.context.get("request", None)
+        if request:
+            items = items.filter(
+                Q(required_role__isnull=True)
+                | Q(required_role__in=request.auth_user.roles.all())
+            )
+        return MenuItemSerializer(items, many=True).data

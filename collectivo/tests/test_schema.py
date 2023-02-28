@@ -1,6 +1,7 @@
 """Tests for the core API."""
 from django.test import TestCase
 from django.urls import reverse
+
 from collectivo.users.clients import AuthClient
 
 
@@ -9,8 +10,7 @@ class SchemaTests(TestCase):
 
     def setUp(self):
         """Set up the test client."""
-        self.client = AuthClient()
-        self.client.force_roles(["superuser"])
+        self.client = AuthClient.as_superuser()
 
     def test_schema(self):
         """Test getting current version is correct."""

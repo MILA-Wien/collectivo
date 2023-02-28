@@ -65,23 +65,30 @@ class MenuItem(models.Model, RegisterMixin):
     def register(
         cls,
         name,
-        menu_name=None,
+        menu: str | tuple | Menu = None,
         parent_item=None,
-        menu_extension_name: str = "core",
-        required_role_name: str = None,
+        required_role: str | Role = None,
         **menu_item_kwargs,
     ):
         """Register a new menu item."""
-        if required_role_name is not None:
-            required_role = Role.objects.get_or_create(
-                name=required_role_name
-            )[0]
-        else:
-            required_role = None
+        if isinstance(required_role, str):
+            required_role = Role.objects.get_or_create(name=required_role)[0]
+
         item = super().register(
             name=name, required_role=required_role, **menu_item_kwargs
         )
-        if menu_name is not None:
+        if menu is not None:
+            if isinstance(menu, tuple):
+                menu_name = menu[0]
+                menu_extension_name = [1]
+            elif isinstance(menu, Menu):
+                menu_name = menu.name
+                menu_extension_name = menu.extension.name
+            elif isinstance(menu, str):
+                menu_name = menu
+                menu_extension_name = "core"
+            else:
+                raise ValueError("Invalid menu type")
             item.add_to_menu(menu_name, menu_extension_name)
         if parent_item is not None:
             parent_item.sub_items.add(item)

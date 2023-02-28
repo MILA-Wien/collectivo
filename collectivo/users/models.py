@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import models
-from django.db.models.manager import EmptyManager
+from django.db.models.manager import BaseManager, EmptyManager, Manager
 
 from collectivo.users.services import AuthService
 

@@ -3,18 +3,11 @@ from django.urls import reverse
 
 from collectivo.users.models import Role, User
 
-from .fixtures import EMAIL, PASSWORD, TEST_USER
+from .fixtures import PASSWORD, TEST_USER
 
 
 def create_test_user(roles):
     """Create a test user."""
-    EMAIL = "test_user@example.com"
-    PASSWORD = "Test123!"
-    TEST_USER = {
-        "first_name": "Test",
-        "last_name": "User",
-        "email": EMAIL,
-    }
     user = User.objects.create(**TEST_USER)
     user.set_password(PASSWORD, temporary=False)
     user.set_email_verified(True)

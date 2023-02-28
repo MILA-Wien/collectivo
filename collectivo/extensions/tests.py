@@ -1,11 +1,10 @@
 """Tests of the extensions module."""
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from collectivo.users.clients import AuthClient
-from .models import Extension
-from .utils import register_extension
 
+from .models import Extension
 
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 

@@ -1,7 +1,9 @@
 """Testing clients of the authentication module."""
 from rest_framework.test import APIClient, ForceAuthClientHandler
+
+from collectivo.users.models import Role, SuperUser, User
 from collectivo.users.services import AuthService
-from collectivo.users.models import User
+from collectivo.users.tests.fixtures import TEST_USER
 
 
 class CustomForceAuthClientHandler(ForceAuthClientHandler):
@@ -14,30 +16,39 @@ class CustomForceAuthClientHandler(ForceAuthClientHandler):
 
 
 class AuthClient(APIClient):
-    """
-    APIClient that can authenticate with the auth module's userinfo.
-
-    Usage example:
-    ```
-        client = CollectivoAPIClient()
-        user = {
-            'sub': 'ac4339c5-56f6-4df5-a6c8-bcdd3683a56a',
-            'roles': ['test_role'],
-            'email': 'test_member_1@example.com'
-        }
-        client.force_authenticate(user)
-    ```
-    """
+    """APIClient with custom authorization methods."""
 
     def __init__(self, force=True, enforce_csrf_checks=False, **defaults):
         """Initialize client with custom handler."""
         super().__init__(enforce_csrf_checks, **defaults)
 
     def force_authenticate(self, user=None):
-        """Force authentication with passed user or token."""
+        """Force authentication with passed user."""
         self.handler = CustomForceAuthClientHandler()
         super().force_authenticate(user)
-        # TODO: Roles
+
+    @classmethod
+    def as_superuser(cls):
+        """Authorize as a generic superuser."""
+        client = cls()
+        client.force_authenticate(SuperUser())
+        return client
+
+    @classmethod
+    def as_user(cls, roles: list[str] = []):
+        """Authorize as a generic test user with given roles.
+
+        This user is not synchronized with the auth service."""
+        client = cls()
+        user = User(**TEST_USER)
+        user.user_id = "00000000-0000-0000-0000-000000000000"
+        user.created = "2021-01-01"
+        user.save_without_sync()
+        for role in roles:
+            role = Role.objects.get_or_create(name=role)[0]
+            user.roles.add(role)
+        client.force_authenticate(user)
+        return client
 
     def authorize(self, email: str, password: str = "Test123!"):
         """Authorize test user with the auth service."""

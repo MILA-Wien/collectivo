@@ -1,21 +1,13 @@
 """Test the keycloak authentication module."""
-from django.test import TestCase, RequestFactory
-from django.conf import settings
-from keycloak import KeycloakOpenID
+from django.test import RequestFactory, TestCase
+from django.urls import reverse
+
+from collectivo.users.models import Role, User
+from collectivo.users.services import AuthService
+
+from ..clients import AuthClient
 from ..middleware import KeycloakMiddleware
-from rest_framework.test import APIClient
-from django.urls import reverse
-from ..clients import AuthClient
-from ..userinfo import UserInfo
-import logging
-from collectivo.users.services import AuthService
-from django.test import TestCase
-from django.urls import reverse
-from ..clients import AuthClient
-from collectivo.users.models import User, AnonymousUser, Role
-from collectivo.users.services import AuthService
-from collectivo.users.exceptions import AuthDeleteError
-from .fixtures import TEST_USER, PASSWORD, EMAIL, PRIVATE_URL, PUBLIC_URL
+from .fixtures import PASSWORD, TEST_USER
 
 
 class KeycloakMiddlewareTests(TestCase):

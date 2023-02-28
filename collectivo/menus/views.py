@@ -23,18 +23,13 @@ class MenuViewSet(viewsets.ModelViewSet):
     """
 
     queryset = models.Menu.objects.all()
+    serializer_class = serializers.MenuSerializer
 
     def get_permissions(self):
         """Set permissions for this viewset."""
         if self.request.method == "GET":
             return [IsAuthenticated()]
         return [IsSuperuser()]
-
-    def get_serializer_class(self):
-        """Set name to read-only except for create."""
-        if self.request.method == "POST":
-            return serializers.MenuCreateSerializer
-        return serializers.MenuSerializer
 
     def get_queryset(self):
         """Allow filtering after extension and menu name."""
@@ -61,25 +56,18 @@ class MenuItemViewSet(viewsets.ModelViewSet):
     """
 
     queryset = models.MenuItem.objects.all()
+    serializer_class = serializers.MenuItemSerializer
 
     def get_permissions(self):
         """Set permissions for this viewset."""
-        if self.action == "list":
+        if self.request.method == "GET":
             return [IsAuthenticated()]
         return [IsSuperuser()]
-
-    def get_serializer_class(self):
-        """Set item_id to read-only except for create."""
-        if self.request.method == "POST":
-            return serializers.MenuItemCreateSerializer
-        return serializers.MenuItemSerializer
 
     def get_queryset(self):
         """Show only items where user has required roles."""
         user_roles = self.request.auth_user.roles.all()
-        logger.info("user_roles" + user_roles)
         queryset = models.MenuItem.objects.filter(
             Q(required_role__in=user_roles) | Q(required_role=None)
         ).order_by("order")
-        logger.info("queryset" + queryset.all())
         return queryset

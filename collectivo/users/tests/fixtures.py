@@ -12,3 +12,4 @@ TEST_USER = {
 }
 PUBLIC_URL = reverse("collectivo:collectivo.users:test_view_public")
 PRIVATE_URL = reverse("collectivo:collectivo.users:test_view_private")
+ADMIN_URL = reverse("collectivo:collectivo.users:test_view_admin")
