@@ -28,12 +28,12 @@ class AuthClientTests(TestCase):
 
     def test_as_user(self):
         """Test that with_roles can be used to test different roles."""
-        client = AuthClient.as_user()
+        client = AuthClient.as_pseudo_user()
         res = client.get(PRIVATE_URL)
         self.assertEqual(res.status_code, 200)
         res = client.get(ADMIN_URL)
         self.assertEqual(res.status_code, 403)
-        client = AuthClient.as_user(roles=["superuser"])
+        client = AuthClient.as_pseudo_user(roles=["superuser"])
         res = client.get(ADMIN_URL)
         self.assertEqual(res.status_code, 200)
 

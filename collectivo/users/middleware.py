@@ -1,14 +1,16 @@
 """Middlewares of the authentication module."""
+import logging
+
 from django.conf import settings
 from django.db import IntegrityError
 from django.http.response import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
+from jwt import decode
 from keycloak import KeycloakOpenID
 from rest_framework.exceptions import AuthenticationFailed
-from jwt import decode
-import logging
-from collectivo.errors import CollectivoError
-from collectivo.users.models import User, AnonymousUser, Role
+
+from collectivo.exceptions import CollectivoError
+from collectivo.users.models import AnonymousUser, Role, User
 
 logger = logging.getLogger(__name__)
 

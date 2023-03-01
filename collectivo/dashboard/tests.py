@@ -45,7 +45,7 @@ class DashboardPrivateAPITests(TestCase):
 
     def setUp(self):
         """Prepare test case."""
-        self.client = AuthClient.as_user()
+        self.client = AuthClient.as_pseudo_user()
 
     def test_get_tile_fails(self):
         """Test that users can view tiles."""
@@ -64,7 +64,7 @@ class DashboardAPITests(TestCase):
     def setUp(self):
         """Prepare test case."""
         # Set up client with authenticated user
-        self.client = AuthClient.as_user(
+        self.client = AuthClient.as_pseudo_user(
             roles=["superuser", "test_role", "test_role2"]
         )
 

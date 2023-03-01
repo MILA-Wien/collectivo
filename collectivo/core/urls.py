@@ -1,5 +1,11 @@
 """URL patterns of the core extension."""
+from django.urls import path
 
-app_name = "collectivo"
+from . import views
 
-urlpatterns = []
+app_name = "collectivo.core"
+
+urlpatterns = [
+    # Core API views
+    path("api/core/about/", views.AboutView.as_view(), name="version"),
+]

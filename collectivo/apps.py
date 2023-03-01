@@ -1,7 +1,9 @@
 """Configuration file for the collectivo package."""
+from logging import getLogger
+
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-from logging import getLogger
+
 from collectivo.version import __version__
 
 logger = getLogger(__name__)

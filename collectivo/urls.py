@@ -1,16 +1,12 @@
 """URL patterns of the collectivo core."""
-from django.urls import path, re_path, include
 from django.conf import settings
 from django.contrib.staticfiles.views import serve
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from collectivo import views
 
 app_name = "collectivo"
 
-urlpatterns = [
-    # Core API views
-    path("api/collectivo/about/", views.AboutView.as_view(), name="version"),
-]
+urlpatterns = []
 
 for app in settings.INSTALLED_APPS:
     if app.startswith("collectivo") and app != "collectivo":

@@ -2,15 +2,18 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from collectivo.members.models import Member
-from collectivo.extensions.models import Extension
-from collectivo.utils import get_auth_manager
-from .populate import members, users, superusers
 
-EXTENSIONS_URL = reverse('collectivo:collectivo.extensions:extension-list')
-MENUS_URL = reverse('collectivo:collectivo.menus:menu-list')
-ITEMS_URL = reverse('collectivo:collectivo.menus:menuitem-list',
-                    kwargs={'menu_id': 'main_menu'})
+from collectivo.extensions.models import Extension
+from collectivo.members.models import Member
+
+from .populate import members, superusers, users
+
+EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
+MENUS_URL = reverse("collectivo:collectivo.menus:menu-list")
+ITEMS_URL = reverse(
+    "collectivo:collectivo.menus:menuitem-list",
+    kwargs={"menu_id": "main_menu"},
+)
 
 
 class TestExtensionRegistrationTests(TestCase):
@@ -20,7 +23,7 @@ class TestExtensionRegistrationTests(TestCase):
         """Prepare client."""
         self.client = APIClient()
         self.auth_manager = get_auth_manager()
-        self.name = 'devtools'
+        self.name = "devtools"
 
     def test_extension_exists(self):
         """Test extension exists."""
@@ -30,14 +33,15 @@ class TestExtensionRegistrationTests(TestCase):
     def test_test_members_exist(self):
         """Test that test users exist."""
         for user in users:
-            user_id = self.auth_manager.get_user_id(user['email'])
+            user_id = self.auth_manager.get_user_id(user["email"])
             roles = self.auth_manager.get_realm_roles_of_user(user_id)
-            roles = [role['name'] for role in roles]
+            roles = [role["name"] for role in roles]
 
             if user in members:
                 self.assertTrue(
-                    Member.objects.filter(email=user['email']).exists())
-                self.assertTrue('members_user' in roles)
+                    Member.objects.filter(email=user["email"]).exists()
+                )
+                self.assertTrue("members_user" in roles)
 
             if user in superusers:
-                self.assertTrue('superuser' in roles)
+                self.assertTrue("superuser" in roles)

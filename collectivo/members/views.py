@@ -1,16 +1,19 @@
 """Views of the members extension."""
 import logging
-from rest_framework import viewsets, mixins
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from collectivo.users.permissions import IsAuthenticated
-from collectivo.users.services import AuthService
-from collectivo.views import SchemaMixin
-from .permissions import IsMembersAdmin
-from . import models, serializers
-from .models import Member
+
 from django.utils.timezone import localdate
 from keycloak.exceptions import KeycloakDeleteError
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from collectivo.users.models import Role, User
+from collectivo.users.permissions import IsAuthenticated
+from collectivo.users.services import AuthService
+from collectivo.utils.views import SchemaMixin
+
+from . import models, serializers
+from .models import Member
+from .permissions import IsMembersAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -28,87 +31,15 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     queryset = models.Member.objects.all()
 
-    def members_role(self):
-        """Return representation of the members_user role."""
-        auth_service = AuthService()
-        role = "members_user"
-        role_id = auth_service.get_realm_role(role)["id"]
-        return {"id": role_id, "name": role}
-
-    def assign_members_role(self, user_id):
-        """Assign members_user role to user."""
-        if user_id is None:
-            return
-        auth_service = AuthService()
-        auth_service.assign_realm_roles(user_id, self.members_role())
-
-    def remove_members_role(self, user_id):
-        """Remove members_user role from user."""
-        if user_id is None:
-            return
-        auth_service = AuthService()
-        try:
-            auth_service.delete_realm_roles_of_user(
-                user_id, self.members_role()
-            )
-        except KeycloakDeleteError:
-            # Role was not assigned to user
-            pass
-
-    def get_or_create_user(self, data):
-        """Create a user in the auth service."""
-        auth_service = AuthService()
-        user_id = auth_service.get_user_id(data["email"])
-        if user_id is None:
-            user_data = {
-                k: v
-                for k, v in data.items()
-                if k in auth_manager.get_user_fields()
-            }
-            auth_manager.create_user(**user_data)
-            user_id = auth_manager.get_user_id(data["email"])
-        return user_id
-
-    def sync_user_data(self, user_id, data):
-        """
-        Synchronize user data with auth service.
-
-        Only performed if data is changed and user_id is not None.
-        If email is changed, email_verified is set to False.
-        """
-        if user_id is None:
-            return
-        auth_service = AuthService()
-        userinfo = auth_service.get_user(user_id)
-
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-        email = data.get("email")
-
-        payload = {}
-        if first_name and userinfo.first_name != first_name:
-            payload["first_name"] = first_name
-        if last_name and userinfo.last_name != last_name:
-            payload["last_name"] = last_name
-        if email and userinfo.email != email:
-            payload["email"] = email
-            payload["email_verified"] = False
-
-        if payload != {}:
-            auth_service.update_user(user_id=user_id, **payload)
-            return auth_service.get_user(user_id)
-        else:
-            return userinfo
-
-    def perform_create(self, serializer, user_id):
-        """Create member and synchronize user data with auth service."""
-        if Member.objects.filter(user_id=user_id).exists():
+    def create_member(self, serializer, user: User):
+        """Create member and synchronize with users module."""
+        if Member.objects.filter(user_id=user.user_id).exists():
             raise PermissionDenied("User is already registered as a member.")
-        userinfo = self.sync_user_data(user_id, serializer.validated_data)
-        self.assign_members_role(user_id)
+
+        # Create member with extra data
         extra_fields = {
-            "user_id": user_id,
-            "email": userinfo.email,
+            "user_id": user.user_id,
+            "email": user.email,
             "membership_start": localdate(),
         }
         if "tags" in serializer.validated_data:
@@ -117,9 +48,11 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
         # Send welcome mail
         try:
-            from collectivo.members.emails.models import EmailAutomation
+            from collectivo.members.emails.models import (
+                EmailAutomation,
+                EmailCampaign,
+            )
             from collectivo.members.emails.views import EmailCampaignViewSet
-            from collectivo.members.emails.models import EmailCampaign
             from collectivo.utils import register_viewset
 
             automations = EmailAutomation.objects.filter(trigger="new_member")
@@ -144,14 +77,18 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     def perform_update(self, serializer):
         """Update member and synchronize user data with auth service."""
-        self.sync_user_data(
-            serializer.instance.user_id, serializer.validated_data
-        )
+        user = User.objects.get(user_id=serializer.instance.user_id)
+        user.first_name = serializer.validated_data["first_name"]
+        user.last_name = serializer.validated_data["last_name"]
+        user.email = serializer.validated_data["email"]
+        user.save()
         serializer.save()
 
     def perform_destroy(self, instance):
         """Delete member and remove members_user role from auth service."""
-        self.remove_members_role(instance.user_id)
+        user = User.objects.get(user_id=instance.user_id)
+        user.roles.remove(Role.objects.get_or_create(name="members_user")[0])
+        user.save()
         instance.delete()
 
 
@@ -166,9 +103,8 @@ class MemberRegisterViewSet(MemberMixin, mixins.CreateModelMixin):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        """Create member with user_id from auth token."""
-        user_id = self.request.userinfo.user_id
-        super().perform_create(serializer, user_id)
+        """Create member with authenticated user."""
+        self.create_member(serializer, self.request.auth_user)
 
 
 class MemberProfileViewSet(
@@ -234,11 +170,6 @@ class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
     permission_classes = [IsMembersAdmin]
     filterset_fields = filterset_fields
     ordering_fields = member_fields
-
-    def perform_create(self, serializer):
-        """Create a keycloak user before creating a member."""
-        user_id = self.get_or_create_user(serializer.validated_data)
-        super().perform_create(serializer, user_id)
 
 
 class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):

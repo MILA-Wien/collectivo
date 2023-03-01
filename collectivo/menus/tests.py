@@ -86,7 +86,7 @@ class MenusAPITests(TestCase):
         items = [item["name"] for item in res.data["items"]]
         self.assertFalse("test_item_4" in items)
 
-        self.client = AuthClient().as_user(roles=["test_role"])
+        self.client = AuthClient().as_pseudo_user(roles=["test_role"])
         res = self.client.get(self.menu_url)
         items = [item["name"] for item in res.data["items"]]
         self.assertTrue("test_item_4" in items)

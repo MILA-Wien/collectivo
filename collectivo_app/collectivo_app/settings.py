@@ -6,11 +6,13 @@ the COLLECTIVO_SETTINGS environment variable (see manage.py).
 """
 import os
 from pathlib import Path
-from collectivo.errors import CollectivoError
-from collectivo.version import __version__
-from corsheaders.defaults import default_headers
-from .utils import string_to_list, get_env_bool
 
+from corsheaders.defaults import default_headers
+
+from collectivo.exceptions import CollectivoError
+from collectivo.version import __version__
+
+from .utils import get_env_bool, string_to_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
@@ -71,7 +73,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "collectivo.middleware.requestId.AddRequestId",
+    "collectivo.core.middleware.AddRequestId",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -80,7 +82,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "collectivo.users.middleware.KeycloakMiddleware",
-    "collectivo.middleware.requestLog.RequestLogMiddleware",
+    "collectivo.core.middleware.RequestLogMiddleware",
 ]
 
 if DEVELOPMENT:

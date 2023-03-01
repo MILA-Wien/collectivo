@@ -35,7 +35,10 @@ class AuthClient(APIClient):
         return client
 
     @classmethod
-    def as_user(cls, roles: list[str] = []):
+    def as_pseudo_user(
+        cls,
+        roles: list[str] = [],
+    ):
         """Authorize as a generic test user with given roles.
 
         This user is not synchronized with the auth service."""
@@ -50,6 +53,24 @@ class AuthClient(APIClient):
         client.force_authenticate(user)
         return client
 
+    @classmethod
+    def as_user(cls, roles: list[str] = []):
+        """Authorize as a generic test user with given roles."""
+        client = cls()
+        if User.objects.filter(email=TEST_USER["email"]).exists():
+            user = User.objects.get(email=TEST_USER["email"])
+            user.delete()
+        user = User.objects.create(**TEST_USER)
+        user.set_password("Test123!", temporary=False)
+        user.set_email_verified(True)
+        for role in roles:
+            role = Role.objects.get_or_create(name=role)[0]
+            user.roles.add(role)
+        user.save()
+        client.force_authenticate(user)
+        return client, user
+
+    @classmethod
     def authorize(self, email: str, password: str = "Test123!"):
         """Authorize test user with the auth service."""
         auth_service = AuthService()

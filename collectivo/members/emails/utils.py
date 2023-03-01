@@ -1,6 +1,7 @@
 """Utility functions of the emails module."""
-from . import views
 from collectivo.utils import register_viewset
+
+from . import views
 
 
 def register_email_template(**payload):

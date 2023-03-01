@@ -1,7 +1,9 @@
 """Views of the emails module."""
 from rest_framework import viewsets
+
 from collectivo.members.permissions import IsMembersAdmin
-from collectivo.views import SchemaMixin
+from collectivo.utils.views import SchemaMixin
+
 from . import models, serializers
 
 

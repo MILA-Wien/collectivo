@@ -7,7 +7,6 @@ from django.conf import settings
 from keycloak import KeycloakAdmin, KeycloakOpenID
 from keycloak.exceptions import (
     KeycloakDeleteError,
-    KeycloakError,
     KeycloakGetError,
     KeycloakPostError,
     KeycloakPutError,

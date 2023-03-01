@@ -2,9 +2,9 @@
 from django.db import models
 
 from collectivo.extensions.models import Extension
-from collectivo.models import RegisterMixin
 from collectivo.users.models import Role
 from collectivo.utils import get_instance
+from collectivo.utils.models import RegisterMixin
 
 
 class DashboardTile(models.Model, RegisterMixin):

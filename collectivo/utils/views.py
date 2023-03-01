@@ -1,27 +1,13 @@
-"""Views of the collectivo core."""
-from rest_framework.views import APIView
+"""Utilities for collectivo views."""
+from collections import OrderedDict
+
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework.decorators import action
 from rest_framework.fields import empty
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from collections import OrderedDict
-from collectivo.version import __version__
+
 from collectivo.users.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-
-
-class AboutView(APIView):
-    """API views of the project version."""
-
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(responses={200: OpenApiResponse()})
-    def get(self, request):
-        """Return the current version of the project."""
-        data = {
-            "version": __version__,
-        }
-        return Response(data)
-
+from collectivo.version import __version__
 
 # TODO Default does not work yet
 # TODO Choices can be big for large datasets

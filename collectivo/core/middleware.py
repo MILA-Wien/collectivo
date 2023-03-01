@@ -1,8 +1,8 @@
-"""Middleware to log `*/api/*` requests and responses."""
+"""Middlewares of the core extension for logging."""
+import logging
 import socket
 import time
-import logging
-
+import uuid
 
 request_logger = logging.getLogger(__name__)
 
@@ -27,12 +27,13 @@ class RequestLogMiddleware:
         # Request passes on to controller
         response = self.get_response(request)
 
-        if hasattr(response, 'status_code'):
+        if hasattr(response, "status_code"):
             log_data["status_code"] = response.status_code
-            if str(response.status_code)[0] in '45':
+            if str(response.status_code)[0] in "45":
                 log_data["response_body"] = response.content
-        if hasattr(request, 'userinfo') and \
-                hasattr(request.userinfo, 'user_id'):
+        if hasattr(request, "userinfo") and hasattr(
+            request.userinfo, "user_id"
+        ):
             log_data["user_id"] = request.userinfo.user_id
 
         if request.META.get("X-Request-ID") is not None:
@@ -40,7 +41,7 @@ class RequestLogMiddleware:
 
         # add runtime to our log_data
         log_data["run_time"] = time.time() - start_time
-        msg = '\n'+'\n'.join([f'  {k}: {v}' for k, v in log_data.items()])
+        msg = "\n" + "\n".join([f"  {k}: {v}" for k, v in log_data.items()])
         request_logger.info(msg=msg)
 
         return response
@@ -51,3 +52,18 @@ class RequestLogMiddleware:
             raise exception
         except Exception as e:
             request_logger.exception("Unhandled Exception: " + str(e))
+
+
+class AddRequestId:
+    """Middleware to add a unique request_id to the request."""
+
+    def __init__(self, get_response):
+        """Initiate middleware."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """Add a unique request_id to the request."""
+        request.META["X-Request-ID"] = str(uuid.uuid4())
+        response = self.get_response(request)
+        response["X-Request-ID"] = request.META["X-Request-ID"]
+        return response

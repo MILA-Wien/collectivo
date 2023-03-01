@@ -1,6 +1,7 @@
 """Models of the extensions module."""
 from django.db import models
-from collectivo.models import RegisterMixin
+
+from collectivo.utils.models import RegisterMixin
 
 
 class Extension(models.Model, RegisterMixin):

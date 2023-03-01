@@ -1,14 +1,13 @@
 """Views of the authentication module."""
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from keycloak import KeycloakOpenID
 from django.conf import settings
-from .serializers import TokenSerializer
+from keycloak import KeycloakOpenID
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .permissions import IsAuthenticated, IsSuperuser
+from .serializers import TokenSerializer
 
-
-# TODO Use auth manager
 config = settings.KEYCLOAK
 keycloak_manager = KeycloakOpenID(
     server_url=config["SERVER_URL"],
@@ -34,13 +33,12 @@ class KeycloakTokenView(APIView):
         serializer.is_valid(raise_exception=True)
 
         # Get token
-        username = request.data['username']
-        password = request.data['password']
+        username = request.data["username"]
+        password = request.data["password"]
         token = self.keycloak_manager.token(username, password)
 
-        # TODO: Error for wrong password
         data = {
-            'access_token': token['access_token'],
+            "access_token": token["access_token"],
         }
         return Response(data)
 
@@ -51,7 +49,7 @@ class IsAuthenticatedView(APIView):
     def get(self, request):
         """Check authentication."""
         data = {
-            'is_authenticated': request.is_authenticated,
+            "is_authenticated": request.is_authenticated,
         }
         return Response(data)
 
