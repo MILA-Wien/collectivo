@@ -60,8 +60,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "collectivo",
     "collectivo.core",
+    "collectivo.keycloak",
     "collectivo.menus",
-    "collectivo.users",
     "collectivo.extensions",
     "collectivo.dashboard",
     "corsheaders",
@@ -81,7 +81,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "collectivo.users.middleware.KeycloakMiddleware",
     "collectivo.core.middleware.RequestLogMiddleware",
 ]
 
@@ -209,7 +208,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "collectivo.keycloak.authentication.KeycloakAuthentication",
+    ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
@@ -311,15 +312,9 @@ DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_FROM")
 
 # Settings for collectivo
 COLLECTIVO = {
-    "auth.service": "collectivo.users.services.KeycloakAuthService",
-    "auth.sync": True,
-}
-
-
-# Configuration for keycloak authentication service
-KEYCLOAK = {
-    "SERVER_URL": os.environ.get("KEYCLOAK_SERVER_URL"),
-    "REALM_NAME": os.environ.get("KEYCLOAK_REALM_NAME", "collectivo"),
-    "CLIENT_ID": os.environ.get("KEYCLOAK_CLIENT_ID", "collectivo"),
-    "CLIENT_SECRET_KEY": os.environ.get("KEYCLOAK_CLIENT_SECRET_KEY"),
+    "keycloak.synchronize": True,
+    "keycloak.server_url": os.environ.get("KEYCLOAK_SERVER_URL"),
+    "keycloak.realm_name": os.environ.get("KEYCLOAK_REALM_NAME", "collectivo"),
+    "keycloak.client_id": os.environ.get("KEYCLOAK_CLIENT_ID", "collectivo"),
+    "keycloak.client_secret_key": os.environ.get("KEYCLOAK_CLIENT_SECRET_KEY"),
 }

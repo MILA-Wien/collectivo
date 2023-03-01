@@ -2,7 +2,6 @@
 from django.db import models
 
 from collectivo.extensions.models import Extension
-from collectivo.users.models import Role
 from collectivo.utils import get_instance
 from collectivo.utils.models import RegisterMixin
 
@@ -20,18 +19,7 @@ class DashboardTile(models.Model, RegisterMixin):
     )
     component_name = models.CharField(max_length=255)
     order = models.FloatField(default=1)
-    required_role = models.ForeignKey(
-        "users.Role",
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="required_role",
-    )
-    blocked_role = models.ForeignKey(
-        "users.Role",
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="blocked_role",
-    )
+    requires_permission = models.CharField(max_length=255)
 
     def __str__(self):
         """Return string representation of the model."""
@@ -42,13 +30,9 @@ class DashboardTile(models.Model, RegisterMixin):
         cls,
         name: str,
         extension: str | Extension,
-        required_role: str | Role = None,
-        blocked_role: str | Role = None,
         **payload,
     ):
         """Register a new dashboard tile."""
         payload["extension"] = get_instance(Extension, extension)
-        payload["required_role"] = get_instance(Role, required_role)
-        payload["blocked_role"] = get_instance(Role, blocked_role)
 
         return super().register(name=name, **payload)

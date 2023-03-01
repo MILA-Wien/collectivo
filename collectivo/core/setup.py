@@ -2,7 +2,6 @@
 from collectivo.core.apps import CoreConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
-from collectivo.users.models import Role
 from collectivo.version import __version__
 
 
@@ -14,8 +13,6 @@ def setup(sender, **kwargs):
         description=CoreConfig.description,
         version=__version__,
     )
-
-    Role.objects.get_or_create(name="superuser")
 
     Menu.register(name="main", extension=core_extension)
     Menu.register(name="admin", extension=core_extension)

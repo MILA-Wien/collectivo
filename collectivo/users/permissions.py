@@ -7,7 +7,7 @@ class IsAuthenticated(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Check if user is authenticated."""
-        return request.auth_user.is_authenticated
+        return request.user.is_authenticated
 
 
 class IsSuperuser(permissions.BasePermission):

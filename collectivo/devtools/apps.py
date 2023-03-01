@@ -5,11 +5,13 @@ from django.db.models.signals import post_migrate
 
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
-    from .populate import populate_keycloak_with_test_data
-    from collectivo.extensions.models import Extension
-    from collectivo.devtools.apps import TestExtensionConfig
-    from collectivo.version import __version__
     from django.conf import settings
+
+    from collectivo.devtools.apps import TestExtensionConfig
+    from collectivo.extensions.models import Extension
+    from collectivo.version import __version__
+
+    from .populate import populate_keycloak_with_test_data
 
     name = "devtools"
 
@@ -49,7 +51,7 @@ def post_migrate_callback(sender, **kwargs):
     #         order=1000,
     #     )
 
-    populate_keycloak_with_test_data()
+    # populate_keycloak_with_test_data()
 
 
 class TestExtensionConfig(AppConfig):

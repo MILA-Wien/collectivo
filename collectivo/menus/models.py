@@ -32,10 +32,8 @@ class MenuItem(models.Model, RegisterMixin):
     )
 
     label = models.CharField(max_length=255)
-    sub_items = models.ManyToManyField("self")
-    required_role = models.ForeignKey(
-        "users.Role", null=True, on_delete=models.SET_NULL
-    )
+    items = models.ManyToManyField("self")
+    requires_permission = models.CharField(max_length=255)
 
     target = models.CharField(
         max_length=50,
@@ -91,7 +89,7 @@ class MenuItem(models.Model, RegisterMixin):
                 raise ValueError("Invalid menu type")
             item.add_to_menu(menu_name, menu_extension_name)
         if parent_item is not None:
-            parent_item.sub_items.add(item)
+            parent_item.items.add(item)
             parent_item.save()
         return item
 
