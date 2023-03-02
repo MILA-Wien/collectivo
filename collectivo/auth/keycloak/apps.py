@@ -7,5 +7,5 @@ class KeycloakConfig(AppConfig):
     """Configuration class of the keycloak extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.keycloak"
+    name = "collectivo.auth.keycloak"
     description = "Keycloak connector for collectivo."

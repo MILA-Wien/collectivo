@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "collectivo",
     "collectivo.core",
-    "collectivo.keycloak",
+    "collectivo.auth.keycloak",
     "collectivo.menus",
     "collectivo.extensions",
     "collectivo.dashboard",
@@ -209,7 +209,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "collectivo.keycloak.authentication.KeycloakAuthentication",
+        "collectivo.auth.keycloak.authentication.KeycloakAuthentication",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",

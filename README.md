@@ -151,16 +151,16 @@ The `input_type` is currently generated automatically from the `field_type` and 
 
 ## Core extensions
 
-### Keycloak
+### Keycloak (collectivo.auth.keycloak)
 
-Enable authentication with [keycloak](https://www.keycloak.org/), based on the [python-keycloak](https://github.com/marcospereirampj/python-keycloak) package. When using this extension, keycloak access tokens can be used to authenticate requests and user data is synchronized between collectivo and keycloak.
+Enable authentication with [keycloak](https://www.keycloak.org/). When using this extension, keycloak access tokens can be used to authenticate requests and user data is synchronized between collectivo and keycloak.
 
-To install the extension, add `collectivo.keycloak` to your installed apps add keycloak as a default authentication class (see [Authentication - Django REST framework](https://www.django-rest-framework.org/api-guide/authentication/)):
+To install the extension, add `collectivo.auth.keycloak` to your installed apps add keycloak as a default authentication class (see [Authentication - Django REST framework](https://www.django-rest-framework.org/api-guide/authentication/)):
 
 ```python
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "collectivo.keycloak.authentication.KeycloakAuthentication",
+        "collectivo.auth.keycloak.authentication.KeycloakAuthentication",
         ...
     ],
     ...
@@ -176,5 +176,6 @@ The following variables can be set in `settings.COLLECTIVO` to configure the ext
 
 Further information:
 
+- This extension uses [python-keycloak](https://github.com/marcospereirampj/python-keycloak) to access the keycloak API.
 - When using the import function to set up your keycloak server, make sure to generate a new secret key for your client before using it in production.
 - To export the keycloak realm including users run `docker compose exec -u 0 keycloak /opt/keycloak/bin/kc.sh export --dir /tmp/export --realm collectivo --users realm_file` Note: exporting the realm via the gui doesn't include the users. The exported files is then in the `./docker/keycloak/export` folder.
