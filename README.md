@@ -149,32 +149,32 @@ The condition is structured as follows: `{'field': x, 'condition':'exact', 'valu
 
 The `input_type` is currently generated automatically from the `field_type` and states default html input types.
 
-## Core modules
+## Core extensions
 
-### auth
+### Keycloak
 
-The auth extension manages user authentication and authorization.
-Currently, the only supported authentication service is [keycloak](https://www.keycloak.org/).
-To activate authentication via keycloak, add the following line in `settings.py`:
+Enable authentication with [keycloak](https://www.keycloak.org/), based on the [python-keycloak](https://github.com/marcospereirampj/python-keycloak) package. When using this extension, keycloak access tokens can be used to authenticate requests and user data is synchronized between collectivo and keycloak.
+
+To install the extension, add `collectivo.keycloak` to your installed apps add keycloak as a default authentication class (see [Authentication - Django REST framework](https://www.django-rest-framework.org/api-guide/authentication/)):
 
 ```python
-MIDDLEWARE = [
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "collectivo.keycloak.authentication.KeycloakAuthentication",
+        ...
+    ],
     ...
-    'collectivo.users.middleware.KeycloakMiddleware'
-]
-```
-
-The following attributes can be used to configure the auth extension in the collectivo settings within `settings.py`:
-
-```python
-KEYCLOAK = {
-    'SERVER_URL': 'http://keycloak:8080',
-    'REALM_NAME': 'collectivo',
-    'CLIENT_ID': 'collectivo',
-    'CLIENT_SECRET_KEY': '**********'
 }
 ```
 
+The following variables can be set in `settings.COLLECTIVO` to configure the extension:
+
+- `keycloak.server_url`: Path towards the keycloak server
+- `keycloak.realm_name`: Name of the realm that is used for collectivo
+- `keycloak.client_id`: Name of the client that is used for collectivo
+- `keycloak.client_secret_key`: Secret key of the collectivo client
+
 Further information:
 
+- When using the import function to set up your keycloak server, make sure to generate a new secret key for your client before using it in production.
 - To export the keycloak realm including users run `docker compose exec -u 0 keycloak /opt/keycloak/bin/kc.sh export --dir /tmp/export --realm collectivo --users realm_file` Note: exporting the realm via the gui doesn't include the users. The exported files is then in the `./docker/keycloak/export` folder.

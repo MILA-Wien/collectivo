@@ -1,24 +1,18 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from jwt import decode
-from keycloak import KeycloakOpenID
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from .models import KeycloakUser
+from .api import KeycloakAPI
 
 
 class KeycloakAuthentication(authentication.BaseAuthentication):
+    """Keycloak authentication middleware."""
+
     def __init__(self, *args, **kwargs):
         """One-time initialization of middleware."""
         super().__init__(*args, **kwargs)
-        config = settings.KEYCLOAK
-        self.keycloak = KeycloakOpenID(
-            server_url=config["SERVER_URL"],
-            realm_name=config["REALM_NAME"],
-            client_id=config["CLIENT_ID"],
-            client_secret_key=config["CLIENT_SECRET_KEY"],
-        )
+        self.api = KeycloakAPI()
 
     def authenticate(self, request):
         """Authenticate a request or return exception."""
@@ -31,7 +25,7 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         """Authenticate a request with keycloak."""
         auth = request.META.get("HTTP_AUTHORIZATION").split()
         access_token = auth[1] if len(auth) == 2 else auth[0]
-        self.keycloak.userinfo(access_token)
+        self.api.openid.userinfo(access_token)
         data = decode(access_token, options={"verify_signature": False})
         User = get_user_model()
         try:
@@ -43,8 +37,8 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
                 first_name=data["given_name"],
                 last_name=data["family_name"],
             )
-            # KeycloakUser is created by a signal
-            # User is loaded again to include KeycloakUser
+            # KeycloakUser is created by a post-save signal in .models
+            # User is loaded again to include the KeycloakUser
             user = User.objects.get(keycloak__uuid=data["sub"])
         return (user, access_token)
 

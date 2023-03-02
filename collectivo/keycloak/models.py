@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import signals
 
-from collectivo.keycloak.keycloak import KeycloakAPI
+from collectivo.keycloak.api import KeycloakAPI
 
 
 class KeycloakUser(models.Model):
@@ -63,18 +63,32 @@ class KeycloakUser(models.Model):
 
 
 def update_keycloak_user(sender, instance, created, **kwargs):
-    """Create a keycloak user when a django user is created."""
+    """Create or update related keycloak user when a django user is changed."""
     if created:
         try:
             instance.keycloak
         except KeycloakUser.DoesNotExist:
             KeycloakUser.objects.create(user=instance)
     else:
-        instance.keycloak.save()
+        instance.keycloak.save()  # Trigger synchronization
+
+
+def delete_keycloak_user(sender, instance, **kwargs):
+    """Delete related keycloak user when a django user is deleted."""
+    try:
+        instance.keycloak.delete()
+    except KeycloakUser.DoesNotExist:
+        pass
 
 
 signals.post_save.connect(
     update_keycloak_user,
+    sender=get_user_model(),
+    weak=False,
+)
+
+signals.post_delete.connect(
+    delete_keycloak_user,
     sender=get_user_model(),
     weak=False,
 )
