@@ -4,7 +4,6 @@ from django.urls import reverse
 from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
-from collectivo.users.clients import AuthClient
 from collectivo.users.models import Role, User
 
 from ..models import Member

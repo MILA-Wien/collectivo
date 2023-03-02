@@ -1,8 +1,10 @@
 """Views of the extensions module."""
 from rest_framework import viewsets
+
+from collectivo.core.permissions import IsSuperuser
+
 from .models import Extension
-from .serializers import ExtensionSerializer, ExtensionCreateSerializer
-from collectivo.users.permissions import IsSuperuser
+from .serializers import ExtensionCreateSerializer, ExtensionSerializer
 
 
 class ExtensionViewSet(viewsets.ModelViewSet):

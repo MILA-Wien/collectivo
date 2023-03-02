@@ -1,11 +1,12 @@
 """Test the features of the emails API."""
-from django.test import TestCase
-from django.urls import reverse
-from collectivo.users.clients import AuthClient
-from collectivo.users.userinfo import UserInfo
-from collectivo.members.models import Member, MemberTag
 import json
 
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
+
+from collectivo.members.models import Member, MemberTag
+from collectivo.users.userinfo import UserInfo
 
 TAGS_URL = reverse("collectivo:collectivo.members:tag-list")
 TAG_URL_NAME = "collectivo:collectivo.members:tag-detail"

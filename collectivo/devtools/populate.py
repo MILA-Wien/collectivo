@@ -5,9 +5,6 @@ from keycloak.exceptions import KeycloakGetError
 
 from collectivo.members.models import Member
 from collectivo.members.views import MembersAdminCreateViewSet
-from collectivo.users.exceptions import AuthDeleteError
-from collectivo.users.models import User
-from collectivo.users.services import AuthService
 from collectivo.utils import register_viewset
 
 logger = logging.getLogger(__name__)

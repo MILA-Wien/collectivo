@@ -1,14 +1,12 @@
 """Views of the members extension."""
 import logging
 
+from django.contrib.auth import get_user_model
 from django.utils.timezone import localdate
-from keycloak.exceptions import KeycloakDeleteError
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.permissions import IsAuthenticated
 
-from collectivo.users.models import Role, User
-from collectivo.users.permissions import IsAuthenticated
-from collectivo.users.services import AuthService
 from collectivo.utils.views import SchemaMixin
 
 from . import models, serializers
@@ -16,6 +14,8 @@ from .models import Member
 from .permissions import IsMembersAdmin
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 member_fields = [field.name for field in models.Member._meta.get_fields()]
 
@@ -31,7 +31,7 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
     queryset = models.Member.objects.all()
 
-    def create_member(self, serializer, user: User):
+    def create_member(self, serializer, user):
         """Create member and synchronize with users module."""
         if Member.objects.filter(user_id=user.user_id).exists():
             raise PermissionDenied("User is already registered as a member.")
@@ -87,7 +87,7 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
     def perform_destroy(self, instance):
         """Delete member and remove members_user role from auth service."""
         user = User.objects.get(user_id=instance.user_id)
-        user.roles.remove(Role.objects.get_or_create(name="members_user")[0])
+        # TODO user.roles.remove(Role.objects.get_or_create(name="members_user")[0])
         user.save()
         instance.delete()
 

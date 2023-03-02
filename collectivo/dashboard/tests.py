@@ -1,10 +1,10 @@
 """Tests of the members API."""
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.users.clients import AuthClient
 
 from .models import DashboardTile
 

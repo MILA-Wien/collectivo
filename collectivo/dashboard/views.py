@@ -1,7 +1,10 @@
 """Views of the dashboard extension."""
 from django.db.models import Q
 from rest_framework import viewsets
-from collectivo.users.permissions import IsSuperuser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+
+from collectivo.core.permissions import IsSuperuser
+
 from . import models, serializers
 
 

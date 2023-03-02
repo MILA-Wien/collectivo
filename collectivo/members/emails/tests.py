@@ -1,16 +1,19 @@
 """Test the features of the emails API."""
+from unittest.mock import patch
+
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
-from collectivo.users.clients import AuthClient
-from collectivo.users.userinfo import UserInfo
+from rest_framework.test import APIClient
+
 from collectivo.members.models import Member
-from django.core import mail
-from .models import EmailCampaign, EmailAutomation
-from unittest.mock import patch
 from collectivo.members.tests.test_members import (
-    TEST_MEMBER_POST,
     MEMBERS_CREATE_URL,
+    TEST_MEMBER_POST,
 )
+from collectivo.users.userinfo import UserInfo
+
+from .models import EmailAutomation, EmailCampaign
 
 TEMPLATES_URL = reverse("collectivo:collectivo.members.emails:template-list")
 CAMPAIGNS_URL = reverse("collectivo:collectivo.members.emails:campaign-list")

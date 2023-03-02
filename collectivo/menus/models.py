@@ -2,7 +2,6 @@
 from django.db import models
 
 from collectivo.extensions.models import Extension
-from collectivo.users.models import Role
 from collectivo.utils.models import RegisterMixin
 
 
@@ -65,13 +64,10 @@ class MenuItem(models.Model, RegisterMixin):
         name,
         menu: str | tuple | Menu = None,
         parent_item=None,
-        required_role: str | Role = None,
+        required_role: str = None,
         **menu_item_kwargs,
     ):
         """Register a new menu item."""
-        if isinstance(required_role, str):
-            required_role = Role.objects.get_or_create(name=required_role)[0]
-
         item = super().register(
             name=name, required_role=required_role, **menu_item_kwargs
         )

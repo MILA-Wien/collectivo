@@ -4,9 +4,9 @@ from collections import OrderedDict
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.fields import empty
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from collectivo.users.permissions import IsAuthenticated
 from collectivo.version import __version__
 
 # TODO Default does not work yet

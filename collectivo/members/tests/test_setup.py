@@ -1,11 +1,11 @@
 """Tests of the members extension."""
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.users.clients import AuthClient
 from collectivo.users.models import User
 from collectivo.users.tests.utils import create_test_user
 

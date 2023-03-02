@@ -1,14 +1,13 @@
-"""Views of the user experience module."""
+"""Views of the menus extension."""
 import logging
 
-from django.db.models import Q
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from collectivo.extensions.models import Extension
-from collectivo.users.permissions import IsAuthenticated, IsSuperuser
+from collectivo.core.permissions import IsSuperuser
 
 from . import models, serializers
 

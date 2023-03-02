@@ -1,8 +1,7 @@
 """Tests of the extensions extension."""
 from django.test import TestCase
 from django.urls import reverse
-
-from collectivo.users.clients import AuthClient
+from rest_framework.test import APIClient
 
 from .models import Extension
 

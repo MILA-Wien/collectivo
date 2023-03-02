@@ -1,10 +1,11 @@
 """Tests for the core extension."""
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
-from collectivo.users.clients import AuthClient
 from collectivo.version import __version__
 
 
@@ -25,9 +26,12 @@ class CoreApiTests(TestCase):
 
     def setUp(self):
         """Set up the test client."""
-        self.client = AuthClient.as_superuser()
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(username="testuser")
+        self.client.force_authenticate(self.user)
 
     def testGetVersion(self):
         """Test getting current version is correct."""
         res = self.client.get(reverse("collectivo:collectivo.core:version"))
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["version"], __version__)

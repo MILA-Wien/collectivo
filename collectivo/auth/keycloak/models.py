@@ -64,13 +64,11 @@ class KeycloakUser(models.Model):
 
 def update_keycloak_user(sender, instance, created, **kwargs):
     """Create or update related keycloak user when a django user is changed."""
-    if created:
-        try:
-            instance.keycloak
-        except KeycloakUser.DoesNotExist:
+    try:
+        instance.keycloak.save()
+    except KeycloakUser.DoesNotExist:
+        if instance.email:
             KeycloakUser.objects.create(user=instance)
-    else:
-        instance.keycloak.save()  # Trigger synchronization
 
 
 def delete_keycloak_user(sender, instance, **kwargs):

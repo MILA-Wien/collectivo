@@ -151,9 +151,17 @@ The `input_type` is currently generated automatically from the `field_type` and 
 
 ## Core extensions
 
+### Core (collectivo.core)
+
+Provides core functionalities of keycloak, including default database entries.
+
 ### Keycloak (collectivo.auth.keycloak)
 
 Enable authentication with [keycloak](https://www.keycloak.org/). When using this extension, keycloak access tokens can be used to authenticate requests and user data is synchronized between collectivo and keycloak.
+
+The extension requires the following packages:
+
+- `python-keycloak`
 
 To install the extension, add `collectivo.auth.keycloak` to your installed apps add keycloak as a default authentication class (see [Authentication - Django REST framework](https://www.django-rest-framework.org/api-guide/authentication/)):
 

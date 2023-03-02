@@ -1,10 +1,10 @@
 """Test the menus extension."""
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
-from collectivo.users.clients import AuthClient
 
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 MENUS_URL = reverse("collectivo:collectivo.menus:menu-list")
