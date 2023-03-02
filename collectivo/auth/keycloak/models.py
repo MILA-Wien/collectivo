@@ -53,7 +53,7 @@ class KeycloakUser(models.Model):
             last_name=self.user.last_name
             if keycloak_user["lastName"] != self.user.last_name
             else None,
-            email=self.email
+            email=self.user.email
             if keycloak_user["email"] != self.user.email
             else None,
             email_verified=False

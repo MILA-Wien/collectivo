@@ -1,12 +1,15 @@
 """Tests for the core extension."""
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.contrib.auth.models import Group
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
 from collectivo.version import __version__
+
+from .permissions import HasGroupPermission, IsSuperuser
 
 
 class CoreSetupTests(TestCase):
@@ -30,8 +33,33 @@ class CoreApiTests(TestCase):
         self.user = get_user_model().objects.create_user(username="testuser")
         self.client.force_authenticate(self.user)
 
-    def testGetVersion(self):
+    def test_get_version(self):
         """Test getting current version is correct."""
         res = self.client.get(reverse("collectivo:collectivo.core:version"))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["version"], __version__)
+
+    def test_is_superuser_permission(self):
+        """Test that the superuser permission works correctly."""
+        request = RequestFactory().get("/")
+        request.user = self.user
+        self.assertFalse(IsSuperuser().has_permission(request, None))
+        group = Group.objects.get(name="collectivo.core.admin")
+        self.user.groups.add(group)
+        self.assertTrue(IsSuperuser().has_permission(request, None))
+
+    def test_has_group_permission(self):
+        """Test that the has group permission works correctly."""
+
+        class SomeGroupView:
+            """View that requires some group."""
+
+            required_groups = ["some group"]
+
+        request = RequestFactory().get("/")
+        request.user = self.user
+        view = SomeGroupView()
+        self.assertFalse(HasGroupPermission().has_permission(request, view))
+        group = Group.objects.create(name="some group")
+        self.user.groups.add(group)
+        self.assertTrue(HasGroupPermission().has_permission(request, view))

@@ -3,6 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from collectivo.utils.tests import create_testuser
+
 from .models import Extension
 
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
@@ -13,7 +15,9 @@ class ExtensionsTests(TestCase):
 
     def setUp(self):
         """Prepare API client and a test extension."""
-        self.client = AuthClient.as_superuser()
+        self.client = APIClient()
+        self.user = create_testuser(superuser=True)
+        self.client.force_authenticate(self.user)
         self.name = "my_extension"
         self.setup_payload = {"name": self.name}
         res = self.client.post(EXTENSIONS_URL, self.setup_payload)

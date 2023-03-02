@@ -1,7 +1,11 @@
 """Tests for the keycloak extension."""
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
-from keycloak.exceptions import KeycloakDeleteError, KeycloakGetError
+from keycloak.exceptions import (
+    KeycloakDeleteError,
+    KeycloakGetError,
+    KeycloakPutError,
+)
 from rest_framework.test import APIClient
 
 from collectivo.version import __version__
@@ -20,16 +24,13 @@ TEST_USER = {
 }
 
 
-def delete_keycloak_test_user():
+def delete_keycloak_test_user(email=TEST_USER["email"]):
     """Delete test user from keycloak."""
     keycloak = KeycloakAPI()
     try:
-        keycloak.delete_user_by_email(TEST_USER["email"])
+        keycloak.delete_user_by_email(email)
     except KeycloakDeleteError:
         pass
-
-
-# TODO: Email verification test
 
 
 class KeycloakAuthenticationTests(TestCase):
@@ -112,6 +113,35 @@ class KeycloakSynchronizationTests(TestCase):
         self.user.save()
         user = self.keycloak.admin.get_user(self.user.keycloak.uuid)
         self.assertEqual(user["firstName"], "new name")
+
+    def test_updating_email_sets_verified_to_false(self):
+        """Test that updating a user's email sets verified to false."""
+        new_mail = "another_email@example.com"
+        delete_keycloak_test_user(new_mail)
+        self.keycloak.admin.update_user(
+            self.user.keycloak.uuid, {"emailVerified": True}
+        )
+        user = self.keycloak.admin.get_user(self.user.keycloak.uuid)
+        self.assertTrue(user["emailVerified"])
+        self.user.email = new_mail
+        self.user.save()
+        user = self.keycloak.admin.get_user(self.user.keycloak.uuid)
+        self.assertFalse(user["emailVerified"])
+
+    def test_updating_user_blocked_by_keycloak(self):
+        """Test that updating a user can be blocked by keycloak."""
+        other_mail = "other_mail@example.com"
+        delete_keycloak_test_user(other_mail)
+        self.keycloak = KeycloakAPI()
+        self.keycloak_user_id = self.keycloak.create_user(
+            first_name="test2",
+            last_name="user2",
+            email=other_mail,
+            email_verified=True,
+        )
+        self.user.email = other_mail  # Already exists on keycloak
+        with self.assertRaises(KeycloakPutError):
+            self.user.save()
 
     def test_deleting_user_deletes_keycloak_user(self):
         """Test that deleting a user deletes a keycloak user."""

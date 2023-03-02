@@ -8,11 +8,13 @@ app_name = "collectivo"
 
 urlpatterns = []
 
+# Include url patterns from all collectivo extensions
 for app in settings.INSTALLED_APPS:
     if app.startswith("collectivo") and app != "collectivo":
         pattern = path("", include(f"{app}.urls"))
         urlpatterns.append(pattern)
 
+# Add debug patterns
 if settings.DEBUG:
     urlpatterns += [
         # Access static files

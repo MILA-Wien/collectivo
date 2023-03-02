@@ -31,13 +31,13 @@ class MenuSerializer(serializers.ModelSerializer):
     def get_items(self, instance: Menu):
         """Return the items of the menu.
 
-        Items are filtered based on required roles and sorted based on order.
+        Items are filtered based on required group and sorted based on order.
         """
         items = instance.items.all().order_by("order")
         request = self.context.get("request", None)
         if request:
             items = items.filter(
-                Q(required_role__isnull=True)
-                | Q(required_role__in=request.auth_user.roles.all())
+                Q(requires_group__isnull=True)
+                | Q(requires_group__in=request.user.groups.all())
             )
         return MenuItemSerializer(items, many=True).data

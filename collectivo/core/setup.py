@@ -1,4 +1,6 @@
 """Setup function of the core extension."""
+from django.contrib.auth.models import Group
+
 from collectivo.core.apps import CoreConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
@@ -12,6 +14,10 @@ def setup(sender, **kwargs):
         name=CoreConfig.name.split(".")[-1],
         description=CoreConfig.description,
         version=__version__,
+    )
+
+    Group.objects.get_or_create(
+        name="collectivo.core.admin",
     )
 
     Menu.register(name="main", extension=core_extension)

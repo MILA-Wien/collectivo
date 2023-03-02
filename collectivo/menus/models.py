@@ -1,4 +1,5 @@
 """Models of the menus extension."""
+from django.contrib.auth.models import Group
 from django.db import models
 
 from collectivo.extensions.models import Extension
@@ -32,7 +33,9 @@ class MenuItem(models.Model, RegisterMixin):
 
     label = models.CharField(max_length=255)
     items = models.ManyToManyField("self")
-    requires_permission = models.CharField(max_length=255)
+    requires_group = models.ForeignKey(
+        "auth.Group", on_delete=models.CASCADE, null=True
+    )
 
     target = models.CharField(
         max_length=50,

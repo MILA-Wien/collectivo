@@ -1,10 +1,12 @@
 """Tests of the members API."""
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
+from collectivo.utils.tests import create_testuser
 
 from .models import DashboardTile
 
@@ -32,12 +34,12 @@ class DashboardPublicAPITests(TestCase):
 
     def setUp(self):
         """Prepare test case."""
-        self.client = AuthClient()
+        self.client = APIClient()
 
     def test_access_menu_api_fails(self):
         """Test that menu API cannot be accessed by a public user."""
         res = self.client.get(TILES_URL)
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 401)
 
 
 class DashboardPrivateAPITests(TestCase):
@@ -45,7 +47,9 @@ class DashboardPrivateAPITests(TestCase):
 
     def setUp(self):
         """Prepare test case."""
-        self.client = AuthClient.as_pseudo_user()
+        self.client = APIClient()
+        self.user = create_testuser()
+        self.client.force_authenticate(self.user)
 
     def test_get_tile_fails(self):
         """Test that users can view tiles."""
@@ -55,6 +59,7 @@ class DashboardPrivateAPITests(TestCase):
     def test_post_tile_fails(self):
         """Test users cannot edit tiles."""
         res = self.client.post(TILES_URL)
+        print(res.data)
         self.assertEqual(res.status_code, 403)
 
 
@@ -64,10 +69,13 @@ class DashboardAPITests(TestCase):
     def setUp(self):
         """Prepare test case."""
         # Set up client with authenticated user
-        self.client = AuthClient.as_pseudo_user(
-            roles=["superuser", "test_role", "test_role2"]
+        self.client = APIClient()
+        self.user = create_testuser(
+            groups=["superuser", "test_group", "test_group2"]
         )
-
+        self.client.force_authenticate(self.user)
+        self.test_group = Group.objects.get_or_create(name="test_group")[0]
+        self.wrong_group = Group.objects.get_or_create(name="wrong_group")[0]
         # Register a test extension
         self.ext_name = "my_extension"
         self.client.post(EXTENSIONS_URL, {"name": self.ext_name})
@@ -87,30 +95,14 @@ class DashboardAPITests(TestCase):
 
     def test_tile_correct_role(self):
         """Test tile should appear for user with required role."""
-        DashboardTile.register(**self.tile, required_role="test_role")
+        DashboardTile.register(**self.tile, requires_group=self.test_group)
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertTrue("my_tile" in items)
 
     def test_tile_wrong_role(self):
         """Test menuitem should not appear for user without required role."""
-        DashboardTile.register(**self.tile, required_role="wrong_role")
-        res = self.client.get(TILES_URL)
-        items = [i["name"] for i in res.data]
-        self.assertFalse("my_tile" in items)
-
-    def test_tile_blocked_role(self):
-        """Test menuitem should not appear for user with blocked role."""
-        DashboardTile.register(**self.tile, blocked_role="test_role")
-        res = self.client.get(TILES_URL)
-        items = [i["name"] for i in res.data]
-        self.assertFalse("my_tile" in items)
-
-    def test_tile_blocked_role_2(self):
-        """Test menuitem should not appear for user with blocked role."""
-        DashboardTile.register(
-            **self.tile, blocked_role="test_role", required_role="test_role2"
-        )
+        DashboardTile.register(**self.tile, requires_group=self.wrong_group)
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)

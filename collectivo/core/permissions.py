@@ -1,5 +1,23 @@
 """Core permissions of collectivo."""
+# Thanks to https://stackoverflow.com/a/19429199/14396787
+from django.contrib.auth.models import Group
+from rest_framework import permissions
 from rest_framework.permissions import BasePermission
+
+
+def is_in_group(user, group_name: str) -> bool | None:
+    """
+    Takes a user and a group name,
+    and returns `True` if the user is in that group.
+    """
+    try:
+        return (
+            Group.objects.get(name=group_name)
+            .user_set.filter(id=user.id)
+            .exists()
+        )
+    except Group.DoesNotExist:
+        return None
 
 
 class IsSuperuser(BasePermission):
@@ -7,4 +25,37 @@ class IsSuperuser(BasePermission):
 
     def has_permission(self, request, view):
         """Check if user is superuser."""
-        return request.user.has_perm("collectivo.core.admin")
+        return is_in_group(request.user, "collectivo.core.admin")
+
+
+class IsAuthenticatedToReadOrIsSuperuser(BasePermission):
+    """Ensure user is authenticated to read or is superuser."""
+
+    def has_permission(self, request, view):
+        """Check if permission is given."""
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return is_in_group(request.user, "collectivo.core.admin")
+
+
+class HasGroupPermission(permissions.BasePermission):
+    """Ensure user is in required groups."""
+
+    def has_permission(self, request, view):
+        """Check if user is in required groups."""
+        # Get a mapping of methods -> required group.
+        required_groups = getattr(view, "required_groups", [])
+
+        if isinstance(required_groups, dict):
+            # Determine the required groups for this particular request method.
+            required_groups = required_groups.get(request.method, [])
+
+        # Return True if the user has all the required groups or is superuser.
+        return all(
+            [
+                is_in_group(request.user, group_name)
+                if group_name != "__all__"
+                else True
+                for group_name in required_groups
+            ]
+        ) or is_in_group(request.user, "collectivo.core.admin")

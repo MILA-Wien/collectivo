@@ -19,7 +19,9 @@ class DashboardTile(models.Model, RegisterMixin):
     )
     component_name = models.CharField(max_length=255)
     order = models.FloatField(default=1)
-    requires_permission = models.CharField(max_length=255)
+    requires_group = models.ForeignKey(
+        "auth.Group", on_delete=models.CASCADE, null=True
+    )
 
     def __str__(self):
         """Return string representation of the model."""

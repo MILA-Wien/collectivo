@@ -9,10 +9,16 @@ from pathlib import Path
 
 from corsheaders.defaults import default_headers
 
-from collectivo.exceptions import CollectivoError
 from collectivo.version import __version__
 
 from .utils import get_env_bool, string_to_list
+
+
+class CollectivoError(Exception):
+    """Custom error type for collectivo."""
+
+    pass
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
