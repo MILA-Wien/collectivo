@@ -63,10 +63,9 @@ class Member(models.Model):
     """A member of the collective."""
 
     # Account
-    user_id = models.UUIDField(null=True, unique=True)
-    email = models.EmailField(null=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    user = models.OneToOneField(
+        "auth.User", primary_key=True, on_delete=models.CASCADE
+    )
 
     # Personal data
     person_type = models.CharField(

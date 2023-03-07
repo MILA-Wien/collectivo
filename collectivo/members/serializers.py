@@ -1,8 +1,10 @@
 """Serializers of the members extension."""
+import copy
+
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
+
 from . import models
-import copy
 
 conditions = {
     "sepa": {
@@ -363,6 +365,11 @@ class MemberProfileSerializer(MemberSerializer):
 
 class MemberSummarySerializer(MemberSerializer):
     """Serializer for admins to get member summaries."""
+
+    id = serializers.IntegerField(source="user.id")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+    email = serializers.EmailField(source="user.email")
 
     class Meta:
         """Serializer settings."""

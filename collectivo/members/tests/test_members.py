@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
-from collectivo.users.models import Role, User
+from collectivo.utils.tests import create_testuser
 
 from ..models import Member
 
@@ -65,12 +65,12 @@ class MembersPublicApiTests(TestCase):
     def test_auth_required_for_members(self):
         """Test that authentication is required for /members."""
         res = self.client.get(MEMBERS_URL)
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 401)
 
     def test_auth_required_for_profile(self):
         """Test that authentication is required for /profile."""
         res = self.client.get(PROFILE_URL)
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 401)
 
 
 class MembersRegistrationTests(TestCase):
@@ -78,7 +78,9 @@ class MembersRegistrationTests(TestCase):
 
     def setUp(self):
         """Prepare client and create test user."""
-        self.client, self.user = AuthClient.as_user()
+        self.client = APIClient()
+        self.user = create_testuser(TEST_USER)
+        self.client.force_authenticate(self.user)
 
     def test_cannot_access_profile(self):
         """Test that a user cannot access profile if they are not a member."""
@@ -187,27 +189,28 @@ class MembersRegistrationTests(TestCase):
 #         self.assertEqual(res.data["address_street"]["required"], True)
 
 
-# class PrivateMemberApiTestsForAdmins(TestCase):
-#     """Test the privatly available members API for admins."""
+class MembersAdminTests(TestCase):
+    """Test the privatly available members API for admins."""
 
-#     def setUp(self):
-#         """Prepare client, extension, & micro-frontend."""
-#         self.client = AuthClient()
-#         Member.objects.all().delete()
-#         user = UserInfo(
-#             roles=["members_admin"],
-#             is_authenticated=True,
-#         )
-#         self.client.force_authenticate(user)
-#         self.ids = []
-#         self.keycloak = get_auth_manager()
+    def setUp(self):
+        """Prepare client, extension, & micro-frontend."""
+        self.client = APIClient()
+        self.user = create_testuser(superuser=True)
+        self.client.force_authenticate(self.user)
+        Member.objects.all().delete()
 
-#     def tearDown(self) -> None:
-#         """Delete test accoutns."""
-#         for i in [0, 2, 1]:
-#             user_id = self.keycloak.get_user_id(str(i) + "@example.com")
-#             if user_id is not None:
-#                 self.keycloak.delete_user(user_id)
+    def test_get_members(self):
+        """Get the summary of members."""
+        res = self.client.get(MEMBERS_URL)
+        print(res.data)
+
+    # def tearDown(self) -> None:
+    #     """Delete test accoutns."""
+    #     for i in [0, 2, 1]:
+    #         user_id = self.keycloak.get_user_id(str(i) + "@example.com")
+    #         if user_id is not None:
+    #             self.keycloak.delete_user(user_id)
+
 
 #     def create_members(self):
 #         """Create an unordered set of members for testing."""
@@ -321,3 +324,19 @@ class MembersRegistrationTests(TestCase):
 #         userinfo = self.keycloak.get_user(user_id)
 #         self.assertEqual(userinfo["firstName"], payload["first_name"])
 #         self.assertEqual(userinfo["emailVerified"], False)
+
+# def test_register_member_assigns_members_user_role(self):
+#     """Test that new members receive the auth role 'members_user'."""
+#     # Create a new member
+#     res = self.user_client.post(REGISTER_URL, TEST_MEMBER_POST)
+#     self.assertEqual(res.status_code, 201)
+#     _, data = self.get_token(self.user_email)
+#     self.assertIn("members_user", data["realm_access"]["roles"])
+
+#     # Delete the member again
+#     res = self.client.delete(
+#         reverse(MEMBER_URL_LABEL, args=[res.data["id"]])
+#     )
+#     self.assertEqual(res.status_code, 204)
+#     _, data = self.get_token(self.user_email)
+#     self.assertNotIn("members_user", data["realm_access"]["roles"])

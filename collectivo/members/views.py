@@ -122,7 +122,7 @@ class MemberProfileViewSet(
     def get_object(self):
         """Return member object of the currently authenticated user."""
         try:
-            return self.queryset.get(user_id=self.request.userinfo.user_id)
+            return self.queryset.get(user=self.request.user)
         except Member.DoesNotExist:
             raise PermissionDenied("User is not registered as a member.")
 
