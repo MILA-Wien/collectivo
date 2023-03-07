@@ -159,10 +159,10 @@ class ShiftViewSet(viewsets.ModelViewSet):
         # !! Assumes both parameters are always given, if not error occurs !!
         min_date = request.query_params.get("shift_starting_date__gte")
         if not min_date:
-            raise ValidationError("Missing attribute 'shift_starting_date'")
+            raise ValidationError("Missing attribute 'shift_starting_date__gte'")
         max_date = request.query_params.get("shift_starting_date__lte")
         if not max_date:
-            raise ValidationError("Missing attribute 'shift_ending_date'")
+            raise ValidationError("Missing attribute 'shift_starting_date__lte'")
         # Get all regular shifts
         queryset_regular = models.Shift.objects.filter(
             shift_type="regular",
