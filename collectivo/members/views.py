@@ -1,127 +1,23 @@
 """Views of the members extension."""
 import logging
-from rest_framework import viewsets, mixins
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from collectivo.auth.permissions import IsAuthenticated
-from collectivo.utils import get_auth_manager
-from collectivo.views import SchemaMixin
-from .permissions import IsMembersAdmin
-from . import models, serializers
-from .models import Member
+
 from django.utils.timezone import localdate
 from keycloak.exceptions import KeycloakDeleteError
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from collectivo.auth.permissions import IsAuthenticated
+from collectivo.filters import get_filterset_fields
+from collectivo.utils import get_auth_manager
+from collectivo.views import SchemaMixin
+
+from . import models, serializers
+from .models import Member
+from .permissions import IsMembersAdmin
 
 logger = logging.getLogger(__name__)
 
 member_fields = [field.name for field in models.Member._meta.get_fields()]
-
-filterset_fields = {
-    "user_id": ["exact"],
-    "email": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "first_name": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "last_name": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "person_type": ["exact", "contains"],
-    "gender": ["exact"],
-    "address_street": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_number": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_stair": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_door": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_postcode": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_city": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "address_country": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "phone": [
-        "exact",
-        "icontains",
-        "istartswith",
-        "iendswith",
-        "contains",
-        "startswith",
-        "endswith",
-    ],
-    "children": ["exact", "gt", "gte", "lt", "lte"],
-    "coshopper": ["exact", "gt", "gte", "lt", "lte"],
-}
 
 
 class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
@@ -218,9 +114,11 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
         # Send welcome mail
         try:
-            from collectivo.members.emails.models import EmailAutomation
+            from collectivo.members.emails.models import (
+                EmailAutomation,
+                EmailCampaign,
+            )
             from collectivo.members.emails.views import EmailCampaignViewSet
-            from collectivo.members.emails.models import EmailCampaign
             from collectivo.utils import register_viewset
 
             automations = EmailAutomation.objects.filter(trigger="new_member")
@@ -301,7 +199,7 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
 
     serializer_class = serializers.MemberSummarySerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
+    filterset_fields = get_filterset_fields(models.Member)
     ordering_fields = "__all__"
 
 
@@ -320,7 +218,7 @@ class MembersAdminViewSet(
 
     serializer_class = serializers.MemberAdminSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
+    filterset_fields = get_filterset_fields(models.Member)
     ordering_fields = member_fields
 
 
@@ -333,7 +231,7 @@ class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
 
     serializer_class = serializers.MemberAdminCreateSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
+    filterset_fields = get_filterset_fields(models.Member)
     ordering_fields = member_fields
 
     def perform_create(self, serializer):
