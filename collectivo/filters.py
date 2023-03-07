@@ -1,5 +1,17 @@
 """Filter functions for the collectivo app."""
 from django.db import models
+from django.db.models import Lookup
+
+
+class IsNull(Lookup):
+    lookup_name = "ne"
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return lhs in ()
+
 
 _filters = {
     "text": [
@@ -10,10 +22,11 @@ _filters = {
         "contains",
         "startswith",
         "endswith",
+        "isnull",
     ],
-    "number": ["exact", "gt", "gte", "lt", "lte"],
-    "choice": ["exact"],
-    "choices": ["exact", "contains"],
+    "number": ["exact", "gt", "gte", "lt", "lte", "in", "isnull"],
+    "choice": ["exact", "isnull", "in"],
+    "choices": ["exact", "contains", "isnull"],
 }
 
 filters = {
