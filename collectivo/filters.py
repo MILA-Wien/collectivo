@@ -1,17 +1,6 @@
 """Filter functions for the collectivo app."""
 from django.db import models
-from django.db.models import Lookup
-
-
-class IsNull(Lookup):
-    lookup_name = "ne"
-
-    def as_sql(self, compiler, connection):
-        lhs, lhs_params = self.process_lhs(compiler, connection)
-        rhs, rhs_params = self.process_rhs(compiler, connection)
-        params = lhs_params + rhs_params
-        return lhs in ()
-
+from django_filters import FilterSet
 
 _filters = {
     "text": [
@@ -59,7 +48,23 @@ filters = {
 
 def get_filterset_fields(model: models.Model) -> dict:
     """Return a dict of filterset fields for a model."""
+
     return {
         field.name: filters[field.get_internal_type()]
         for field in model._meta.get_fields()
     }
+
+
+def get_filterset_class(model_class: models.Model) -> type:
+    """Return a filterset class for a model."""
+
+    class CustomFilterSet(FilterSet):
+        """A custom filterset class for a model."""
+
+        class Meta:
+            """Meta class for the filterset."""
+
+            model = model_class
+            fields = get_filterset_fields(model_class)
+
+    return CustomFilterSet
