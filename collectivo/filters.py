@@ -10,12 +10,10 @@ _filters = {
         "contains",
         "startswith",
         "endswith",
-        "isnull",
-        "inlist",
     ],
-    "number": ["exact", "gt", "gte", "lt", "lte", "isnull", "inlist"],
-    "choice": ["exact", "isnull", "inlist"],
-    "choices": ["exact", "contains", "isnull", "inlist"],
+    "number": ["exact", "gt", "gte", "lt", "lte"],
+    "choice": ["exact"],
+    "choices": ["exact", "contains"],
 }
 
 filters = {
