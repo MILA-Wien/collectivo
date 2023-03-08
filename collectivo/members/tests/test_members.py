@@ -1,4 +1,6 @@
 """Tests of the members API."""
+from django.contrib.auth import get_user_model
+from django.db.models import signals
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import localdate
@@ -8,8 +10,9 @@ from collectivo.utils.tests import create_testuser
 
 from ..models import Member
 
+User = get_user_model()
+
 MEMBERS_URL = reverse("collectivo:collectivo.members:member-list")
-MEMBERS_CREATE_URL = reverse("collectivo:collectivo.members:create-list")
 MEMBER_URL_LABEL = "collectivo:collectivo.members:member-detail"
 PROFILE_URL = reverse("collectivo:collectivo.members:profile")
 REGISTER_URL = reverse("collectivo:collectivo.members:register")
@@ -199,33 +202,32 @@ class MembersAdminTests(TestCase):
         self.client.force_authenticate(self.user)
         Member.objects.all().delete()
 
+    def create_members(self):
+        """Create an unordered set of members for testing."""
+        signals.post_save.disconnect(
+            sender=User, dispatch_uid="update_keycloak_user"
+        )
+        for i in [0, 2, 1]:
+            user = User.objects.create_user(
+                username=str(i),
+                email=str(i) + "@example.com",
+            )
+            payload = {
+                **TEST_MEMBER_POST,
+                "user": user.id,
+            }
+            self.client.post(MEMBERS_URL, payload)
+
     def test_get_members(self):
         """Get the summary of members."""
         res = self.client.get(MEMBERS_URL)
-        print(res.data)
+        self.assertEqual(res.status_code, 200)
 
-    # def tearDown(self) -> None:
-    #     """Delete test accoutns."""
-    #     for i in [0, 2, 1]:
-    #         user_id = self.keycloak.get_user_id(str(i) + "@example.com")
-    #         if user_id is not None:
-    #             self.keycloak.delete_user(user_id)
+    def test_create_members(self):
+        """Test that admins can create members."""
+        self.create_members()
+        self.assertEqual(len(Member.objects.all()), 3)
 
-
-#     def create_members(self):
-#         """Create an unordered set of members for testing."""
-#         for i in [0, 2, 1]:
-#             payload = {
-#                 **TEST_MEMBER_POST,
-#                 "email": str(i) + "@example.com",
-#                 "first_name": str(i),
-#             }
-#             self.client.post(MEMBERS_CREATE_URL, payload)
-
-#     def test_create_members(self):
-#         """Test that admins can create members."""
-#         self.create_members()
-#         self.assertEqual(len(Member.objects.all()), 3)
 
 #     def test_update_member_admin_fields(self):
 #         """Test that admins can write to admin fields."""
@@ -278,23 +280,6 @@ class MembersAdminTests(TestCase):
 #             [m.id for m in Member.objects.all()][offset : offset + limit],
 #             [m["id"] for m in res.data["results"]],
 #         )
-
-#     def test_auth_sync_as_admin(self):
-#         """Test that auth fields are updated on auth server for /members."""
-#         # Patch the name of a member
-#         res2 = self.client.patch(
-#             reverse(MEMBER_URL_LABEL, args=[self.member_id]),
-#             {"first_name": "new_name"},
-#         )
-#         self.assertEqual(res2.status_code, 200)
-
-#         # Check that new attribute is set on django
-#         member = Member.objects.get(id=self.member_id)
-#         self.assertEqual(getattr(member, "first_name"), "new_name")
-
-#         # Check that new attribute is set on keycloak
-#         userinfo = self.keycloak.get_user(res2.data["user_id"])
-#         self.assertEqual(userinfo["firstName"], "new_name")
 
 #     def test_register_member_assigns_members_user_role(self):
 #         """Test that new members receive the auth role 'members_user'."""

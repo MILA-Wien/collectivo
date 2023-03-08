@@ -82,11 +82,13 @@ def delete_keycloak_user(sender, instance, **kwargs):
 signals.post_save.connect(
     update_keycloak_user,
     sender=get_user_model(),
+    dispatch_uid="update_keycloak_user",
     weak=False,
 )
 
 signals.post_delete.connect(
     delete_keycloak_user,
     sender=get_user_model(),
+    dispatch_uid="delete_keycloak_user",
     weak=False,
 )

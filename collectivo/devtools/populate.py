@@ -1,14 +1,16 @@
 """Populate collectivo & keycloak with test users."""
 import logging
 
+from django.contrib.auth import get_user_model
 from keycloak.exceptions import KeycloakGetError
 
+from collectivo.auth.keycloak.api import KeycloakAPI
 from collectivo.members.models import Member
-from collectivo.members.views import MembersCreateViewSet
+from collectivo.members.views import MembersViewSet
 from collectivo.utils import register_viewset
 
 logger = logging.getLogger(__name__)
-
+User = get_user_model()
 N_TEST_MEMBERS = 3
 
 
@@ -59,7 +61,7 @@ users = [
 def populate_keycloak_with_test_data():
     """Add users, groups, and roles to keycloak."""
     logger.info("Development mode is active. Do not use this in production.")
-    auth_manager = AuthService()
+    auth_manager = KeycloakAPI()
 
     for user in users:
         try:
@@ -67,7 +69,7 @@ def populate_keycloak_with_test_data():
             auth_manager.delete_user(user_id)
             User.objects.filter(email=user["email"]).delete()
             Member.objects.filter(email=user["email"]).delete()
-        except (KeycloakGetError, AuthDeleteError):
+        except KeycloakGetError:
             pass
         user_id = auth_manager.create_user(
             user["firstName"],
@@ -117,4 +119,4 @@ def populate_keycloak_with_test_data():
         if member["email"] == "test_member_02@example.com":
             payload["person_type"] = "legal"
 
-        register_viewset(MembersCreateViewSet, payload=payload)
+        register_viewset(MembersViewSet, payload=payload)

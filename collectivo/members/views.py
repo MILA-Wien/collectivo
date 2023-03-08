@@ -19,11 +19,7 @@ User = get_user_model()
 
 member_fields = [field.name for field in models.Member._meta.get_fields()]
 
-filterset_fields = {
-    "first_name": ("contains",),
-    "last_name": ("contains",),
-    "person_type": ("exact",),
-}
+filterset_fields = {}  # TODO: These are redefined in another branch
 
 
 class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
