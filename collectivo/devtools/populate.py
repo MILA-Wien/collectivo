@@ -4,7 +4,7 @@ import logging
 from keycloak.exceptions import KeycloakGetError
 
 from collectivo.members.models import Member
-from collectivo.members.views import MembersAdminCreateViewSet
+from collectivo.members.views import MembersCreateViewSet
 from collectivo.utils import register_viewset
 
 logger = logging.getLogger(__name__)
@@ -117,4 +117,4 @@ def populate_keycloak_with_test_data():
         if member["email"] == "test_member_02@example.com":
             payload["person_type"] = "legal"
 
-        register_viewset(MembersAdminCreateViewSet, payload=payload)
+        register_viewset(MembersCreateViewSet, payload=payload)

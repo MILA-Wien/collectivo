@@ -52,8 +52,8 @@ for ext in _chosen_extensions:
             f"'{ext}' is not a built-in extension. "
             f"Available extensions are: {_built_in_extensions}."
         )
-    if ext == "members":
-        _sub_extensions.append("members.emails")
+    # if ext == "members":
+    #     _sub_extensions.append("members.emails")
 _chosen_extensions += _sub_extensions
 
 

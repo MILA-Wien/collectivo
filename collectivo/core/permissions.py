@@ -28,7 +28,7 @@ class IsSuperuser(BasePermission):
         return is_in_group(request.user, "collectivo.core.admin")
 
 
-class IsAuthenticatedToReadOrIsSuperuser(BasePermission):
+class ReadOrIsSuperuser(BasePermission):
     """Ensure user is authenticated to read or is superuser."""
 
     def has_permission(self, request, view):
@@ -38,7 +38,7 @@ class IsAuthenticatedToReadOrIsSuperuser(BasePermission):
         return is_in_group(request.user, "collectivo.core.admin")
 
 
-class HasGroupPermission(permissions.BasePermission):
+class HasGroup(BasePermission):
     """Ensure user is in required groups."""
 
     def has_permission(self, request, view):
@@ -59,3 +59,13 @@ class HasGroupPermission(permissions.BasePermission):
                 for group_name in required_groups
             ]
         ) or is_in_group(request.user, "collectivo.core.admin")
+
+
+class ReadOrHasGroup(HasGroup):
+    """Ensure user is authenticated to read or is in required group."""
+
+    def has_permission(self, request, view):
+        """Check if permission is given."""
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return super().has_permission(request, view)

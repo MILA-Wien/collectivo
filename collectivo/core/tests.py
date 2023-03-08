@@ -9,7 +9,7 @@ from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
 from collectivo.version import __version__
 
-from .permissions import HasGroupPermission, IsSuperuser
+from .permissions import HasGroup, IsSuperuser
 
 
 class CoreSetupTests(TestCase):
@@ -59,7 +59,7 @@ class CoreApiTests(TestCase):
         request = RequestFactory().get("/")
         request.user = self.user
         view = SomeGroupView()
-        self.assertFalse(HasGroupPermission().has_permission(request, view))
+        self.assertFalse(HasGroup().has_permission(request, view))
         group = Group.objects.create(name="some group")
         self.user.groups.add(group)
-        self.assertTrue(HasGroupPermission().has_permission(request, view))
+        self.assertTrue(HasGroup().has_permission(request, view))

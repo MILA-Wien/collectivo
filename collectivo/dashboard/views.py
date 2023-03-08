@@ -2,7 +2,7 @@
 from django.db.models import Q
 from rest_framework import viewsets
 
-from collectivo.core.permissions import IsAuthenticatedToReadOrIsSuperuser
+from collectivo.core.permissions import ReadOrIsSuperuser
 
 from . import models, serializers
 
@@ -19,7 +19,7 @@ class DashboardTileViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = serializers.DashboardTileSerializer
-    permission_classes = [IsAuthenticatedToReadOrIsSuperuser]
+    permission_classes = [ReadOrIsSuperuser]
 
     def get_queryset(self):
         """Show only items where user has required group."""

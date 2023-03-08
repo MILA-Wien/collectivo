@@ -9,13 +9,7 @@ from . import views
 app_name = "collectivo.members"
 
 admin_router = DefaultRouter()
-admin_router.register("members", views.MembersAdminViewSet, basename="member")
-admin_router.register(
-    "create", views.MembersAdminCreateViewSet, basename="create"
-)
-admin_router.register(
-    "summary", views.MembersSummaryViewSet, basename="summary"
-)
+admin_router.register("members", views.MembersViewSet, basename="member")
 admin_router.register("groups", views.MemberGroupViewSet, basename="group")
 admin_router.register("skills", views.MemberSkillViewSet, basename="skill")
 admin_router.register("tags", views.MemberTagViewSet, basename="tag")

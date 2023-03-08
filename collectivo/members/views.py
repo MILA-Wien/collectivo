@@ -7,11 +7,11 @@ from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
+from collectivo.core.permissions import HasGroup, ReadOrHasGroup
 from collectivo.utils.views import SchemaMixin
 
 from . import models, serializers
 from .models import Member
-from .permissions import IsMembersAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -127,21 +127,9 @@ class MemberProfileViewSet(
             raise PermissionDenied("User is not registered as a member.")
 
 
-class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
-    """
-    API for admins to get a summary of members.
-
-    Requires the role 'members_admin'.
-    """
-
-    serializer_class = serializers.MemberSummarySerializer
-    permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
-    ordering_fields = member_fields
-
-
-class MembersAdminViewSet(
+class MembersViewSet(
     MemberMixin,
+    mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -154,20 +142,8 @@ class MembersAdminViewSet(
     """
 
     serializer_class = serializers.MemberAdminSerializer
-    permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
-    ordering_fields = member_fields
-
-
-class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
-    """
-    API for admins to create members.
-
-    Requires the role 'members_admin'.
-    """
-
-    serializer_class = serializers.MemberAdminCreateSerializer
-    permission_classes = [IsMembersAdmin]
+    permission_classes = [HasGroup]
+    required_groups = ["collectivo.members.admin"]
     filterset_fields = filterset_fields
     ordering_fields = member_fields
 
@@ -175,7 +151,8 @@ class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
 class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member tags."""
 
-    permission_classes = [IsMembersAdmin]
+    permission_classes = [ReadOrHasGroup]
+    required_groups = ["collectivo.members.admin"]
     serializer_class = serializers.MemberTagSerializer
     queryset = models.MemberTag.objects.all()
 
@@ -187,35 +164,20 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
             )
         return super().perform_destroy(instance)
 
-    def get_permissions(self):
-        """Set permissions for this viewset."""
-        if self.action == "list":
-            return [IsAuthenticated()]
-        return [IsMembersAdmin()]
-
 
 class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member skills."""
 
+    permission_classes = [ReadOrHasGroup]
+    required_groups = ["collectivo.members.admin"]
     serializer_class = serializers.MemberSkillSerializer
     queryset = models.MemberSkill.objects.all()
-
-    def get_permissions(self):
-        """Set permissions for this viewset."""
-        if self.action == "list":
-            return [IsAuthenticated()]
-        return [IsMembersAdmin()]
 
 
 class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage member groups."""
 
-    permission_classes = [IsMembersAdmin]
+    permission_classes = [ReadOrHasGroup]
+    required_groups = ["collectivo.members.admin"]
     serializer_class = serializers.MemberGroupSerializer
     queryset = models.MemberGroup.objects.all()
-
-    def get_permissions(self):
-        """Set permissions for this viewset."""
-        if self.action == "list":
-            return [IsAuthenticated()]
-        return [IsMembersAdmin()]
