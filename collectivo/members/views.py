@@ -245,6 +245,7 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberTagSerializer
+    filterset_fields = get_filterset_fields(models.MemberTag)
     queryset = models.MemberTag.objects.all()
 
     def perform_destroy(self, instance):
