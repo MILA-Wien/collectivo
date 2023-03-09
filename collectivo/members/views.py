@@ -199,7 +199,9 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
 
     serializer_class = serializers.MemberSummarySerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = get_filterset_fields(models.Member)
+    filterset_fields = get_filterset_fields(
+        serializers.MemberSummarySerializer
+    )
     ordering_fields = "__all__"
 
 
@@ -218,7 +220,7 @@ class MembersAdminViewSet(
 
     serializer_class = serializers.MemberAdminSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = get_filterset_fields(models.Member)
+    filterset_fields = get_filterset_fields(serializers.MemberAdminSerializer)
     ordering_fields = member_fields
 
 
@@ -231,7 +233,9 @@ class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
 
     serializer_class = serializers.MemberAdminCreateSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = get_filterset_fields(models.Member)
+    filterset_fields = get_filterset_fields(
+        serializers.MemberAdminCreateSerializer
+    )
     ordering_fields = member_fields
 
     def perform_create(self, serializer):
@@ -245,7 +249,7 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberTagSerializer
-    filterset_fields = get_filterset_fields(models.MemberTag)
+    filterset_fields = get_filterset_fields(serializers.MemberTagSerializer)
     queryset = models.MemberTag.objects.all()
 
     def perform_destroy(self, instance):

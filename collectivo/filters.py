@@ -1,6 +1,7 @@
 """Filter functions for the collectivo app."""
 from django.db import models
 from django_filters import FilterSet
+from rest_framework import serializers
 
 _filters = {
     "text": [
@@ -18,40 +19,35 @@ _filters = {
     "choices": ["exact", "contains", "isnull"],
 }
 
+# Match https://www.django-rest-framework.org/api-guide/fields/
 filters = {
-    "BigAutoField": _filters["number"],
-    "UUIDField": _filters["text"],
-    "CharField": _filters["text"],
-    "ForeignKey": _filters["choice"],
-    "DateField": _filters["number"],
-    "IntegerField": _filters["number"],
-    "TextField": _filters["text"],
-    "ManyToManyField": _filters["choices"],
-    "EmailField": _filters["text"],
     "BooleanField": _filters["choice"],
-    "DecimalField": _filters["number"],
-    "FloatField": _filters["number"],
-    "PositiveIntegerField": _filters["number"],
-    "PositiveSmallIntegerField": _filters["number"],
-    "SmallIntegerField": _filters["number"],
-    "TimeField": _filters["number"],
-    "URLField": _filters["text"],
-    "GenericIPAddressField": _filters["text"],
+    "CharField": _filters["text"],
+    "EmailField": _filters["text"],
+    "RegexField": _filters["text"],
     "SlugField": _filters["text"],
-    "FileField": _filters["text"],
-    "ImageField": _filters["text"],
+    "URLField": _filters["text"],
+    "UUIDField": _filters["text"],
+    "FilePathField": _filters["text"],
+    "IPAddressField": _filters["text"],
+    "IntegerField": _filters["number"],
+    "FloatField": _filters["number"],
+    "DecimalField": _filters["number"],
     "DateTimeField": _filters["number"],
+    "DateField": _filters["number"],
+    "TimeField": _filters["number"],
     "DurationField": _filters["number"],
-    "BinaryField": _filters["text"],
+    "ChoiceField": _filters["choice"],
+    "MultipleChoiceField": _filters["choices"],
 }
 
 
-def get_filterset_fields(model: models.Model) -> dict:
+def get_filterset_fields(serializer: serializers.Serializer) -> dict:
     """Return a dict of filterset fields for a model."""
-
     return {
-        field.name: filters[field.get_internal_type()]
-        for field in model._meta.get_fields()
+        name: filters[type(instance).__name__]
+        for name, instance in serializer().fields.items()
+        if type(instance).__name__ in filters
     }
 
 
