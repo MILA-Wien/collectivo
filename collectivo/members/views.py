@@ -4,10 +4,10 @@ import logging
 from django.contrib.auth import get_user_model
 from django.utils.timezone import localdate
 from rest_framework import mixins, viewsets
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
-from collectivo.core.permissions import HasGroup, ReadOrHasGroup
+from collectivo.core.permissions import HasGroup
 from collectivo.utils.views import SchemaMixin
 
 from . import models, serializers
@@ -44,11 +44,8 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
         # Send welcome mail
         try:
-            from collectivo.members.emails.models import (
-                EmailAutomation,
-                EmailCampaign,
-            )
-            from collectivo.members.emails.views import EmailCampaignViewSet
+            from collectivo.emails.models import EmailAutomation, EmailCampaign
+            from collectivo.emails.views import EmailCampaignViewSet
             from collectivo.utils import register_viewset
 
             automations = EmailAutomation.objects.filter(trigger="new_member")
@@ -71,20 +68,11 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
             # Email Module not installed
             pass
 
-    def perform_update(self, serializer):
-        """Update member and synchronize user data with auth service."""
-        user = User.objects.get(user_id=serializer.instance.user_id)
-        user.first_name = serializer.validated_data["first_name"]
-        user.last_name = serializer.validated_data["last_name"]
-        user.email = serializer.validated_data["email"]
-        user.save()
-        serializer.save()
-
     def perform_destroy(self, instance):
         """Delete member and remove members_user role from auth service."""
-        user = User.objects.get(user_id=instance.user_id)
-        # TODO user.roles.remove(Role.objects.get_or_create(name="members_user")[0])
-        user.save()
+        # TODO instance.user.roles.remove(Role.objects.get_or_create
+        # (name="members_user")[0])
+        # instance.user.save()
         instance.delete()
 
 
@@ -141,39 +129,4 @@ class MembersViewSet(
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]
     filterset_fields = filterset_fields
-    ordering_fields = member_fields
-
-
-class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage member tags."""
-
-    permission_classes = [ReadOrHasGroup]
-    required_groups = ["collectivo.members.admin"]
-    serializer_class = serializers.MemberTagSerializer
-    queryset = models.MemberTag.objects.all()
-
-    def perform_destroy(self, instance):
-        """Prevent deletion if assigned to members."""
-        if instance.member_set.all().exists():
-            raise ValidationError(
-                "Cannot delete tag that is assigned to members."
-            )
-        return super().perform_destroy(instance)
-
-
-class MemberSkillViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage member skills."""
-
-    permission_classes = [ReadOrHasGroup]
-    required_groups = ["collectivo.members.admin"]
-    serializer_class = serializers.MemberSkillSerializer
-    queryset = models.MemberSkill.objects.all()
-
-
-class MemberGroupViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage member groups."""
-
-    permission_classes = [ReadOrHasGroup]
-    required_groups = ["collectivo.members.admin"]
-    serializer_class = serializers.MemberGroupSerializer
-    queryset = models.MemberGroup.objects.all()
+    ordering_fields = member_fields + ["user__first_name", "user__last_name"]

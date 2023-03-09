@@ -1,32 +1,43 @@
 """Models of the members extension."""
 from django.db import models
 
-
-class MemberTag(models.Model):
-    """A tag that can be assigned to members."""
-
-    label = models.CharField(max_length=255, unique=True)
-    built_in = models.BooleanField(default=False, editable=False)
-
-    def __str__(self):
-        """Return string representation."""
-        return self.label
+# --------------------------------------------------------------------------- #
+# Membership types ---------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 
-class MemberGroup(models.Model):
-    """A group that can be assigned to members."""
+class MembershipType(models.Model):
+    """A type of membership. E.g. in a specific organisation."""
 
     label = models.CharField(max_length=255, unique=True)
 
-    def __str__(self):
-        """Return string representation."""
-        return self.label
+    has_shares = models.BooleanField(default=False)
+    shares_price = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    shares_number_custom = models.BooleanField(default=False)
+    shares_number_custom_min = models.IntegerField(null=True, blank=True)
+    shares_number_standard = models.IntegerField(null=True, blank=True)
+    shares_number_social = models.IntegerField(null=True, blank=True)
 
+    has_fees = models.BooleanField(default=False)
+    fees_custom = models.BooleanField(default=False)
+    fees_custom_min = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    fees_standard = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    fees_social = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
 
-class MemberSkill(models.Model):
-    """A skill that can be assigned to members."""
+    has_card = models.BooleanField(default=False)
 
-    label = models.CharField(max_length=255, unique=True)
+    comembership_of = models.ForeignKey(
+        "MembershipType", null=True, blank=True, on_delete=models.CASCADE
+    )
+    comembership_max = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         """Return string representation."""
@@ -34,89 +45,61 @@ class MemberSkill(models.Model):
 
 
 class MembershipSubtype(models.Model):
-    """A sub type of membership. E.g. active or passive member."""
+    """A subtype of a membership type. E.g. active or passive member."""
 
     label = models.CharField(max_length=255, unique=True)
+    type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
 
     def __str__(self):
         """Return string representation."""
         return self.label
 
 
-class MemberCard(models.Model):
-    """A membership card that can be assigned to members."""
-
-    date_created = models.DateField()
-    active = models.BooleanField(default=False)
-
-
-# TODO: MAKE THIS INTO A GENERIC MEMBERSHIP??
-
-
-class CoMemberType(models.Model):
-    """A type of co-member that can be assigned to a membership type."""
-
-    label = models.CharField(max_length=255, unique=True)
-    max_members = models.IntegerField(null=True, blank=True)
-    has_card = models.BooleanField(default=False)
-
-
-class CoMembers(models.Model):
-    """A co-member that can be assigned to a membership."""
-
-    type = models.ForeignKey("CoMembershipType", on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField(null=True, blank=True)
-    birth_date = models.DateField(null=True)
-
-    # Optional depending on CoMemberType
-    card = models.ForeignKey(
-        "MemberCard", null=True, blank=True, on_delete=models.SET_NULL
-    )
-
-
-class MembershipType(models.Model):
-    """A type of membership. E.g. in a specific organisation."""
-
-    label = models.CharField(max_length=255, unique=True)
-    subtypes = models.ManyToManyField("MembershipSubType", blank=True)
-    comemberships = models.ManyToManyField("CoMembershipType", blank=True)
-
-    has_shares = models.BooleanField(default=False)
-    shares_price = models.DecimalField()
-
-    has_fees = models.BooleanField(default=False)
-    fees_custom = models.BooleanField(default=False)
-    fees_price = models.DecimalField(null=True, blank=True)  # If not custom
-    fees_price_min = models.DecimalField(null=True, blank=True)  # If custom
-
-    has_card = models.BooleanField(default=False)
-
-    def __str__(self):
-        """Return string representation."""
-        return self.label
+# --------------------------------------------------------------------------- #
+# Memberships --------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 
 class Membership(models.Model):
     """A membership of a member."""
 
+    member = models.ForeignKey("Member", on_delete=models.CASCADE)
+    number = models.IntegerField()
+    active = models.BooleanField(default=False)
     started = models.DateField(null=True, blank=True)
     cancelled = models.DateField(null=True, blank=True)
     ended = models.DateField(null=True, blank=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
-    subtype = models.ForeignKey("MembershipSubtype", on_delete=models.CASCADE)
+    subtype = models.ForeignKey(
+        "MembershipSubtype", null=True, blank=True, on_delete=models.CASCADE
+    )
 
     # Optional depending on membership type
     shares = models.IntegerField(null=True, blank=True)
-    fees = models.DecimalField(null=True, blank=True)
-    comembers = models.ManyToManyField("MemberAddon", blank=True)
-    card = models.ForeignKey(
-        "MemberCard", null=True, blank=True, on_delete=models.SET_NULL
+    fees = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    comembership_of = models.ForeignKey(
+        "Membership", blank=True, null=True, on_delete=models.CASCADE
     )
 
-    # Connection to payments module
-    payments = models.ManyToManyField("payments.Payment", blank=True)
+    # TODO: Connection to payments module
+    # payments = models.ManyToManyField("payments.Payment", blank=True)
+
+
+class MembershipCard(models.Model):
+    """A membership card that can be assigned to members."""
+
+    date_created = models.DateField()
+    active = models.BooleanField(default=False)
+    membership = models.ForeignKey(
+        "Membership", on_delete=models.CASCADE, null=True, blank=True
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Members (which can have multiple memberships) ----------------------------- #
+# --------------------------------------------------------------------------- #
 
 
 class Member(models.Model):
@@ -164,23 +147,9 @@ class Member(models.Model):
     legal_type = models.CharField(max_length=255, null=True, blank=True)
     legal_id = models.CharField(max_length=255, null=True, blank=True)
 
-    # Survey data
-    # TODO: Move to separate model
-    survey_contact = models.TextField(null=True, blank=True)
-    survey_motivation = models.TextField(null=True, blank=True)
-    groups_interested = models.ManyToManyField(
-        "MemberGroup", related_name="groups_interested", blank=True
-    )
-    skills = models.ManyToManyField("MemberSkill", blank=True)
-
-    # Other
-    tags = models.ManyToManyField("MemberTag", blank=True)
-    # TODO remove related name after survey data is moved
-    groups = models.ManyToManyField(
-        "MemberGroup", related_name="groups", blank=True
-    )
-    admin_notes = models.TextField(null=True, blank=True)
+    # Admin data
+    notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
         """Return string representation."""
-        return f"{self.first_name} {self.last_name} ({self.id})"
+        return f"{self.first_name} {self.last_name}"

@@ -1,10 +1,7 @@
 """Setup function for the members extension."""
-from django.conf import settings
-
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.members.apps import MembersConfig
-from collectivo.members.models import MemberGroup, MemberSkill, MemberTag
 from collectivo.menus.models import MenuItem
 from collectivo.version import __version__
 
@@ -71,32 +68,3 @@ def setup(sender, **kwargs):
             "members_profile",
         ]:
             item.delete()
-
-    if settings.DEVELOPMENT:
-        tags = ["Statutes approved", "Public use approved", "Founding event"]
-        for label in tags:
-            MemberTag.objects.get_or_create(label=label)
-        groups = [
-            "Infogespräche",
-            "Sortiment",
-            "Öffentlichkeitsarbeit",
-            "Finanzen",
-            "Genossenschaft",
-            "IT und Digitales",
-            "Events",
-            "Standort",
-            "Minimarkt",
-        ]
-        for label in groups:
-            MemberGroup.objects.get_or_create(label=label)
-        skills = [
-            "Immobilien/Architektur/Planung",
-            "Einzelhandel",
-            "Handwerk (Elektrik, Tischlerei, …)",
-            "Genossenschaft/Partizipation/Organisationsentwicklung",
-            "Kommunikation (Medien, Grafik, Text,…)",
-            "IT/Digitales",
-            "Finanzen (BWL, Buchhaltung,…)",
-        ]
-        for label in skills:
-            MemberSkill.objects.get_or_create(label=label)

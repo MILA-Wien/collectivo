@@ -381,19 +381,12 @@ class MemberSummarySerializer(MemberSerializer):
 class MemberAdminSerializer(MemberSerializer):
     """Serializer for admins to manage members in detail."""
 
-    user__first_name = serializers.CharField(
-        source="user.first_name", read_only=True
-    )
-    user__last_name = serializers.CharField(
-        source="user.last_name", read_only=True
-    )
-    user__email = serializers.EmailField(source="user.email", read_only=True)
-
     class Meta:
         """Serializer settings."""
 
         model = models.Member
         fields = "__all__"
+        read_only_fields = ["user_id"]
 
 
 class MemberAdminCreateSerializer(MemberRegisterSerializer):
@@ -417,3 +410,33 @@ class MemberAdminCreateSerializer(MemberRegisterSerializer):
         if "shares_number" not in attrs:
             raise ParseError("shares_number: This field is required.")
         return attrs
+
+
+class MemberTagSerializer(serializers.ModelSerializer):
+    """Serializer for member tags."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.MemberTag
+        fields = "__all__"
+
+
+class MemberSkillSerializer(serializers.ModelSerializer):
+    """Serializer for member skills."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.MemberSkill
+        fields = "__all__"
+
+
+class MemberGroupSerializer(serializers.ModelSerializer):
+    """Serializer for member groups."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.MemberGroup
+        fields = "__all__"

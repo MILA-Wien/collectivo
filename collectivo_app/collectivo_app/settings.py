@@ -42,7 +42,7 @@ else:
     )
 
 # Choose built-in collectivo extensions from environment
-_built_in_extensions = ["members"]
+_built_in_extensions = ["members", "emails", "tags", "surveys", "payments"]
 _sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:

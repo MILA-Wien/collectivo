@@ -45,7 +45,7 @@ class CollectivoUxConfig(AppConfig):
     """Configuration class of the emails module."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.members.emails"
+    name = "collectivo.emails"
 
     def ready(self):
         """

@@ -8,17 +8,17 @@ from rest_framework.test import APIClient
 
 from collectivo.members.models import Member
 from collectivo.members.tests.test_members import (
+    MEMBER_POST,
     MEMBERS_CREATE_URL,
-    TEST_MEMBER_POST,
 )
 from collectivo.users.userinfo import UserInfo
 
 from .models import EmailAutomation, EmailCampaign
 
-TEMPLATES_URL = reverse("collectivo:collectivo.members.emails:template-list")
-CAMPAIGNS_URL = reverse("collectivo:collectivo.members.emails:campaign-list")
-DESIGNS_URL = reverse("collectivo:collectivo.members.emails:design-list")
-AUTO_URL = reverse("collectivo:collectivo.members.emails:automation-list")
+TEMPLATES_URL = reverse("collectivo:collectivo.emails:template-list")
+CAMPAIGNS_URL = reverse("collectivo:collectivo.emails:campaign-list")
+DESIGNS_URL = reverse("collectivo:collectivo.emails:design-list")
+AUTO_URL = reverse("collectivo:collectivo.emails:automation-list")
 
 
 def run_mocked_celery_chain(mocked_chain):
@@ -74,7 +74,7 @@ class EmailsTests(TestCase):
             "TEST First name: Test Member 01  \nPerson type: natural\n\n",
         )
 
-    @patch("collectivo.members.emails.serializers.chain")
+    @patch("collectivo.emails.serializers.chain")
     def test_email_batch_template(self, chain):
         """Test sending a batch of emails using a template."""
         res = self.client.post(TEMPLATES_URL, self.template_data)
@@ -89,7 +89,7 @@ class EmailsTests(TestCase):
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)
 
-    @patch("collectivo.members.emails.serializers.chain")
+    @patch("collectivo.emails.serializers.chain")
     def test_new_member_automation(self, chain):
         """Test that a new member gets an automatic email."""
         # Create automation
@@ -103,7 +103,7 @@ class EmailsTests(TestCase):
 
         # Create a new member
         member = {
-            **TEST_MEMBER_POST,
+            **MEMBER_POST,
             "email": "test_user_not_member@example.com",
         }
         res = self.client.post(MEMBERS_CREATE_URL, member)

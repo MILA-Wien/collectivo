@@ -149,11 +149,15 @@ The condition is structured as follows: `{'field': x, 'condition':'exact', 'valu
 
 The `input_type` is currently generated automatically from the `field_type` and states default html input types.
 
-## Core extensions
+# Core extensions
 
-### Core (collectivo.core)
+## Core (collectivo.core)
 
-Provides core functionalities of keycloak, including default database entries.
+This extension initializes core functionalities of collectivo, including default database entries like the main menu.
+
+## Auth (collectivo.auth)
+
+Namespace for extensions that deal with authentication.
 
 ### Keycloak (collectivo.auth.keycloak)
 

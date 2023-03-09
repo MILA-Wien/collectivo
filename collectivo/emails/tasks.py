@@ -1,11 +1,12 @@
 """Celery tasks of the emails module."""
-from celery import shared_task
-from django.core import mail
-from celery.utils.log import get_task_logger
 import time
-from collectivo.members.models import Member
-from collectivo.members.emails.models import EmailCampaign
 
+from celery import shared_task
+from celery.utils.log import get_task_logger
+from django.core import mail
+
+from collectivo.emails.models import EmailCampaign
+from collectivo.members.models import Member
 
 logger = get_task_logger(__name__)
 

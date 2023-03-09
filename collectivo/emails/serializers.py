@@ -1,15 +1,17 @@
 """Serializers of the emails module."""
+from celery import chain
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, Template
-from django.conf import settings
-from rest_framework.exceptions import ValidationError
+from django.utils import timezone
+from html2text import html2text
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from collectivo.tags.models import Tag
+
 from . import models
 from .tasks import send_mails_async, send_mails_async_end
-from html2text import html2text
-from celery import chain
-from collectivo.members.models import MemberTag
-from django.utils import timezone
 
 
 class EmailDesignSerializer(serializers.ModelSerializer):
@@ -93,9 +95,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
 
         # Prevent sending to members with broken emails tag
         recipients = data.get("recipients")
-        tag = MemberTag.objects.get_or_create(
-            label="Email broken", built_in=True
-        )[0]
+        tag = Tag.objects.get_or_create(label="Email broken", built_in=True)[0]
         if recipients is not None:
             for recipient in recipients:
                 if tag in recipient.tags.all():
@@ -150,7 +150,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         try:
             chain(*tasks)()
         except Exception as e:
-            campaign.status = 'failure'
+            campaign.status = "failure"
             campaign.status_message = str(e)
             campaign.save()
             raise e

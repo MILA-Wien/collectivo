@@ -1,13 +1,16 @@
-"""Configuration file for the extension."""
+"""Configuration file for the members extension."""
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
+from collectivo.version import __version__
 
-class ExtensionConfig(AppConfig):
-    """Configuration class for the extension."""
+
+class MembersConfig(AppConfig):
+    """Configuration class for the members extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.extension_template"  # Replace with your extension name
+    name = "collectivo.surveys"
+    description = "An extension to manage member data and registration."
 
     def ready(self):
         """
