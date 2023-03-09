@@ -244,13 +244,16 @@ class PrivateMemberApiTestsForAdmins(TestCase):
 
     def create_members(self):
         """Create an unordered set of members for testing."""
+        ids = []
         for i in [0, 2, 1]:
             payload = {
                 **TEST_MEMBER_POST,
                 "email": str(i) + "@example.com",
                 "first_name": str(i),
             }
-            self.client.post(MEMBERS_CREATE_URL, payload)
+            user = self.client.post(MEMBERS_CREATE_URL, payload)
+            ids.append(user.data["id"])
+        return ids
 
     def test_create_members(self):
         """Test that admins can create members."""
@@ -291,9 +294,22 @@ class PrivateMemberApiTestsForAdmins(TestCase):
 
     def test_member_filtering(self):
         """Test that member names can be filtered with 'contains'."""
-        self.create_members()
+        ids = self.create_members()
         res = self.client.get(MEMBERS_URL + "?first_name__contains=1")
         self.assertEqual([entry["first_name"] for entry in res.data], ["1"])
+        id_strings = ",".join([str(i) for i in ids])
+        res = self.client.get(MEMBERS_URL + "?id__in=" + id_strings)
+        self.assertEqual(
+            [entry["first_name"] for entry in res.data], ["0", "2", "1"]
+        )
+        res = self.client.get(MEMBERS_URL + "?person_type=legal")
+        self.assertEqual(res.data, [])
+        res = self.client.get(MEMBERS_URL + "?person_type__isnull=True")
+        self.assertEqual(res.data, [])
+        res = self.client.get(MEMBERS_URL + "?person_type__isnull=False")
+        self.assertEqual(
+            [entry["first_name"] for entry in res.data], ["0", "2", "1"]
+        )
 
     def test_member_pagination(self):
         """Test that pagination works for members."""
