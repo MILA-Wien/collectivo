@@ -1,3 +1,62 @@
+"""Tests of the members extension for users."""
+from django.contrib.auth import get_user_model
+from django.db.models import signals
+from django.test import TestCase
+from django.urls import reverse
+from django.utils.timezone import localdate
+from rest_framework.test import APIClient
+
+from collectivo.utils.tests import create_testuser
+
+from .. import models
+from ..models import Member
+
+User = get_user_model()
+
+MEMBERS_URL = reverse("collectivo:collectivo.members:member-list")
+MEMBER_URL_LABEL = "collectivo:collectivo.members:member-detail"
+PROFILE_URL = reverse("collectivo:collectivo.members:profile")
+REGISTER_URL = reverse("collectivo:collectivo.members:register")
+REGISTER_SCHEMA_URL = reverse("collectivo:collectivo.members:register-schema")
+REGISTRATION_SCHEMA_URL = reverse(
+    "collectivo:collectivo.members:register-schema"
+)
+PROFILE_SCHEMA_URL = reverse("collectivo:collectivo.members:profile-schema")
+
+TEST_MEMBER = {
+    "gender": "diverse",
+    "address_street": "my street",
+    "address_number": "1",
+    "address_postcode": "0000",
+    "address_city": "my city",
+    "address_country": "my country",
+}
+
+TEST_MEMBER_POST = {
+    **TEST_MEMBER,
+    "person_type": "natural",
+    "membership_type": "active",
+    "survey_contact": "-",
+    "survey_motivation": "-",
+    "shares_payment_type": "sepa",
+    "statutes_approved": True,
+    "shares_tarif": "normal",
+}
+
+TEST_MEMBER_GET = {
+    **TEST_MEMBER,
+    # "membership_start": localdate(),
+    # "email": "some_member@example.com",
+}
+
+TEST_USER = {
+    "email": "some_member@example.com",
+    "username": "some_member@example.com",
+    "firstName": "firstname",
+    "lastName": "lastname",
+}
+
+
 class MembersPublicApiTests(TestCase):
     """Test the public members API."""
 
@@ -24,6 +83,9 @@ class MembersRegistrationTests(TestCase):
         self.client = APIClient()
         self.user = create_testuser(TEST_USER)
         self.client.force_authenticate(self.user)
+        self.status = models.MembershipStatus.objects.filter(
+            type__label="Genossenschaft MILA"
+        )[0]
 
     def test_cannot_access_profile(self):
         """Test that a user cannot access profile if they are not a member."""
@@ -33,19 +95,31 @@ class MembersRegistrationTests(TestCase):
             res.data["detail"], "User is not registered as a member."
         )
 
+    def create_member(self, payload=TEST_MEMBER_POST):
+        """Create a sample member."""
+        res = self.client.post(
+            REGISTER_URL, {**payload, "membership_status": self.status.id}
+        )
+        self.assertEqual(res.status_code, 201)
+        member = Member.objects.get(user=res.data["user"])
+        return member
 
-#     def create_member(self, payload=TEST_MEMBER_POST):
-#         """Create a sample member."""
-#         res = self.client.post(REGISTER_URL, payload)
-#         self.assertEqual(res.status_code, 201)
-#         member = Member.objects.get(id=res.data["id"])
-#         return member
+    def test_create_member(self):
+        """Test that an authenticated user can create itself as a member."""
+        member = self.create_member()
+        for key, value in TEST_MEMBER_GET.items():
+            self.assertEqual(value, getattr(member, key))
 
-#     def test_create_member(self):
-#         """Test that an authenticated user can create itself as a member."""
-#         member = self.create_member()
-#         for key, value in TEST_MEMBER_GET.items():
-#             self.assertEqual(value, getattr(member, key))
+        memberships = member.membership_set.all()
+        self.assertEqual(len(memberships), 1)
+        membership = memberships[0]
+        self.assertEqual(membership.status, self.status)
+
+    # def test_get_schema(self):
+    #     """Test that an authenticated user can create itself as a member."""
+    #     res = self.client.get(REGISTER_SCHEMA_URL)
+    #     print(res.data)
+
 
 #     def test_create_legal_member(self):
 #         """Test that a legal member automatically becomes type investing."""

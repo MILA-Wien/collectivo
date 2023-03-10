@@ -1,9 +1,9 @@
-"""Tests of the members API."""
+"""Tests of the members extension for admins."""
+# TODO: Reintroduce filtering tests from filter branch
 from django.contrib.auth import get_user_model
 from django.db.models import signals
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
 from collectivo.utils.tests import create_testuser
@@ -86,7 +86,7 @@ class MembersAdminTests(TestCase):
         member = Member.objects.get(user=user_id)
         self.assertEqual(getattr(member, "notes"), "my note")
 
-    def test_member_sorting(self):
+    def test_sorting(self):
         """Test that all member fields can be sorted."""
         self.create_members()
 
@@ -100,70 +100,21 @@ class MembersAdminTests(TestCase):
             [entry["user__first_name"] for entry in res.data], ["2", "1", "0"]
         )
 
-    def test_member_filtering(self):
-        """Test that member names can be filtered with 'contains'."""
+    def test_pagination(self):
+        """Test that pagination works for members."""
         self.create_members()
 
-        res = self.client.get(MEMBERS_URL + "?user__first_name__contains=1")
+        limit = 1
+        offset = 1
+        res = self.client.get(MEMBERS_URL + f"?limit={limit}&offset={offset}")
         self.assertEqual(
-            [entry["user__first_name"] for entry in res.data], ["1"]
+            [entry["user__first_name"] for entry in res.data["results"]],
+            ["2"],
         )
 
-
-#     def test_member_pagination(self):
-#         """Test that pagination works for members."""
-#         self.create_members()
-
-#         limit = 3
-#         offset = 5
-#         res = self.client.get(MEMBERS_URL + f"?limit={limit}&offset={offset}")
-
-#         self.assertEqual(
-#             [m.id for m in Member.objects.all()][offset : offset + limit],
-#             [m["id"] for m in res.data["results"]],
-#         )
-
-#     def test_register_member_assigns_members_user_role(self):
-#         """Test that new members receive the auth role 'members_user'."""
-#         # Create a new member
-#         res = self.user_client.post(REGISTER_URL, TEST_MEMBER_POST)
-#         self.assertEqual(res.status_code, 201)
-#         _, data = self.get_token(self.user_email)
-#         self.assertIn("members_user", data["realm_access"]["roles"])
-
-#         # Delete the member again
-#         res = self.client.delete(
-#             reverse(MEMBER_URL_LABEL, args=[res.data["id"]])
-#         )
-#         self.assertEqual(res.status_code, 204)
-#         _, data = self.get_token(self.user_email)
-#         self.assertNotIn("members_user", data["realm_access"]["roles"])
-
-#     def test_create_member_as_admin(self):
-#         """Test that admins can create new member without keycloak."""
-#         payload = {
-#             **TEST_MEMBER_POST,
-#             "email": "new_test_member@example.com",
-#         }
-#         res = self.client.post(MEMBERS_CREATE_URL, payload)
-#         self.assertEqual(res.status_code, 201)
-#         user_id = self.keycloak.get_user_id(payload["email"])
-#         userinfo = self.keycloak.get_user(user_id)
-#         self.assertEqual(userinfo["firstName"], payload["first_name"])
-#         self.assertEqual(userinfo["emailVerified"], False)
-
-# def test_register_member_assigns_members_user_role(self):
-#     """Test that new members receive the auth role 'members_user'."""
-#     # Create a new member
-#     res = self.user_client.post(REGISTER_URL, TEST_MEMBER_POST)
-#     self.assertEqual(res.status_code, 201)
-#     _, data = self.get_token(self.user_email)
-#     self.assertIn("members_user", data["realm_access"]["roles"])
-
-#     # Delete the member again
-#     res = self.client.delete(
-#         reverse(MEMBER_URL_LABEL, args=[res.data["id"]])
-#     )
-#     self.assertEqual(res.status_code, 204)
-#     _, data = self.get_token(self.user_email)
-#     self.assertNotIn("members_user", data["realm_access"]["roles"])
+    def test_new_users_are_added_to_members_user_group(self):
+        """Test that new users are added to the members group."""
+        user = User.objects.create(username="another_user")
+        self.assertTrue(
+            user.groups.filter(name="collectivo.members.user").exists()
+        )

@@ -22,6 +22,15 @@ class MembershipType(models.Model):
 
     has_fees = models.BooleanField(default=False)
     fees_custom = models.BooleanField(default=False)
+    fees_repeat_unit = models.CharField(
+        max_length=20,
+        default="year",
+        choices=[
+            ("year", "year"),
+            ("month", "month"),
+        ],
+    )
+    fees_repeat_each = models.IntegerField(default=1)
     fees_custom_min = models.DecimalField(
         max_digits=100, decimal_places=2, null=True, blank=True
     )
@@ -39,13 +48,22 @@ class MembershipType(models.Model):
     )
     comembership_max = models.IntegerField(null=True, blank=True)
 
+    welcome_mail = models.ForeignKey(
+        "emails.EmailTemplate",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     def __str__(self):
         """Return string representation."""
         return self.label
 
 
-class MembershipSubtype(models.Model):
-    """A subtype of a membership type. E.g. active or passive member."""
+class MembershipStatus(models.Model):
+    """A status that members can have within a membership of a certain type.
+
+    E.g. active or passive member."""
 
     label = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
@@ -60,18 +78,23 @@ class MembershipSubtype(models.Model):
 # --------------------------------------------------------------------------- #
 
 
+class AutoFieldNonPrimary(models.AutoField):
+    def _check_primary_key(self):
+        return []
+
+
 class Membership(models.Model):
     """A membership of a member."""
 
     member = models.ForeignKey("Member", on_delete=models.CASCADE)
-    number = models.IntegerField()
+    number = models.IntegerField(unique=True)
     active = models.BooleanField(default=False)
     started = models.DateField(null=True, blank=True)
     cancelled = models.DateField(null=True, blank=True)
     ended = models.DateField(null=True, blank=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
-    subtype = models.ForeignKey(
-        "MembershipSubtype", null=True, blank=True, on_delete=models.CASCADE
+    status = models.ForeignKey(
+        "MembershipStatus", null=True, blank=True, on_delete=models.CASCADE
     )
 
     # Optional depending on membership type

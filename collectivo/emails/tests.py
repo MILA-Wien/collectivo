@@ -7,10 +7,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from collectivo.members.models import Member
-from collectivo.members.tests.test_members import (
-    MEMBER_POST,
-    MEMBERS_CREATE_URL,
-)
+from collectivo.members.tests.test_admin import MEMBER_POST, MEMBERS_CREATE_URL
 from collectivo.users.userinfo import UserInfo
 
 from .models import EmailAutomation, EmailCampaign

@@ -19,10 +19,13 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         try:
             return self.authenticate_with_keycloak(request)
         except Exception as e:
+            print(e)
             raise AuthenticationFailed() from e
 
     def authenticate_with_keycloak(self, request):
         """Authenticate a request with keycloak."""
+        if "HTTP_AUTHORIZATION" not in request.META:
+            return None
         auth = request.META.get("HTTP_AUTHORIZATION").split()
         access_token = auth[1] if len(auth) == 2 else auth[0]
         self.api.openid.userinfo(access_token)
