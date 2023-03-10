@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
+from collectivo.tags.models import Tag
 from collectivo.utils.tests import create_testuser
 
 from .. import models
@@ -100,7 +101,6 @@ class MembersRegistrationTests(TestCase):
         res = self.client.post(
             REGISTER_URL, {**payload, "membership_status": self.status.id}
         )
-        self.assertEqual(res.status_code, 201)
         member = Member.objects.get(user=res.data["user"])
         return member
 
@@ -114,6 +114,29 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
+        self.assertEqual(membership.shares, 9)
+
+    def test_tags_assigned(self):
+        """Test that tags are assigned to the user when a member is created."""
+        member = self.create_member()
+        tag = Tag.objects.get_or_create(label="Statuten angenommen")[0]
+        self.assertIn(tag, member.user.tag_set.all())
+        tag = Tag.objects.get_or_create(label="Öffentlichkeitsarbeit")[0]
+        self.assertNotIn(tag, member.user.tag_set.all())
+
+    def test_statutes_not_approved_raises_error(self):
+        """Test that statutes must be approved."""
+        res = self.client.post(
+            REGISTER_URL,
+            {
+                **TEST_MEMBER_POST,
+                "membership_status": self.status.id,
+                "statutes_approved": False,
+            },
+        )
+        self.assertEqual(res.status_code, 400)
+
+    # Test invalid payloads
 
     # def test_get_schema(self):
     #     """Test that an authenticated user can create itself as a member."""

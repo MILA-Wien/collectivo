@@ -1,10 +1,11 @@
 """Serializers of the members extension."""
 import copy
 
-from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import ParseError
+
+from collectivo.tags.models import Tag
 
 from . import models
 
@@ -264,7 +265,7 @@ register_tag_fields = ["statutes_approved", "public_use_approved"]
 
 
 class MemberSerializer(serializers.ModelSerializer):
-    """Base serializer for member serializers."""
+    """Base serializer for member serializers with extra schema attributes."""
 
     schema_attrs = {
         field: settings["schema"]
@@ -290,6 +291,7 @@ class MembershipSerializer(serializers.ModelSerializer):
 class MemberRegisterSerializer(MemberSerializer):
     """Serializer for users to register themselves as members.
 
+    This is serializer is not generic, but custom for MILA.
     Automatically creates a membership for Genossenschaft MILA."""
 
     def __init__(self, *args, **kwargs):
@@ -344,80 +346,54 @@ class MemberRegisterSerializer(MemberSerializer):
             "membership_status",
         ]
         read_only_fields = ["user"]
-        # extra_kwargs = {
-        #     field: field_settings[field]["kwargs"]
-        #     for field in fields
-        #     if field in field_settings and "kwargs" in field_settings[field]
-        # }
 
-    def _validate_membership_type(self, attrs):
+    def _convert_membership_status(self, attrs):
         """Adjust membership type based on person type."""
         pt = attrs.get("person_type")
         if pt == "natural":
-            if attrs.get("membership_type") is None:
+            if attrs.get("membership_status") is None:
                 raise ParseError("membership_type required for natural person")
         elif pt == "legal":
-            attrs["membership_type"] = "investing"
+            attrs["membership_status"] = "investing"
         else:
             raise ParseError("person_type is invalid")
         return attrs
 
-    def _convert_shares_tarif(self, attrs):
+    def _convert_membership_shares(self, attrs):
         """Convert shares_tarif choice into shares_number value."""
         shares_tarif = attrs.pop("shares_tarif", None)
         if shares_tarif == "social":
-            attrs["shares_number"] = 1
+            attrs["membership_shares"] = 1
         elif shares_tarif == "normal":
-            attrs["shares_number"] = 9
+            attrs["membership_shares"] = 9
         elif shares_tarif == "more":
-            if "shares_number" not in attrs:
-                raise ParseError("shares_number: This field is required.")
+            if "membership_shares" not in attrs:
+                raise ParseError("membership_shares: This field is required.")
         else:
             raise ParseError("shares_tarif: This field is incorrect.")
         return attrs
 
     def validate(self, attrs):
         """Validate and transform tag fields before validation."""
-        for extra_field in [
-            "statutes_approved",
-            "public_use_approved",
-            "shares_tarif",
-        ]:
-            attrs.pop(extra_field, None)
 
+        # Save membership data for create
+        attrs = self._convert_membership_shares(attrs)
+        attrs = self._convert_membership_status(attrs)
         self.membership_data = {
             "shares": attrs.pop("membership_shares", None),
             "status": attrs.pop("membership_status", None),
         }
-        # membership = MembershipSerializer(data=self.membership_data)
-        # TODO: Check if atomic
-        # try:
-        #     membership.is_valid(raise_exception=True)
-        # except ValidationError as e:
-        #     if e.detail != {"member": ["This field is required."]}:
-        #         raise e
 
-        # attrs["tags"] = []
-        # for field in register_tag_fields:
-        #     tag_setting = field_settings[field]
-        #     tag_label = tag_setting["kwargs"]["label"]
-        #     if field in attrs:
-        #         value = attrs[field]
-        #     else:
-        #         value = False
-        #     if (
-        #         tag_setting["kwargs"].get("required") is True
-        #         and value is not True
-        #     ):
-        #         raise ParseError(f"{field} must be true")
-        #     attrs.pop(field, None)
-        #     if value is True:
-        #         tag_id = models.MemberTag.objects.get_or_create(
-        #             label=tag_label
-        #         )[0].id
-        #         attrs["tags"].append(tag_id)
-        # attrs = self._convert_shares_tarif(attrs)
-        # attrs = self._validate_membership_type(attrs)
+        # Save tag fields for create
+        self.tag_fields = {
+            "Statuten angenommen": attrs.pop("statutes_approved", None),
+            "Öffentlichkeitsarbeit": attrs.pop("public_use_approved", None),
+        }
+
+        # Ensure that the statutes are approved
+        if self.tag_fields["Statuten angenommen"] is not True:
+            raise ParseError("statutes_approved: This field must be True.")
+
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -425,6 +401,8 @@ class MemberRegisterSerializer(MemberSerializer):
 
         with transaction.atomic():
             member = super().create(validated_data)
+
+            # Create membership
             membership = MembershipSerializer(
                 data={
                     "member": member.pk,
@@ -434,7 +412,8 @@ class MemberRegisterSerializer(MemberSerializer):
                     **self.membership_data,
                 }
             )
-            print(self.membership_data)
+
+            # Generate membership number
             membership.is_valid(raise_exception=True)
             highest = (
                 models.Membership.objects.filter(
@@ -447,7 +426,16 @@ class MemberRegisterSerializer(MemberSerializer):
                 number = 1
             else:
                 number = highest.number + 1
+
             membership.save(number=number)
+
+            # Assign tags
+            for field in ["Statuten angenommen", "Öffentlichkeitsarbeit"]:
+                value = self.tag_fields[field] or False
+                if value is True:
+                    tag = Tag.objects.get_or_create(label=field)[0]
+                    tag.users.add(member.user)
+                    tag.save()
 
         member = models.Member.objects.get(pk=member.pk)
         return member
@@ -546,6 +534,11 @@ class MemberProfileSerializer(MemberSerializer):
         # }
 
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
 class MemberSerializer(MemberSerializer):
     """Serializer for admins to manage members in detail."""
 
@@ -558,13 +551,28 @@ class MemberSerializer(MemberSerializer):
     )
     user__email = serializers.EmailField(source="user.email", read_only=True)
 
+    # TODO: Edit tags through this serializer
+    # user__tags_set = serializers.PrimaryKeyRelatedField(
+    #     many=True, source="user.tags_set", queryset=Tag.objects.all()
+    # )
+
     class Meta:
         """Serializer settings."""
 
         model = models.Member
         fields = "__all__"
 
+    def validate(self, attrs):
+        """Validate and transform tag fields before validation."""
+        user__tags_set = attrs.pop("user__tags_set", None)
+        # if user__tags_set is not None:
+        #     user = self.instance.user
+        #     user.tags_set.set(user__tags_set)
+        #     user.save()
+        return super().validate(attrs)
 
+
+# print(MemberSerializer().fields)
 # TODO
 # class MemberAdminCreateSerializer(MemberRegisterSerializer):
 #     """Serializer for admins to register new members."""

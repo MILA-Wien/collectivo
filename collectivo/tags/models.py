@@ -21,7 +21,9 @@ class Tag(models.Model):
 
     label = models.CharField(max_length=255, unique=True)
     users = models.ManyToManyField(get_user_model(), blank=True)
-    category = models.ForeignKey("TagCategory", on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        "TagCategory", null=True, blank=True, on_delete=models.CASCADE
+    )
     from_extension = models.ForeignKey(
         "extensions.Extension", null=True, blank=True, on_delete=models.CASCADE
     )
