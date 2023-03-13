@@ -70,9 +70,10 @@ def get_endpoint_for_model(model: models.Model, path: str = None) -> str:
     """Get the endpoint for a model."""
     model = get_related_model(model, path)
     app_path = model._meta.app_config.name
+    if len(app_path.split(".")) > 2:
+        raise NotImplementedError("Double nested apps not supported yet.")
     if "." in app_path:
         app_path = app_path.split(".")[0] + ":" + app_path
-
     try:
         return reverse(f"{app_path}:{model._meta.model_name}-list")
     except NoReverseMatch:
