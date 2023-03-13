@@ -1,6 +1,9 @@
 """Utilities for collectivo views."""
 from collections import OrderedDict
 
+from django.db import models
+from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.fields import empty
@@ -43,6 +46,39 @@ input_types = {
 }
 
 
+def get_related_model(model: models.Model, path: str = None) -> models.Model:
+    """Get the related model for a field path."""
+    if path is None:
+        return model
+    for related_model_name in path.split("."):
+        model = model._meta.get_field(related_model_name).related_model
+    return model
+
+
+def get_queryset_from_source(model, path):
+    """Get the queryset for a field path."""
+    model = get_related_model(model, path)
+    return model.objects.all()
+
+
+def generate_choices(queryset) -> OrderedDict:
+    """Generate choices for a field."""
+    return OrderedDict([(item.pk, item.__str__()) for item in queryset])
+
+
+def get_endpoint_for_model(model: models.Model, path: str = None) -> str:
+    """Get the endpoint for a model."""
+    model = get_related_model(model, path)
+    app_path = model._meta.app_config.name
+    if "." in app_path:
+        app_path = app_path.split(".")[0] + ":" + app_path
+
+    try:
+        return reverse(f"{app_path}:{model._meta.model_name}-list")
+    except NoReverseMatch:
+        return None
+
+
 class SchemaMixin:
     """Adds an action 'schema' to a viewset."""
 
@@ -70,20 +106,24 @@ class SchemaMixin:
                 if hasattr(field_obj, attr):
                     # Get choices from model field instead of serializer
                     # This is because serializer does not always have choices
-                    if attr == "choices" and hasattr(
-                        field_obj, "get_queryset"
+
+                    if attr == "choices" and (
+                        hasattr(field_obj, "child_relation")
+                        or hasattr(field_obj, "get_queryset")
                     ):
-                        model = self.get_serializer_class().Meta.model
-                        field = getattr(model, field_name)
-                        value = OrderedDict(
-                            [
-                                (
-                                    field_obj.to_representation(item),
-                                    field_obj.display_value(item),
-                                )
-                                for item in field.get_queryset()
-                            ]
+                        queryset = get_queryset_from_source(
+                            self.get_serializer_class().Meta.model,
+                            field_obj.source,
                         )
+                        value = generate_choices(queryset)
+
+                        # NEW URL instead of choices
+                        choices_endpoint = get_endpoint_for_model(
+                            self.get_serializer_class().Meta.model,
+                            field_obj.source,
+                        )
+                        data[field_name]["choices_endpoint"] = choices_endpoint
+
                     else:
                         value = getattr(field_obj, attr)
                     if value is not empty and value is not None:

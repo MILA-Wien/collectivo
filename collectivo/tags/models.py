@@ -20,7 +20,7 @@ class Tag(models.Model):
     """A tag that can be assigned to users."""
 
     label = models.CharField(max_length=255, unique=True)
-    users = models.ManyToManyField(get_user_model(), blank=True)
+    users = models.ManyToManyField(get_user_model(), related_name="tags")
     category = models.ForeignKey(
         "TagCategory", null=True, blank=True, on_delete=models.CASCADE
     )

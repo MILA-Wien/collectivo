@@ -78,15 +78,25 @@ class MembershipStatus(models.Model):
 # --------------------------------------------------------------------------- #
 
 
-class AutoFieldNonPrimary(models.AutoField):
-    def _check_primary_key(self):
-        return []
+class MembershipManager(models.Manager):
+    def create(self, *args, **kwargs):
+        """Create a membership with automatic number."""
+        highest = self.filter(type=kwargs["type"]).order_by("number").last()
+        if highest is None:
+            number = 1
+        else:
+            number = highest.number + 1
+        return super().create(*args, number=number, **kwargs)
 
 
 class Membership(models.Model):
     """A membership of a member."""
 
-    member = models.ForeignKey("Member", on_delete=models.CASCADE)
+    objects = MembershipManager()
+
+    member = models.ForeignKey(
+        "Member", on_delete=models.CASCADE, related_name="memberships"
+    )
     number = models.IntegerField(unique=True)
     active = models.BooleanField(default=False)
     started = models.DateField(null=True, blank=True)

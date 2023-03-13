@@ -264,7 +264,7 @@ summary_fields = [
 register_tag_fields = ["statutes_approved", "public_use_approved"]
 
 
-class MemberSerializer(serializers.ModelSerializer):
+class MemberBaseSerializer(serializers.ModelSerializer):
     """Base serializer for member serializers with extra schema attributes."""
 
     schema_attrs = {
@@ -288,7 +288,7 @@ class MembershipSerializer(serializers.ModelSerializer):
         ]
 
 
-class MemberRegisterSerializer(MemberSerializer):
+class MemberRegisterSerializer(MemberBaseSerializer):
     """Serializer for users to register themselves as members.
 
     This is serializer is not generic, but custom for MILA.
@@ -412,22 +412,8 @@ class MemberRegisterSerializer(MemberSerializer):
                     **self.membership_data,
                 }
             )
-
-            # Generate membership number
             membership.is_valid(raise_exception=True)
-            highest = (
-                models.Membership.objects.filter(
-                    type__label="Genossenschaft MILA"
-                )
-                .order_by("number")
-                .last()
-            )
-            if highest is None:
-                number = 1
-            else:
-                number = highest.number + 1
-
-            membership.save(number=number)
+            membership.save()
 
             # Assign tags
             for field in ["Statuten angenommen", "Öffentlichkeitsarbeit"]:
@@ -441,7 +427,7 @@ class MemberRegisterSerializer(MemberSerializer):
         return member
 
 
-# class MemberRegisterSerializer(MemberSerializer):
+# class MemberRegisterSerializer(MemberBaseSerializer):
 #     """Serializer for users to register themselves as members."""
 
 #     # Tag fields
@@ -518,7 +504,7 @@ class MemberRegisterSerializer(MemberSerializer):
 
 
 # TODO: Fix this serializer
-class MemberProfileSerializer(MemberSerializer):
+class MemberProfileSerializer(MemberBaseSerializer):
     """Serializer for members to manage their own data."""
 
     class Meta:
@@ -539,7 +525,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class MemberSerializer(MemberSerializer):
+class MemberSerializer(MemberBaseSerializer):
     """Serializer for admins to manage members in detail."""
 
     # Display user fields on the same level as member fields
@@ -550,11 +536,13 @@ class MemberSerializer(MemberSerializer):
         source="user.last_name", read_only=True
     )
     user__email = serializers.EmailField(source="user.email", read_only=True)
+    user__tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        source="user.tags",
+        read_only=True,
+    )
 
-    # TODO: Edit tags through this serializer
-    # user__tags_set = serializers.PrimaryKeyRelatedField(
-    #     many=True, source="user.tags_set", queryset=Tag.objects.all()
-    # )
+    memberships = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         """Serializer settings."""
@@ -564,7 +552,7 @@ class MemberSerializer(MemberSerializer):
 
     def validate(self, attrs):
         """Validate and transform tag fields before validation."""
-        user__tags_set = attrs.pop("user__tags_set", None)
+        # user__tags_set = attrs.pop("user__tags_set", None)
         # if user__tags_set is not None:
         #     user = self.instance.user
         #     user.tags_set.set(user__tags_set)

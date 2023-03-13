@@ -3,7 +3,7 @@ from rest_framework import viewsets
 
 from collectivo.core.permissions import IsSuperuser
 from collectivo.filters import get_filterset_fields
-from collectivo.utils.views import SchemaMixin
+from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
 

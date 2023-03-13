@@ -10,6 +10,9 @@ app_name = "collectivo.members"
 
 admin_router = DefaultRouter()
 admin_router.register("members", views.MembersViewSet, basename="member")
+admin_router.register(
+    "membership", views.MembershipViewSet, basename="membership"
+)
 
 me_router = DirectDetailRouter()
 me_router.register(

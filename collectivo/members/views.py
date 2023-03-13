@@ -8,8 +8,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from collectivo.core.permissions import HasGroup
-from collectivo.filters import get_filterset_fields
-from collectivo.utils.views import SchemaMixin
+from collectivo.filters import get_filterset, get_filterset_fields
+from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
 from .models import Member
@@ -127,5 +127,21 @@ class MembersViewSet(
     serializer_class = serializers.MemberSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]
-    filterset_fields = get_filterset_fields(serializers.MemberSerializer)
+    filterset_class = get_filterset(serializers.MemberSerializer)
+    # TODO generate ordering fields from serializer
+    ordering_fields = member_fields + ["user__first_name", "user__last_name"]
+
+
+class MembershipViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """
+    API for admins to manage memberships.
+
+    Requires the group 'collectivo.members.admin'.
+    """
+
+    # TODO: Membership serializer
+    serializer_class = serializers.MemberSerializer
+    permission_classes = [HasGroup]
+    required_groups = ["collectivo.members.admin"]
+    filterset_class = get_filterset(serializers.MemberSerializer)
     ordering_fields = member_fields + ["user__first_name", "user__last_name"]

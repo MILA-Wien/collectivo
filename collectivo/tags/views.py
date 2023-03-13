@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 
 from collectivo.core.permissions import ReadOrIsSuperuser
-from collectivo.utils.views import SchemaMixin
+from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
 

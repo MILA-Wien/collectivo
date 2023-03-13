@@ -110,7 +110,7 @@ class MembersRegistrationTests(TestCase):
         for key, value in TEST_MEMBER_GET.items():
             self.assertEqual(value, getattr(member, key))
 
-        memberships = member.membership_set.all()
+        memberships = member.memberships.all()
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
@@ -120,9 +120,9 @@ class MembersRegistrationTests(TestCase):
         """Test that tags are assigned to the user when a member is created."""
         member = self.create_member()
         tag = Tag.objects.get_or_create(label="Statuten angenommen")[0]
-        self.assertIn(tag, member.user.tag_set.all())
+        self.assertIn(tag, member.user.tags.all())
         tag = Tag.objects.get_or_create(label="Öffentlichkeitsarbeit")[0]
-        self.assertNotIn(tag, member.user.tag_set.all())
+        self.assertNotIn(tag, member.user.tags.all())
 
     def test_statutes_not_approved_raises_error(self):
         """Test that statutes must be approved."""
