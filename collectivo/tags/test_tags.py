@@ -23,6 +23,11 @@ class MembersTagsTests(TestCase):
             UserInfo(is_authenticated=True, roles=["members_admin"])
         )
 
+    def test_get_tags(self):
+        """Test getting tags."""
+        res = self.client.get(TAGS_URL + "?offset=0&limit=10")
+        self.assertEqual(res.status_code, 200)
+
     def assign_tag(self):
         """Assign a tag to a member."""
         res = self.client.post(TAGS_URL, {"label": "test tag"})

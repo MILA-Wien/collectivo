@@ -1,0 +1,1 @@
+"""Shifts extension for collectivo."""

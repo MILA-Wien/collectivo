@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from collectivo.core.permissions import HasGroup
+from collectivo.filters import get_filterset_fields
 from collectivo.utils.views import SchemaMixin
 
 from . import models, serializers
@@ -18,8 +19,6 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 member_fields = [field.name for field in models.Member._meta.get_fields()]
-
-filterset_fields = {}  # TODO: These are redefined in another branch
 
 
 class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
@@ -128,5 +127,5 @@ class MembersViewSet(
     serializer_class = serializers.MemberSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]
-    filterset_fields = filterset_fields
+    filterset_fields = get_filterset_fields(serializers.MemberSerializer)
     ordering_fields = member_fields + ["user__first_name", "user__last_name"]

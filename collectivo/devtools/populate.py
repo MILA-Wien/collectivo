@@ -7,6 +7,7 @@ from keycloak.exceptions import KeycloakGetError
 from collectivo.auth.keycloak.api import KeycloakAPI
 from collectivo.members.models import Member
 from collectivo.members.views import MembersViewSet
+from collectivo.tags.models import Tag
 from collectivo.utils import register_viewset
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,9 @@ def populate_keycloak_with_test_data():
     """Add users, groups, and roles to keycloak."""
     logger.info("Development mode is active. Do not use this in production.")
     auth_manager = KeycloakAPI()
+
+    for i in range(100):
+        Tag.objects.create(label=f"Test tag {i}")
 
     for user in users:
         try:
