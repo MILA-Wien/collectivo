@@ -1,6 +1,7 @@
-"""Utilities for collectivo views."""
+"""Schema mixin for collectivo viewsets."""
 from collections import OrderedDict
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
@@ -13,7 +14,10 @@ from rest_framework.response import Response
 from collectivo.version import __version__
 
 # TODO Default does not work yet
-# TODO Choices can be big for large datasets
+# TODO Special case for user model
+# TODO Remove choices from schema if choices_endpoint is set,
+# once implemented in frontend
+
 field_attrs = [
     "label",
     "help_text",
@@ -46,34 +50,35 @@ input_types = {
 }
 
 
-def get_related_model(model: models.Model, path: str = None) -> models.Model:
-    """Get the related model for a field path."""
-    if path is None:
+def get_source(model: models.Model, source: str = None) -> models.Model:
+    """Get the related model for a specific source."""
+    if source is None:
         return model
-    for related_model_name in path.split("."):
+    for related_model_name in source.split("."):
         model = model._meta.get_field(related_model_name).related_model
     return model
 
 
-def get_queryset_from_source(model, path):
+def get_queryset(model, source):
     """Get the queryset for a field path."""
-    model = get_related_model(model, path)
+    model = get_source(model, source)
     return model.objects.all()
 
 
-def generate_choices(queryset) -> OrderedDict:
+def get_choices(queryset) -> OrderedDict:
     """Generate choices for a field."""
     return OrderedDict([(item.pk, item.__str__()) for item in queryset])
 
 
-def get_endpoint_for_model(model: models.Model, path: str = None) -> str:
-    """Get the endpoint for a model."""
-    model = get_related_model(model, path)
-    app_path = model._meta.app_config.name
-    if len(app_path.split(".")) > 2:
-        raise NotImplementedError("Double nested apps not supported yet.")
-    if "." in app_path:
-        app_path = app_path.split(".")[0] + ":" + app_path
+def get_endpoint(model: models.Model, source: str = None) -> str:
+    """Get the endpoint for a model field with a specific source."""
+    model = get_source(model, source)
+    if model is get_user_model():
+        return None  # TODO: Implement special case for user model
+    app_path = reduced_path = model._meta.app_config.name
+    while "." in reduced_path:
+        reduced_path, _ = reduced_path.rsplit(".", 1)
+        app_path = reduced_path + ":" + app_path
     try:
         return reverse(f"{app_path}:{model._meta.model_name}-list")
     except NoReverseMatch:
@@ -105,25 +110,23 @@ class SchemaMixin:
                 data[field_name]["input_type"] = "textarea"
             for attr in field_attrs:
                 if hasattr(field_obj, attr):
-                    # Get choices from model field instead of serializer
-                    # This is because serializer does not always have choices
-
+                    # Add URL path where choices can be retrieved
                     if attr == "choices" and (
                         hasattr(field_obj, "child_relation")
                         or hasattr(field_obj, "get_queryset")
                     ):
-                        queryset = get_queryset_from_source(
+                        choices_url = get_endpoint(
                             self.get_serializer_class().Meta.model,
                             field_obj.source,
                         )
-                        value = generate_choices(queryset)
+                        data[field_name]["choices_url"] = choices_url
 
-                        # NEW URL instead of choices
-                        choices_endpoint = get_endpoint_for_model(
+                        # TODO: This should be removed once frontend uses url
+                        queryset = get_queryset(
                             self.get_serializer_class().Meta.model,
                             field_obj.source,
                         )
-                        data[field_name]["choices_endpoint"] = choices_endpoint
+                        value = get_choices(queryset)
 
                     else:
                         value = getattr(field_obj, attr)
