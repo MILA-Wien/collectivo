@@ -1,4 +1,5 @@
 """Models of the shift module."""
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -85,6 +86,6 @@ class Assignment(models.Model):
 class ShiftUser(models.Model):
     """A user that can be assigned to a shift."""
 
-    # TODO should be set by keycloak and collectivo
-    username = models.CharField(max_length=30, blank=True)
-    creator = models.BooleanField(default=False)
+    user = models.OneToOneField(
+        get_user_model(), primary_key=True, on_delete=models.CASCADE
+    )

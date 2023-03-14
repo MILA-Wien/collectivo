@@ -70,12 +70,12 @@ class MenuItem(models.Model, RegisterMixin):
         name,
         menu: str | tuple | Menu = None,
         parent_item=None,
-        required_role: str = None,
+        required_group: str = None,
         **menu_item_kwargs,
     ):
         """Register a new menu item."""
         item = super().register(
-            name=name, required_role=required_role, **menu_item_kwargs
+            name=name, required_role=required_group, **menu_item_kwargs
         )
         if menu is not None:
             if isinstance(menu, tuple):

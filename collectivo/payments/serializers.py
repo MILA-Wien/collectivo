@@ -1,13 +1,34 @@
-"""Serializers of the extension."""
-# from rest_framework import serializers
+"""Serializers of the payments module."""
+from rest_framework import serializers
 
-# from .models import MyModel
+from . import models
 
-# class MyModelSerializer(serializers.ModelSerializer):
-#     """Serializer for my model."""
 
-#     class Meta:
-#         """Serializer settings."""
+class PaymentProfileSerializer(serializers.ModelSerializer):
+    """Serializer for payment profiles."""
 
-#         model = MyModel
-#         fields = '__all__'
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Payment
+        fields = "__all__"
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    """Serializer for payments."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Payment
+        fields = "__all__"
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    """Serializer for subscriptions."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Subscription
+        fields = "__all__"

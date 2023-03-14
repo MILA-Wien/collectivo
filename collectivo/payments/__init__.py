@@ -1,1 +1,1 @@
-"""A built-in collectivo extension."""
+"""Payments module for collectivo."""

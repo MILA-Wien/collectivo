@@ -1,15 +1,15 @@
-"""URL patterns of the extension."""
-from django.urls import include, path
+"""URL patterns of the emails module."""
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from . import views
 
-# from .views import MyModelViewSet
-
-app_name = "collectivo.extension_template"
+app_name = "collectivo.payments"
 
 router = DefaultRouter()
-# router.register("mymodel", MyModelViewSet, basename="XY")
+router.register("payments", views.PaymentViewSet)
+router.register("subscriptions", views.SubscriptionViewSet)
 
 
 urlpatterns = [
-    path("api/extension_template/", include(router.urls)),
+    path("api/payments/", include(router.urls)),
 ]

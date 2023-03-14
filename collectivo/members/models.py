@@ -22,15 +22,17 @@ class MembershipType(models.Model):
 
     has_fees = models.BooleanField(default=False)
     fees_custom = models.BooleanField(default=False)
+    fees_repeat_each = models.IntegerField(default=1)
     fees_repeat_unit = models.CharField(
         max_length=20,
         default="year",
         choices=[
             ("year", "year"),
             ("month", "month"),
+            ("week", "week"),
+            ("day", "day"),
         ],
     )
-    fees_repeat_each = models.IntegerField(default=1)
     fees_custom_min = models.DecimalField(
         max_digits=100, decimal_places=2, null=True, blank=True
     )
