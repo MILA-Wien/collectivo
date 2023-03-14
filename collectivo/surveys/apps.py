@@ -2,15 +2,13 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from collectivo.version import __version__
-
 
 class MembersConfig(AppConfig):
     """Configuration class for the members extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.surveys"
-    description = "An extension to manage member data and registration."
+    description = "Surveys (work in progress)."
 
     def ready(self):
         """

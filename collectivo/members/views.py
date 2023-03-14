@@ -2,13 +2,12 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from django.utils.timezone import localdate
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from collectivo.core.permissions import HasGroup
-from collectivo.filters import get_filterset, get_filterset_fields
+from collectivo.filters import get_filterset
 from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
@@ -34,38 +33,37 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
         # Create member with extra data
         extra_fields = {
             "user": user,
-            # "membership_start": localdate(),
         }
         if "tags" in serializer.validated_data:
             extra_fields["tags"] = serializer.validated_data["tags"]
         serializer.save(**extra_fields)
 
-        # TODO: This is for membership
-        # # Send welcome mail
-        # try:
-        #     from collectivo.emails.models import EmailAutomation, EmailCampaign
-        #     from collectivo.emails.views import EmailCampaignViewSet
-        #     from collectivo.utils import register_viewset
+    # TODO: This is for membership
+    # # Send welcome mail
+    # try:
+    #     from collectivo.emails.models import EmailAutomation, EmailCampaign
+    #     from collectivo.emails.views import EmailCampaignViewSet
+    #     from collectivo.utils import register_viewset
 
-        #     automations = EmailAutomation.objects.filter(trigger="new_member")
+    #     automations = EmailAutomation.objects.filter(trigger="new_member")
 
-        #     for automation in automations:
-        #         member = serializer.instance
-        #         campaign = {
-        #             "recipients": [member.id],
-        #             "template": automation.template.id,
-        #             "send": True,
-        #         }
-        #         res = register_viewset(EmailCampaignViewSet, payload=campaign)
+    #     for automation in automations:
+    #         member = serializer.instance
+    #         campaign = {
+    #             "recipients": [member.id],
+    #             "template": automation.template.id,
+    #             "send": True,
+    #         }
+    #         res = register_viewset(EmailCampaignViewSet, payload=campaign)
 
-        #         # Add automation to campaign for documentation
-        #         campaign = EmailCampaign.objects.get(id=res.data["id"])
-        #         campaign.automation = automation
-        #         campaign.save()
+    #         # Add automation to campaign for documentation
+    #         campaign = EmailCampaign.objects.get(id=res.data["id"])
+    #         campaign.automation = automation
+    #         campaign.save()
 
-        # except ImportError:
-        #     # Email Module not installed
-        #     pass
+    # except ImportError:
+    #     # Email Module not installed
+    #     pass
 
     def perform_destroy(self, instance):
         """Delete member and remove members_user role from auth service."""

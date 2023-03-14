@@ -13,6 +13,7 @@ from . import models
 
 
 def add_user_to_members_user_group(sender, instance, created, **kwargs):
+    """Add a user to the collectivo.members.user group."""
     if created:
         instance.groups.add(Group.objects.get(name="collectivo.members.user"))
         instance.save()

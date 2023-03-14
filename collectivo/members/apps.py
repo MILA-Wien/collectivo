@@ -2,8 +2,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from collectivo.version import __version__
-
 
 class MembersConfig(AppConfig):
     """Configuration class for the members extension."""

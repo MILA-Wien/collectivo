@@ -1,12 +1,10 @@
-"""Configuration file for the members extension."""
+"""Configuration file for the tags extension."""
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from collectivo.version import __version__
 
-
-class MembersConfig(AppConfig):
-    """Configuration class for the members extension."""
+class TagsConfig(AppConfig):
+    """Configuration class for the tags extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.tags"

@@ -1,5 +1,5 @@
 """Serializers of the extension."""
-from rest_framework import serializers
+# from rest_framework import serializers
 
 # from .models import MyModel
 

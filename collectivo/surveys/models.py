@@ -1,5 +1,5 @@
 """Models of the members extension."""
-from django.db import models
+# from django.db import models
 
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #

@@ -1,1 +1,0 @@
-import{importShared as e}from"./__federation_fn_import.js";const{openBlock:t,createElementBlock:o}=await e("vue"),a={name:"Hello"},_=Object.assign(a,{setup(c){return(l,n)=>(t(),o("h1",null,"hello"))}});export{_ as default};

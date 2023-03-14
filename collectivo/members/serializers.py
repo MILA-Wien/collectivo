@@ -13,6 +13,8 @@ class MembershipSerializer(serializers.ModelSerializer):
     """Serializer for memberships."""
 
     class Meta:
+        """Serializer settings."""
+
         model = models.Membership
         fields = [
             "id",
@@ -93,14 +95,14 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     """Serializer for users to register themselves as members.
 
     This is serializer is not generic, but custom for MILA.
-    Automatically creates a membership for Genossenschaft MILA."""
+    Automatically creates a membership for Genossenschaft MILA.
+    """
 
     # TODO: This serializer is not generic, but custom for MILA.
 
     def __init__(self, *args, **kwargs):
+        """Fill the possible status options for Genossenschaft MILA."""
         super().__init__(*args, **kwargs)
-
-        # Fill the possible status options for Genossenschaft MILA
         self.fields["membership_status"].choices = [
             (x.id, x.label)
             for x in models.MembershipStatus.objects.filter(

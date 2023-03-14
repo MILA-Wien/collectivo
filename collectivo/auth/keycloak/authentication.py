@@ -1,3 +1,4 @@
+"""Keycloak authentication middleware."""
 from django.contrib.auth import get_user_model
 from jwt import decode
 from rest_framework import authentication
@@ -46,6 +47,5 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         return (user, access_token)
 
     def authenticate_header(self, request):
-        """Return a string to be used as the value of the WWW-Authenticate
-        header in a 401 response to the client."""
+        """Return WWW-Authenticate header to be used in a 401 response."""
         return "Keycloak Access Token"

@@ -63,7 +63,8 @@ class MembershipType(models.Model):
 class MembershipStatus(models.Model):
     """A status that members can have within a membership of a certain type.
 
-    E.g. active or passive member."""
+    E.g. active or passive member.
+    """
 
     label = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
@@ -79,6 +80,8 @@ class MembershipStatus(models.Model):
 
 
 class MembershipManager(models.Manager):
+    """Manager for membership models."""
+
     def create(self, *args, **kwargs):
         """Create a membership with automatic number."""
         highest = self.filter(type=kwargs["type"]).order_by("number").last()

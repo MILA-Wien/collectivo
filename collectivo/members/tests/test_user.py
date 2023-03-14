@@ -1,9 +1,7 @@
 """Tests of the members extension for users."""
 from django.contrib.auth import get_user_model
-from django.db.models import signals
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
 from collectivo.tags.models import Tag

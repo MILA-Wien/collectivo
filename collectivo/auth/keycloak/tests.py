@@ -84,7 +84,8 @@ class KeycloakAuthenticationTests(TestCase):
         """Test creating a user with an existing keycloak account.
 
         Since the email address already exists on keycloak, the user should
-        automatically be linked to the existing keycloak account."""
+        automatically be linked to the existing keycloak account.
+        """
         User.objects.create(**TEST_USER)
         user = User.objects.get(username=TEST_USER["username"])
         self.assertEqual(user.keycloak.uuid, self.keycloak_user_id)

@@ -20,7 +20,8 @@ class KeycloakUser(models.Model):
         """Save model and synchronize with keycloak.
 
         Get or create keycloak user if a new instance is created.
-        Update keycloak user if an existing instance is updated."""
+        Update keycloak user if an existing instance is updated.
+        """
         if self.uuid is None:
             self.uuid = self.get_or_create_keycloak_user()
         else:

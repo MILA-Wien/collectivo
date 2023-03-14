@@ -1,5 +1,4 @@
 """Models of the menus extension."""
-from django.contrib.auth.models import Group
 from django.db import models
 
 from collectivo.extensions.models import Extension
@@ -10,6 +9,8 @@ class Menu(models.Model, RegisterMixin):
     """A menu to be displayed in the user interface."""
 
     class Meta:
+        """Model settings."""
+
         unique_together = ("name", "extension")
 
     name = models.CharField(max_length=255)
@@ -24,6 +25,8 @@ class MenuItem(models.Model, RegisterMixin):
     """An item to be displayed in a menu."""
 
     class Meta:
+        """Model settings."""
+
         unique_together = ("name", "extension")
 
     name = models.CharField(max_length=255)

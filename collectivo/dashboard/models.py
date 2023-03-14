@@ -10,6 +10,8 @@ class DashboardTile(models.Model, RegisterMixin):
     """A component that can be included in the dashboard."""
 
     class Meta:
+        """Meta settings."""
+
         unique_together = ("name", "extension")
 
     name = models.CharField(max_length=255, unique=True)

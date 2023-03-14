@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = get_env_bool("DEBUG", False)
 DEVELOPMENT = get_env_bool("DEVELOPMENT", False)
+CREATE_TEST_DATA = DEVELOPMENT
 
 if os.environ.get("ALLOWED_HOSTS") is not None:
     ALLOWED_HOSTS = string_to_list(os.environ.get("ALLOWED_HOSTS"))
@@ -50,7 +51,6 @@ _built_in_extensions = [
     "payments",
     "shifts",
 ]
-_sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:
     if ext not in _built_in_extensions:
@@ -59,10 +59,6 @@ for ext in _chosen_extensions:
             f"'{ext}' is not a built-in extension. "
             f"Available extensions are: {_built_in_extensions}."
         )
-    # if ext == "members":
-    #     _sub_extensions.append("members.emails")
-_chosen_extensions += _sub_extensions
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -98,7 +94,7 @@ MIDDLEWARE = [
 ]
 
 if DEVELOPMENT:
-    INSTALLED_APPS += ["collectivo.devtools", "django_extensions"]
+    INSTALLED_APPS += ["django_extensions"]
 
 ROOT_URLCONF = "collectivo_app.urls"
 

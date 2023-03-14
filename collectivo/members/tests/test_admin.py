@@ -53,7 +53,7 @@ class MembersAdminTests(TestCase):
         )
         ids = []
         tag_ids = []
-        other_tag = Tag.objects.get_or_create(label=f"Other tag")[0]
+        other_tag = Tag.objects.get_or_create(label="Other tag")[0]
         for i in [0, 2, 1]:
             # Create a user
             user = User.objects.create_user(
@@ -73,7 +73,7 @@ class MembersAdminTests(TestCase):
 
             # Create a member for this user
             payload = {**MEMBER, "user": user.id}
-            res = self.client.post(MEMBERS_URL, payload)
+            self.client.post(MEMBERS_URL, payload)
             member = Member.objects.get(user=user)
 
             # Create a membership for this member

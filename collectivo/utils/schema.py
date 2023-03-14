@@ -11,8 +11,6 @@ from rest_framework.fields import empty
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from collectivo.version import __version__
-
 # TODO Default does not work yet
 # TODO Special case for user model
 # TODO Remove choices from schema if choices_endpoint is set,

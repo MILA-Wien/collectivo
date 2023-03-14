@@ -104,7 +104,7 @@ class KeycloakAPI:
         """Get a keycloak role."""
         try:
             return self.admin.get_realm_role(name)["id"]
-        except KeycloakGetError as e:
+        except KeycloakGetError:
             self.create_role(name=name)
             return self.admin.get_realm_role(name)["id"]
 

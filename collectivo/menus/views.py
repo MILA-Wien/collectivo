@@ -39,7 +39,7 @@ class MenuViewSet(
     @action(
         methods=["GET"],
         detail=False,
-        url_path="(?P<extension>\w+)/(?P<menu>\w+)",
+        url_path=r"(?P<extension>\w+)/(?P<menu>\w+)",
         url_name="detail",
     )
     def retrieve_with_params(self, request: Request, extension, menu):

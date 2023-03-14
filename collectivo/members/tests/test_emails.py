@@ -24,9 +24,9 @@ class MembersEmailsTests(TestCase):
         self.user = create_testuser(superuser=True)
         self.client.force_authenticate(self.user)
         self.recipient = User.objects.create_user(
-            username=f"recipient@example.com",
-            email=f"recipient@example.com",
-            first_name=f"recipient",
+            username="recipient@example.com",
+            email="recipient@example.com",
+            first_name="recipient",
         )
         self.member = Member.objects.create(user=self.recipient, phone="42")
         self.template = EmailTemplate.objects.create(
@@ -51,36 +51,37 @@ class MembersEmailsTests(TestCase):
             "recipient has phone number 42",
         )
 
-    # TODO: Unfinished feature for new automation system
-    # @patch("collectivo.emails.serializers.chain")
-    # def test_new_member_automation(self, chain):
-    #     """Test that a new member gets an automatic email."""
-    #     # Create automation
-    #     template = self.client.post(TEMPLATES_URL, self.template_data)
-    #     automation = {
-    #         "trigger": "new_member",
-    #         "template": template.data["id"],
-    #     }
-    #     automation_res = self.client.post(AUTO_URL, automation)
-    #     self.assertEqual(automation_res.status_code, 201)
 
-    #     # Create a new member
-    #     user = User.objects.create_user(
-    #         username=f"recipient_0{i}@example.com",
-    #         first_name=f"recipient_0{i}",
-    #         email=f"recipient_0{i}@example.com",
-    #     )
-    #     Member
-    #     res = self.client.post(MEMBERS_CREATE_URL, member)
-    #     self.assertEqual(res.status_code, 201)
+# TODO: Unfinished feature for new automation system
+# @patch("collectivo.emails.serializers.chain")
+# def test_new_member_automation(self, chain):
+#     """Test that a new member gets an automatic email."""
+#     # Create automation
+#     template = self.client.post(TEMPLATES_URL, self.template_data)
+#     automation = {
+#         "trigger": "new_member",
+#         "template": template.data["id"],
+#     }
+#     automation_res = self.client.post(AUTO_URL, automation)
+#     self.assertEqual(automation_res.status_code, 201)
 
-    #     # Check that the email was sent automatically
-    #     run_mocked_celery_chain(chain)
-    #     obj = EmailCampaign.objects.get(template=template.data["id"])
-    #     automation = EmailAutomation.objects.get(pk=automation_res.data["id"])
-    #     self.assertEqual(obj.automation, automation)
-    #     self.assertEqual(obj.status, "success")
-    #     self.assertEqual(len(mail.outbox), 1)
-    #     self.assertEqual(
-    #         mail.outbox[0].recipients()[0], "test_user_not_member@example.com"
-    #     )
+#     # Create a new member
+#     user = User.objects.create_user(
+#         username=f"recipient_0{i}@example.com",
+#         first_name=f"recipient_0{i}",
+#         email=f"recipient_0{i}@example.com",
+#     )
+#     Member
+#     res = self.client.post(MEMBERS_CREATE_URL, member)
+#     self.assertEqual(res.status_code, 201)
+
+#     # Check that the email was sent automatically
+#     run_mocked_celery_chain(chain)
+#     obj = EmailCampaign.objects.get(template=template.data["id"])
+#     automation = EmailAutomation.objects.get(pk=automation_res.data["id"])
+#     self.assertEqual(obj.automation, automation)
+#     self.assertEqual(obj.status, "success")
+#     self.assertEqual(len(mail.outbox), 1)
+#     self.assertEqual(
+#         mail.outbox[0].recipients()[0], "test_user_not_member@example.com"
+#     )

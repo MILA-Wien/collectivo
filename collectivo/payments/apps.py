@@ -2,8 +2,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from collectivo.version import __version__
-
 
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""

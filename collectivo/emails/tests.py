@@ -1,4 +1,4 @@
-"""Tests for the emails extension."""
+"""Test the features of the emails API."""
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -30,8 +30,8 @@ def run_mocked_celery_chain(mocked_chain):
         return task.result
 
 
-class EmailsBaseTests(TestCase):
-    """Base class for tests of the emails extension."""
+class EmailsTests(TestCase):
+    """Test the members emails API."""
 
     def setUp(self):
         """Prepare test case."""
@@ -78,10 +78,6 @@ class EmailsBaseTests(TestCase):
             mail.outbox[0].body,
             "TEST First name: recipient_01  \nNew line\n\n",
         )
-
-
-class EmailsTests(TestCase):
-    """Tests for the emails extension."""
 
     @patch("collectivo.emails.serializers.chain")
     def test_email_batch_template(self, chain):

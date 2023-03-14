@@ -9,3 +9,9 @@ class KeycloakConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.auth.keycloak"
     description = "Keycloak connector for collectivo."
+
+    def ready(self):
+        """Initialize extension after database is ready."""
+        from .setup import setup
+
+        post_migrate.connect(setup, sender=self)

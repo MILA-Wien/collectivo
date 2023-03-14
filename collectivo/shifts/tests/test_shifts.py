@@ -1,10 +1,10 @@
 """Test the features of the shifts API."""
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
-from collectivo.auth.clients import CollectivoAPIClient
-from collectivo.auth.userinfo import UserInfo
 from collectivo.shifts.models import Assignment, Shift, ShiftUser
+from collectivo.utils.test import create_testuser
 
 SHIFTS_URL = reverse("collectivo:collectivo.shifts:shift-list")
 ASSIGNMENT_URL = reverse("collectivo:collectivo.shifts:assignment-list")
@@ -58,8 +58,9 @@ class ShiftAPITests(TestCase):
 
     def setUp(self):
         """Prepare test case."""
-        self.client = CollectivoAPIClient()
-        self.client.force_authenticate(UserInfo(is_authenticated=True))
+        self.client = APIClient()
+        self.user = create_testuser(superuser=True)
+        self.client.force_authenticate(self.user)
 
     def create_shift(self, payload):
         """Create a sample member."""

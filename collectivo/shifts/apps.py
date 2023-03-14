@@ -1,43 +1,6 @@
-"""Configuration file of the user experience module."""
+"""Configuration file of the shifts extension."""
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-
-
-def post_migrate_callback(sender, **kwargs):
-    """Initialize extension after database is ready."""
-
-    name = "shifts"
-    description = "API for shifts extension."
-    # TODO: register extension
-    # register_extension(name=name, built_in=True, description=description)
-
-    # register_menuitem(
-    #     item_id="shifts_user_menu_item",
-    #     menu_id="main_menu",
-    #     label="Shifts",
-    #     extension=name,
-    #     action="component",
-    #     component_name="shifts",
-    #     required_role="shifts_user",
-    #     order=10,
-    # )
-    # register_menuitem(
-    #     item_id="shifts_admin_menu_item",
-    #     menu_id="main_menu",
-    #     label="Shifts Adminitsration",
-    #     extension=name,
-    #     action="component",
-    #     component_name="admin",
-    #     required_role="shifts_admin",
-    #     order=10,
-    # )
-    # register_tile(
-    #     tile_id="shifts_user_tile",
-    #     label="Shifts",
-    #     extension=name,
-    #     component_name="shifts_user_tile",
-    #     required_role="shifts_user",
-    # )
 
 
 class ShiftsConfig(AppConfig):
@@ -45,6 +8,7 @@ class ShiftsConfig(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.shifts"
+    description = "Shift management system."
     label = "shifts"
 
     def ready(self):
@@ -54,4 +18,6 @@ class ShiftsConfig(AppConfig):
         Database calls are performed after migrations, using the post_migrate
         signal. This signal only works if the app has a models.py module.
         """
-        post_migrate.connect(post_migrate_callback, sender=self)
+        from .setup import setup
+
+        post_migrate.connect(setup, sender=self)
