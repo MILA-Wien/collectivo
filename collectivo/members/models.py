@@ -162,13 +162,13 @@ class Member(models.Model):
             ("male", "male"),
         ],
     )
-    address_street = models.CharField(max_length=255, null=True, blank=True)
-    address_number = models.CharField(max_length=255, null=True, blank=True)
+    address_street = models.CharField(max_length=255)
+    address_number = models.CharField(max_length=255)
     address_stair = models.CharField(max_length=255, null=True, blank=True)
     address_door = models.CharField(max_length=255, null=True, blank=True)
-    address_postcode = models.CharField(max_length=255, null=True, blank=True)
-    address_city = models.CharField(max_length=255, null=True, blank=True)
-    address_country = models.CharField(max_length=255, null=True, blank=True)
+    address_postcode = models.CharField(max_length=255)
+    address_city = models.CharField(max_length=255)
+    address_country = models.CharField(max_length=255)
     phone = models.CharField(max_length=255, null=True, blank=True)
 
     # Personal data (only for natural people)

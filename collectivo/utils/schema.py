@@ -105,9 +105,11 @@ class SchemaMixin:
                 "field_type": field_type,
                 "input_type": input_types[field_type],
             }
+
             # Convert CharField to textarea if no max_length is set (TextField)
             if field_type == "CharField" and field_obj.max_length is None:
                 data[field_name]["input_type"] = "textarea"
+
             for attr in field_attrs:
                 if hasattr(field_obj, attr):
                     # Add URL path where choices can be retrieved

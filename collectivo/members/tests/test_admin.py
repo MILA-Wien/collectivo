@@ -159,7 +159,7 @@ class MembersAdminTests(TestCase):
 
     def test_filtering_tags(self):
         """Test that member tags can be filtered."""
-        user_ids, tag_ids = self.create_members()
+        _, tag_ids = self.create_members()
         for i, j in enumerate([0, 2, 1]):
             res = self.client.get(MEMBERS_URL + f"?user__tags={tag_ids[i]}")
             self.assertEqual(
@@ -177,13 +177,13 @@ class MembersAdminTests(TestCase):
             [entry["user__first_name"] for entry in res.data], ["0", "2", "1"]
         )
 
-    def test_schema(self):
-        """Test that the schema is correct."""
+    def test_schema_choices_url(self):
+        """Test that the choices url can be retrieved through the schema."""
         self.create_members()
         res = self.client.get(MEMBERS_SCHEMA_URL)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(
-            res.data["user__tags"]["choices_endpoint"], "/api/tags/tags/"
+            res.data["user__tags"]["choices_url"], "/api/tags/tags/"
         )
 
     def test_new_users_are_added_to_members_user_group(self):
