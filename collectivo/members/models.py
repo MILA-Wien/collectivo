@@ -185,4 +185,4 @@ class Member(models.Model):
 
     def __str__(self):
         """Return string representation."""
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.user.first_name} {self.user.last_name}"

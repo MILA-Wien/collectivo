@@ -51,7 +51,7 @@ class MemberBaseSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(MemberBaseSerializer):
-    """Serializer for admins to manage members in detail."""
+    """Serializer for admins to manage members."""
 
     class Meta:
         """Serializer settings."""

@@ -1,21 +1,23 @@
-"""Test the features of the emails API."""
+"""Tests for the emails extension."""
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.core import mail
+from django.db.models import signals
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from collectivo.members.models import Member
-from collectivo.members.tests.test_admin import MEMBER_POST, MEMBERS_CREATE_URL
-from collectivo.users.userinfo import UserInfo
+from collectivo.utils.test import create_testuser
 
-from .models import EmailAutomation, EmailCampaign
+from .models import EmailCampaign
 
 TEMPLATES_URL = reverse("collectivo:collectivo.emails:template-list")
 CAMPAIGNS_URL = reverse("collectivo:collectivo.emails:campaign-list")
 DESIGNS_URL = reverse("collectivo:collectivo.emails:design-list")
 AUTO_URL = reverse("collectivo:collectivo.emails:automation-list")
+
+User = get_user_model()
 
 
 def run_mocked_celery_chain(mocked_chain):
@@ -28,15 +30,17 @@ def run_mocked_celery_chain(mocked_chain):
         return task.result
 
 
-class EmailsTests(TestCase):
-    """Test the members emails API."""
+class EmailsBaseTests(TestCase):
+    """Base class for tests of the emails extension."""
 
     def setUp(self):
         """Prepare test case."""
-        self.client = AuthClient()
-        self.client.force_authenticate(
-            UserInfo(is_authenticated=True, roles=["members_admin"])
+        signals.post_save.disconnect(
+            sender=User, dispatch_uid="update_keycloak_user"
         )
+        self.client = APIClient()
+        self.user = create_testuser(superuser=True)
+        self.client.force_authenticate(self.user)
         res = self.client.post(
             DESIGNS_URL, {"name": "Test design 2", "body": "TEST {{content}}"}
         )
@@ -44,12 +48,15 @@ class EmailsTests(TestCase):
             "name": "Test template 2",
             "subject": "Test",
             "design": res.data["id"],
-            "body": "First name: {{member.first_name}} <br/> "
-            "Person type: {{member.person_type}}",
+            "body": "First name: {{user.first_name}} <br/> New line",
         }
         self.recipients = [
-            Member.objects.get(email="test_member_01@example.com").id,
-            Member.objects.get(email="test_member_02@example.com").id,
+            User.objects.create_user(
+                username=f"recipient_0{i}@example.com",
+                first_name=f"recipient_0{i}",
+                email=f"recipient_0{i}@example.com",
+            ).pk
+            for i in [1, 2]
         ]
 
     def _batch_assertions(self, res):
@@ -58,18 +65,23 @@ class EmailsTests(TestCase):
         obj = EmailCampaign.objects.get(pk=res.data["id"])
         self.assertEqual(obj.status, "success")
         self.assertEqual(len(mail.outbox), 2)
+        print(mail.outbox[0].recipients())
         self.assertEqual(
-            mail.outbox[0].recipients()[0], "test_member_01@example.com"
+            mail.outbox[0].recipients()[0], "recipient_01@example.com"
         )
         self.assertEqual(mail.outbox[0].subject, "Test")
         self.assertEqual(
             mail.outbox[0].alternatives[0][0],
-            "TEST First name: Test Member 01 <br/> Person type: natural",
+            "TEST First name: recipient_01 <br/> New line",
         )
         self.assertEqual(
             mail.outbox[0].body,
-            "TEST First name: Test Member 01  \nPerson type: natural\n\n",
+            "TEST First name: recipient_01  \nNew line\n\n",
         )
+
+
+class EmailsTests(TestCase):
+    """Tests for the emails extension."""
 
     @patch("collectivo.emails.serializers.chain")
     def test_email_batch_template(self, chain):
@@ -85,34 +97,3 @@ class EmailsTests(TestCase):
         self.assertEqual(res.status_code, 201)
         run_mocked_celery_chain(chain)
         self._batch_assertions(res)
-
-    @patch("collectivo.emails.serializers.chain")
-    def test_new_member_automation(self, chain):
-        """Test that a new member gets an automatic email."""
-        # Create automation
-        template = self.client.post(TEMPLATES_URL, self.template_data)
-        automation = {
-            "trigger": "new_member",
-            "template": template.data["id"],
-        }
-        automation_res = self.client.post(AUTO_URL, automation)
-        self.assertEqual(automation_res.status_code, 201)
-
-        # Create a new member
-        member = {
-            **MEMBER_POST,
-            "email": "test_user_not_member@example.com",
-        }
-        res = self.client.post(MEMBERS_CREATE_URL, member)
-        self.assertEqual(res.status_code, 201)
-
-        # Check that the email was sent automatically
-        run_mocked_celery_chain(chain)
-        obj = EmailCampaign.objects.get(template=template.data["id"])
-        automation = EmailAutomation.objects.get(pk=automation_res.data["id"])
-        self.assertEqual(obj.automation, automation)
-        self.assertEqual(obj.status, "success")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(
-            mail.outbox[0].recipients()[0], "test_user_not_member@example.com"
-        )

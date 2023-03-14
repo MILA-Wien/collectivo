@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from collectivo.tags.models import Tag
-from collectivo.utils.tests import create_testuser
+from collectivo.utils.test import create_testuser
 
 from ..models import Member, Membership, MembershipType
 

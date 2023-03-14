@@ -2,16 +2,15 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from collectivo.version import __version__
-
 
 class DashboardConfig(AppConfig):
     """Configuration class for the dashboard extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "collectivo.dashboard"
-    description = """An extension to provide a starting page where other
-    extensions can display tiles."""
+    description = (
+        """A starting page. Can be used by extensions to display messages."""
+    )
 
     def ready(self):
         """

@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.utils.tests import create_testuser
+from collectivo.utils.test import create_testuser
 
 from .models import DashboardTile
 

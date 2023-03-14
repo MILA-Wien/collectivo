@@ -7,7 +7,7 @@ from django.utils.timezone import localdate
 from rest_framework.test import APIClient
 
 from collectivo.tags.models import Tag
-from collectivo.utils.tests import create_testuser
+from collectivo.utils.test import create_testuser
 
 from .. import models
 from ..models import Member

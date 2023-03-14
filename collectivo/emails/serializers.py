@@ -8,6 +8,7 @@ from html2text import html2text
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from collectivo.extensions.models import Extension
 from collectivo.tags.models import Tag
 
 from . import models
@@ -95,7 +96,10 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
 
         # Prevent sending to members with broken emails tag
         recipients = data.get("recipients")
-        tag = Tag.objects.get_or_create(label="Email broken", built_in=True)[0]
+        extension = Extension.objects.get(name="emails")
+        tag = Tag.objects.get_or_create(
+            label="Email broken", from_extension=extension
+        )[0]
         if recipients is not None:
             for recipient in recipients:
                 if tag in recipient.tags.all():
@@ -128,8 +132,13 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         from_email = settings.DEFAULT_FROM_EMAIL
         emails = []
         for recipient in recipients:
-            body_html = Template(body).render(Context({"member": recipient}))
+            body_html = Template(body).render(Context({"user": recipient}))
             body_text = html2text(body_html)
+            if recipient.email in (None, ""):
+                campaign.status = "failure"
+                campaign.status_message = f"{recipient} has no email."
+                campaign.save()
+                raise ValueError(campaign.status_message)
             email = EmailMultiAlternatives(
                 subject, body_text, from_email, [recipient.email]
             )
