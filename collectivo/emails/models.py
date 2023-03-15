@@ -54,11 +54,12 @@ class EmailCampaign(models.Model):
     status_message = models.CharField(max_length=255, null=True)
     sent = models.DateTimeField(null=True)
     recipients = models.ManyToManyField(get_user_model())
-    automation = models.ForeignKey(
-        "emails.EmailAutomation",
+    extension = models.ForeignKey(
+        "extensions.Extension",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        help_text="The extension that created this campaign.",
     )
 
     def __str__(self):
@@ -67,31 +68,3 @@ class EmailCampaign(models.Model):
             "Email campaign "
             f"({self.id}, {self.status}, {self.template.name})"
         )
-
-
-class EmailAutomationTrigger(models.Model):
-    """A trigger from an extension to start an automatic email campaign."""
-
-    name = models.CharField(max_length=255, unique="True")
-    extension = models.ForeignKey(
-        "extensions.Extension", on_delete=models.CASCADE
-    )
-
-    def __str__(self):
-        """Return a string representation of the object."""
-        return self.name
-
-
-class EmailAutomation(models.Model):
-    """An automatic email campaign that is connected to a trigger."""
-
-    trigger = models.OneToOneField(
-        "EmailAutomationTrigger", primary_key=True, on_delete=models.CASCADE
-    )
-    template = models.ForeignKey(
-        "emails.EmailTemplate", on_delete=models.SET_NULL, null=True
-    )
-
-    def __str__(self):
-        """Return a string representation of the object."""
-        return f"{self.trigger} ({self.id})"

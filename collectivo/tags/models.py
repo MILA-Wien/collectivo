@@ -6,28 +6,36 @@ from django.db import models
 class TagCategory(models.Model):
     """A category of tags."""
 
-    label = models.CharField(max_length=255, unique=True)
-    from_extension = models.ForeignKey(
-        "extensions.Extension", null=True, blank=True, on_delete=models.CASCADE
+    name = models.CharField(max_length=255, unique=True)
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text="The extension that this tag category belongs to.",
     )
 
     def __str__(self):
         """Return string representation."""
-        return self.label
+        return self.name
 
 
 class Tag(models.Model):
     """A tag that can be assigned to users."""
 
-    label = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     users = models.ManyToManyField(get_user_model(), related_name="tags")
     category = models.ForeignKey(
         "TagCategory", null=True, blank=True, on_delete=models.CASCADE
     )
-    from_extension = models.ForeignKey(
-        "extensions.Extension", null=True, blank=True, on_delete=models.CASCADE
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text="The extension that this tag belongs to.",
     )
 
     def __str__(self):
         """Return string representation."""
-        return self.label
+        return self.name

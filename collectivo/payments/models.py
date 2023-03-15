@@ -3,18 +3,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 
-# TODO: How to manage the payment methods? Some need iban, some something else
-class PaymentMethod(models.Model):
-    """A payment method."""
-
-    name = models.CharField(max_length=255)
-    enabled = models.BooleanField(default=True)
-
-    def __str__(self):
-        """Return a string representation of the object."""
-        return f"PaymentMethod ({self.name})"
-
-
 class PaymentProfile(models.Model):
     """An extension of the user model with payment data."""
 
@@ -26,19 +14,27 @@ class PaymentProfile(models.Model):
     bank_account_owner = models.CharField(
         max_length=255, null=True, blank=True
     )
-    payment_method = models.ForeignKey(
-        "PaymentMethod",
-        on_delete=models.SET_NULL,
-        null=True,
+    payment_method = models.CharField(
+        choices=[
+            ("transfer", "sepa"),
+        ],
+        max_length=30,
     )
 
     def __str__(self):
         """Return a string representation of the object."""
-        return f"PaymentUser ({self.user_id})"
+        return str(self.user)
 
 
 class Payment(models.Model):
     """A payment."""
+
+    name = models.CharField(max_length=255)
+    purpose = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    user = models.ForeignKey(
+        "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     status = models.CharField(
         max_length=10,
@@ -50,22 +46,27 @@ class Payment(models.Model):
             ("failure", "failure"),
         ],
     )
+
     created = models.DateTimeField(auto_now_add=True)
     payed = models.DateTimeField(null=True)
 
-    name = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    profile = models.ForeignKey(
-        "PaymentProfile", on_delete=models.SET_NULL, null=True
+    subscription = models.ForeignKey(
+        "Subscription", on_delete=models.SET_NULL, null=True, blank=True
     )
 
     def __str__(self):
         """Return a string representation of the object."""
-        return f"Payment ({self.name})"
+        return self.name
 
 
 class Subscription(models.Model):
     """A repetitive payment."""
+
+    name = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    user = models.ForeignKey(
+        "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     starting_date = models.DateField()
     ending_date = models.DateField(null=True)
@@ -80,14 +81,7 @@ class Subscription(models.Model):
             ("day", "day"),
         ],
     )
-    payments = models.ManyToManyField("Payment")
-
-    name = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    profile = models.ForeignKey(
-        "PaymentProfile", on_delete=models.SET_NULL, null=True
-    )
 
     def __str__(self):
         """Return a string representation of the object."""
-        return f"Subscription ({self.name})"
+        return self.name

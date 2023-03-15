@@ -2,7 +2,7 @@
 from rest_framework import viewsets
 
 from collectivo.core.permissions import IsSuperuser
-from collectivo.filters import get_filterset_fields
+from collectivo.filters import get_filterset
 from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
@@ -13,7 +13,7 @@ class EmailDesignViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailDesignSerializer
-    filterset_fields = get_filterset_fields(serializers.EmailDesignSerializer)
+    # filterset_fields = get_filterset(serializers.EmailDesignSerializer)
     queryset = models.EmailDesign.objects.all()
 
 
@@ -22,9 +22,7 @@ class EmailTemplateViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailTemplateSerializer
-    filterset_fields = get_filterset_fields(
-        serializers.EmailTemplateSerializer
-    )
+    # filterset_fields = get_filterset(serializers.EmailTemplateSerializer)
     queryset = models.EmailTemplate.objects.all()
 
 
@@ -33,18 +31,5 @@ class EmailCampaignViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailCampaignSerializer
-    filterset_fields = get_filterset_fields(
-        serializers.EmailCampaignSerializer
-    )
+    # filterset_fields = get_filterset(serializers.EmailCampaignSerializer)
     queryset = models.EmailCampaign.objects.all()
-
-
-class EmailAutomationViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage email automations."""
-
-    permission_classes = [IsSuperuser]
-    serializer_class = serializers.EmailAutomationSerializer
-    filterset_fields = get_filterset_fields(
-        serializers.EmailAutomationSerializer
-    )
-    queryset = models.EmailAutomation.objects.all()

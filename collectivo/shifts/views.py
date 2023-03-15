@@ -212,12 +212,12 @@ class ShiftViewSet(viewsets.ModelViewSet):
 class AssignmentViewSet(viewsets.ModelViewSet):
     """Manage individual shifts."""
 
-    queryset = models.Assignment.objects.all()
+    queryset = models.ShiftAssignment.objects.all()
     serializer_class = serializers.AssignmentSerializer
 
 
 class ShiftUserViewSet(viewsets.ModelViewSet):
     """Manage shift users."""
 
-    queryset = models.ShiftUser.objects.all()
+    queryset = models.ShiftProfile.objects.all()
     serializer_class = serializers.ShiftUserSerializer

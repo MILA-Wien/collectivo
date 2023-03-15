@@ -39,16 +39,6 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class EmailAutomationSerializer(serializers.ModelSerializer):
-    """Serializer for email automations."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = models.EmailAutomation
-        fields = "__all__"
-
-
 class EmailCampaignSerializer(serializers.ModelSerializer):
     """Serializer for email campaigns (email sending orders)."""
 

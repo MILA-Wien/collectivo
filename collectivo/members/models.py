@@ -1,4 +1,6 @@
 """Models of the members extension."""
+from django.apps import apps
+from django.conf import settings
 from django.db import models
 
 # --------------------------------------------------------------------------- #
@@ -9,7 +11,7 @@ from django.db import models
 class MembershipType(models.Model):
     """A type of membership. E.g. in a specific organisation."""
 
-    label = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True)
 
     has_shares = models.BooleanField(default=False)
     shares_price = models.DecimalField(
@@ -59,7 +61,7 @@ class MembershipType(models.Model):
 
     def __str__(self):
         """Return string representation."""
-        return self.label
+        return self.name
 
 
 class MembershipStatus(models.Model):
@@ -68,12 +70,12 @@ class MembershipStatus(models.Model):
     E.g. active or passive member.
     """
 
-    label = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
 
     def __str__(self):
         """Return string representation."""
-        return self.label
+        return self.name
 
 
 # --------------------------------------------------------------------------- #
@@ -121,8 +123,9 @@ class Membership(models.Model):
         "Membership", blank=True, null=True, on_delete=models.CASCADE
     )
 
-    # TODO: Connection to payments module
-    # payments = models.ManyToManyField("payments.Payment", blank=True)
+    # Connection to payment module
+    payments = models.ManyToManyField("payments.Payment")
+    subscriptions = models.ManyToManyField("payments.Subscription")
 
 
 class MembershipCard(models.Model):

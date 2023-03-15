@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from collectivo.shifts.models import Assignment, Shift, ShiftUser
+from collectivo.shifts.models import Shift, ShiftAssignment, ShiftProfile
 from collectivo.utils.test import create_testuser
 
 SHIFTS_URL = reverse("collectivo:collectivo.shifts:shift-list")
@@ -75,7 +75,7 @@ class ShiftAPITests(TestCase):
         res = self.client.post(SHIFT_USERS_URL, payload)
         if res.status_code != 201:
             raise ValueError("Could not register shift user:", res.content)
-        shift_user = ShiftUser.objects.get(id=res.data["id"])
+        shift_user = ShiftProfile.objects.get(id=res.data["id"])
         return shift_user
 
     def test_create_shift(self):
@@ -93,25 +93,25 @@ class ShiftAPITests(TestCase):
         """
         shift = self.create_shift(payload=TEST_SHIFT_POST)
         self.assertEqual(
-            Assignment.objects.filter(
+            ShiftAssignment.objects.filter(
                 shift__shift_title="first_regular_shift",
             ).count(),
             shift.required_users,
         )
         self.assertEqual(
-            Assignment.objects.filter(
+            ShiftAssignment.objects.filter(
                 shift__shift_title="first_regular_shift",
             ).count(),
             4,
         )
-        assignments = Assignment.objects.all()
+        assignments = ShiftAssignment.objects.all()
         self.assertEqual(assignments[0].attended, False)
         self.assertEqual(assignments[3].additional_info_individual, "")
 
     def test_assignment_gets_attributes_from_shift(self):
         """Test that assignments get atttributes from shifts."""
         shift = self.create_shift(payload=TEST_SHIFT_POST)
-        assignments = Assignment.objects.all()
+        assignments = ShiftAssignment.objects.all()
         self.assertEqual(
             shift.shift_title,
             assignments[0].shift.shift_title,
@@ -141,7 +141,7 @@ class ShiftAPITests(TestCase):
                 "API patch call failed, could not assign user to shift:",
                 res.content,
             )
-        assignment = Assignment.objects.get(id=res.data["id"])
+        assignment = ShiftAssignment.objects.get(id=res.data["id"])
         return assignment
 
     def test_assignment_is_assigned_by_user(self):

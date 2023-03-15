@@ -104,9 +104,9 @@ class MemberRegisterSerializer(MemberBaseSerializer):
         """Fill the possible status options for Genossenschaft MILA."""
         super().__init__(*args, **kwargs)
         self.fields["membership_status"].choices = [
-            (x.id, x.label)
+            (x.id, x.name)
             for x in models.MembershipStatus.objects.filter(
-                type__label="Genossenschaft MILA"
+                type__name="Genossenschaft MILA"
             ).all()
         ]
 
@@ -162,11 +162,11 @@ class MemberRegisterSerializer(MemberBaseSerializer):
                 raise ParseError("membership_type required for natural person")
         elif pt == "legal":
             membership_type = models.MembershipType.objects.get(
-                label="Genossenschaft MILA"
+                name="Genossenschaft MILA"
             )
             membership_status = models.MembershipStatus.objects.get(
                 type=membership_type,
-                label="Investierend",
+                name="Investierend",
             )
             attrs["membership_status"] = membership_status.pk
         else:
@@ -222,7 +222,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
                 data={
                     "member": member.pk,
                     "type": models.MembershipType.objects.get(
-                        label="Genossenschaft MILA"
+                        name="Genossenschaft MILA"
                     ).pk,
                     **self.membership_data,
                 }
@@ -234,7 +234,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             for field in ["Statuten angenommen", "Öffentlichkeitsarbeit"]:
                 value = self.tag_fields[field] or False
                 if value is True:
-                    tag = Tag.objects.get_or_create(label=field)[0]
+                    tag = Tag.objects.get_or_create(name=field)[0]
                     tag.users.add(member.user)
                     tag.save()
 

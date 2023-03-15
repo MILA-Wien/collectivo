@@ -25,10 +25,10 @@ def setup(sender, **kwargs):
     Group.objects.get_or_create(name="collectivo.members.user")
 
     try:
-        mtype = models.MembershipType.objects.get(label="Genossenschaft MILA")
+        mtype = models.MembershipType.objects.get(name="Genossenschaft MILA")
     except models.MembershipType.DoesNotExist:
         mtype = models.MembershipType.objects.create(
-            label="Genossenschaft MILA",
+            name="Genossenschaft MILA",
             has_shares=True,
             shares_price=20,
             shares_number_custom=True,
@@ -38,9 +38,9 @@ def setup(sender, **kwargs):
             has_fees=False,
             has_card=True,
         )
-    for label in ["Aktiv", "Investierend"]:
+    for name in ["Aktiv", "Investierend"]:
         models.MembershipStatus.objects.get_or_create(
-            label=label,
+            name=name,
             type=mtype,
         )
 

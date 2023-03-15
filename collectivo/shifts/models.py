@@ -66,11 +66,11 @@ class Shift(models.Model):
     )
 
 
-class Assignment(models.Model):
+class ShiftAssignment(models.Model):
     """A shift to be done by a single user."""
 
     assigned_user = models.ForeignKey(
-        "ShiftUser",
+        "ShiftProfile",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
@@ -83,7 +83,7 @@ class Assignment(models.Model):
     additional_info_individual = models.TextField(max_length=300)
 
 
-class ShiftUser(models.Model):
+class ShiftProfile(models.Model):
     """A user that can be assigned to a shift."""
 
     user = models.OneToOneField(

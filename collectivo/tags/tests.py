@@ -22,7 +22,7 @@ class TagsTests(TestCase):
         self.client = APIClient()
         self.user = create_testuser(superuser=True)
         self.client.force_authenticate(self.user)
-        self.tag = Tag.objects.create(label="test_tag")
+        self.tag = Tag.objects.create(name="test_tag")
 
     def test_get_tags(self):
         """Test getting tags."""
@@ -42,7 +42,7 @@ class TagsTests(TestCase):
     def test_tag_assign(self):
         """Test assigning a tag to a member."""
         self.assign_tag()
-        self.assertTrue(self.user.tags.filter(label="test_tag").exists())
+        self.assertTrue(self.user.tags.filter(name="test_tag").exists())
 
     def test_tag_delete_denied(self):
         """Test deleting a tag is denied if it is assigned to a member."""
@@ -55,7 +55,7 @@ class TagsTests(TestCase):
         """Test deleting a tag is accepted if it is not used anywhere."""
         self.assign_tag()
         self.unassign_tag()
-        self.assertFalse(self.user.tags.filter(label="test_tag").exists())
+        self.assertFalse(self.user.tags.filter(name="test_tag").exists())
         tags_url = reverse(TAG_URL_NAME, args=[self.tag.pk])
         res = self.client.delete(tags_url)
         self.assertEqual(res.status_code, 204)

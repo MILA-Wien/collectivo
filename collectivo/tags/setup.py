@@ -19,4 +19,4 @@ def setup(sender, **kwargs):
 
     if settings.CREATE_TEST_DATA:
         for i in range(100):
-            Tag.objects.get_or_create(label=f"Test tag {i}")
+            Tag.objects.get_or_create(name=f"Test tag {i}")

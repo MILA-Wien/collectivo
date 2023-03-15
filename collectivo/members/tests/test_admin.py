@@ -43,7 +43,7 @@ class MembersAdminTests(TestCase):
         self.client = APIClient()
         self.user = create_testuser(superuser=True)
         self.client.force_authenticate(self.user)
-        self.membership_type = MembershipType.objects.create(label="Testss")
+        self.membership_type = MembershipType.objects.create(name="Testss")
         Member.objects.all().delete()
 
     def create_members(self):
@@ -53,7 +53,7 @@ class MembersAdminTests(TestCase):
         )
         ids = []
         tag_ids = []
-        other_tag = Tag.objects.get_or_create(label="Other tag")[0]
+        other_tag = Tag.objects.get_or_create(name="Other tag")[0]
         for i in [0, 2, 1]:
             # Create a user
             user = User.objects.create_user(
@@ -64,7 +64,7 @@ class MembersAdminTests(TestCase):
             ids.append(user.id)
 
             # Add tags to this user
-            tag = Tag.objects.get_or_create(label=f"Tag {i}")[0]
+            tag = Tag.objects.get_or_create(name=f"Tag {i}")[0]
             tag.users.add(user)
             other_tag.users.add(user)
             other_tag.save()
