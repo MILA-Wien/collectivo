@@ -157,7 +157,7 @@ services:
     restart: always
     environment:
       VITE_APP_API: http://collectivo.local:8000
-      VITE_KEYCLOAK_URL: http://keycloak:8080
+      VITE_KEYCLOAK_URL: ${KEYCLOAK_SERVER_URL}
     ports:
       - '8001:80'
 
@@ -168,7 +168,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KEYCLOAK_FRONTEND_URL: http://keycloak:8080
+      KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_SERVER_URL}
       ROOT_LOGLEVEL: ALL
       KEYCLOAK_LOGLEVEL: DEBUG
     volumes:
@@ -177,6 +177,87 @@ services:
     command: start-dev --import-realm
     ports:
       - '8080:8080'
+  habidat-db:
+    image: mariadb
+    restart: always
+    volumes:
+      - ./docker/habidat/db:/var/lib/mysql
+    environment:
+      # please change:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_PASSWORD=secret
+      # no need to change for default setup:
+      - MYSQL_DATABASE=direktkredit
+      - MYSQL_USER=direktkredit
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      timeout: 20s
+      retries: 10
+    logging:
+      options:
+        max-size: 50m  
+  habidat:
+    container_name: habidat
+    #image: habidat/direktkredit:1.1
+    image: nanu/habidat
+    restart: always
+    volumes:
+      - ./docker/habidat/config/config.sample.json:/habidat/config/config.sample.json
+      - ./docker/habidat/files:/habidat/public/files
+      - ./docker/habidat/images:/habidat/public/images
+      - ./docker/habidat/upload:/habidat/upload  
+    environment:
+          # please change:
+      - HABIDAT_DK_PROJECT_ID=project
+      - HABIDAT_DK_PROJECT_NAME=Projectname
+      - HABIDAT_DK_PROJECT_EMAIL=
+      - HABIDAT_DK_PROJECT_LOGO=logo.gif
+      - HABIDAT_DK_ADMIN_EMAIL=admin@example.com
+      - HABIDAT_DK_ADMIN_USERNAME=admin
+      - HABIDAT_DK_ADMIN_PASSWORD=secret
+      - HABIDAT_DK_SESSION_SECRET=secret      
+      # no need to change for default setup:
+      - HABIDAT_DK_DB_URI=mysql://direktkredit:secret@habidat-db/direktkredit
+      - HABIDAT_DK_PORT_HTTP=80
+      - HABIDAT_DK_AUTH_ADMIN_METHOD=local,oidc    # ldap is also possible                             
+      # only if admin auth method includes LDAP:
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_URI=ldap://host:port
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_HOST=host
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_PORT=389
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_BINDDN=cn=ldap-read,dc=example,dc=com
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_PASSWORD=secret
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_BASE=dc=example,dc=com
+      #- HABIDAT_DK_AUTH_ADMIN_LDAP_SEARCHFILTER=(cn={{username}})
+      # only if admin auth method includes oidc
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_LABEL=Keycloak (Admin)
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_ISSUER=${KEYCLOAK_SERVER_URL}/realms/collectivo
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_CLIENT_ID=habidat
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_CLIENT_SECRET=hF2EGOwy7QTI5G9SNGFTejsC9j8G5X34
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_CALLBACK_URL=http://direktkredit.local:8020/login-oidc-cb-admin
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_AUTH_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/auth
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_TOKEN_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/token
+      - HABIDAT_DK_AUTH_ADMIN_OIDC_USERINFO_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/userinfo
+      # list of user auth methods (local or oidc)
+      - HABIDAT_DK_AUTH_USER_METHOD=oidc                              
+      # only if user auth method includes OIDC:
+      - HABIDAT_DK_AUTH_USER_OIDC_LABEL=Keycloak
+      - HABIDAT_DK_AUTH_USER_OIDC_ISSUER=${KEYCLOAK_SERVER_URL}/realms/collectivo
+      - HABIDAT_DK_AUTH_USER_OIDC_CLIENT_ID=habidat
+      - HABIDAT_DK_AUTH_USER_OIDC_CLIENT_SECRET=hF2EGOwy7QTI5G9SNGFTejsC9j8G5X34
+      - HABIDAT_DK_AUTH_USER_OIDC_CALLBACK_URL=http://direktkredit.local:8020/login-oidc-cb
+      - HABIDAT_DK_AUTH_USER_OIDC_AUTH_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/auth
+      - HABIDAT_DK_AUTH_USER_OIDC_TOKEN_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/token
+      - HABIDAT_DK_AUTH_USER_OIDC_USERINFO_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/userinfo
+    depends_on:
+      habidat-db:
+        condition: service_healthy
+    links:
+      - habidat-db
+    ports:
+      - 8020:80
+    logging:
+      options:
+        max-size: 50m        
 
 volumes:
   collectivo-db-data:
