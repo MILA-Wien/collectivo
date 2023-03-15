@@ -88,7 +88,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         recipients = data.get("recipients")
         extension = Extension.objects.get(name="emails")
         tag = Tag.objects.get_or_create(
-            label="Email broken", from_extension=extension
+            name="Email broken", extension=extension
         )[0]
         if recipients is not None:
             for recipient in recipients:

@@ -33,7 +33,7 @@ class ShiftSerializer(serializers.ModelSerializer):
         """Get all assigned users for a shift."""
         assignments = ShiftAssignment.objects.filter(shift=obj)
         assigned_users = ShiftProfile.objects.filter(
-            assignment__in=assignments
+            shiftassignment__in=assignments
         )
         return ShiftUserSerializer(assigned_users, many=True).data
 

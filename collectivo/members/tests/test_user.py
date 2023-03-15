@@ -89,7 +89,7 @@ class MembersRegistrationTests(TestCase):
         self.user = create_testuser(TEST_USER)
         self.client.force_authenticate(self.user)
         self.status = models.MembershipStatus.objects.get(
-            type__label="Genossenschaft MILA", label="Investierend"
+            type__name="Genossenschaft MILA", name="Investierend"
         )
 
     def test_cannot_access_profile(self):
@@ -143,9 +143,9 @@ class MembersRegistrationTests(TestCase):
     def test_tags_assigned(self):
         """Test that tags are assigned to the user when a member is created."""
         member = self.create_member()
-        tag = Tag.objects.get_or_create(label="Statuten angenommen")[0]
+        tag = Tag.objects.get_or_create(name="Statuten angenommen")[0]
         self.assertIn(tag, member.user.tags.all())
-        tag = Tag.objects.get_or_create(label="Öffentlichkeitsarbeit")[0]
+        tag = Tag.objects.get_or_create(name="Öffentlichkeitsarbeit")[0]
         self.assertNotIn(tag, member.user.tags.all())
 
     def test_statutes_not_approved_raises_error(self):
@@ -175,7 +175,7 @@ class MembersProfileTests(TestCase):
         self.user = create_testuser(TEST_USER)
         self.client.force_authenticate(self.user)
         self.status = models.MembershipStatus.objects.get(
-            type__label="Genossenschaft MILA", label="Investierend"
+            type__name="Genossenschaft MILA", name="Investierend"
         )
         self.member = self.create_member()
 

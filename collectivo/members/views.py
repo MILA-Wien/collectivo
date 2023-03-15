@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from collectivo.core.permissions import HasGroup
-from collectivo.filters import get_filterset
+from collectivo.utils.filters import get_filterset
 from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers

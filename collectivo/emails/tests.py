@@ -15,7 +15,6 @@ from .models import EmailCampaign
 TEMPLATES_URL = reverse("collectivo:collectivo.emails:template-list")
 CAMPAIGNS_URL = reverse("collectivo:collectivo.emails:campaign-list")
 DESIGNS_URL = reverse("collectivo:collectivo.emails:design-list")
-AUTO_URL = reverse("collectivo:collectivo.emails:automation-list")
 
 User = get_user_model()
 
