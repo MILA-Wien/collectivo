@@ -1,6 +1,7 @@
 """Models of the emails module."""
 from django.contrib.auth import get_user_model
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class EmailDesign(models.Model):
@@ -8,6 +9,7 @@ class EmailDesign(models.Model):
 
     name = models.CharField(max_length=255, unique="True")
     body = models.TextField()
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -29,6 +31,7 @@ class EmailTemplate(models.Model):
         null=True,
         help_text="This tag will be added to recipients if campaign is sent.",
     )
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -61,6 +64,7 @@ class EmailCampaign(models.Model):
         blank=True,
         help_text="The extension that created this campaign.",
     )
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""

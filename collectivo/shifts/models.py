@@ -1,6 +1,7 @@
 """Models of the shift module."""
 from django.contrib.auth import get_user_model
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class Shift(models.Model):
@@ -65,6 +66,8 @@ class Shift(models.Model):
         null=True,
     )
 
+    history = HistoricalRecords()
+
 
 class ShiftAssignment(models.Model):
     """A shift to be done by a single user."""
@@ -82,6 +85,8 @@ class ShiftAssignment(models.Model):
     attended = models.BooleanField(default=False)
     additional_info_individual = models.TextField(max_length=300)
 
+    history = HistoricalRecords()
+
 
 class ShiftProfile(models.Model):
     """A user that can be assigned to a shift."""
@@ -89,3 +94,5 @@ class ShiftProfile(models.Model):
     user = models.OneToOneField(
         get_user_model(), primary_key=True, on_delete=models.CASCADE
     )
+
+    history = HistoricalRecords()

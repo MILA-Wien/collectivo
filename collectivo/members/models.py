@@ -74,6 +74,8 @@ class MembershipStatus(models.Model):
     name = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
 
+    history = HistoricalRecords()
+
     def __str__(self):
         """Return string representation."""
         return self.name
@@ -128,6 +130,8 @@ class Membership(models.Model):
     payments = models.ManyToManyField("payments.Payment")
     subscriptions = models.ManyToManyField("payments.Subscription")
 
+    history = HistoricalRecords()
+
 
 class MembershipCard(models.Model):
     """A membership card that can be assigned to members."""
@@ -137,6 +141,8 @@ class MembershipCard(models.Model):
     membership = models.ForeignKey(
         "Membership", on_delete=models.CASCADE, null=True, blank=True
     )
+
+    history = HistoricalRecords()
 
 
 # --------------------------------------------------------------------------- #

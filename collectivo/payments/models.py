@@ -1,6 +1,7 @@
 """Models of the payments module."""
 from django.contrib.auth import get_user_model
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class PaymentProfile(models.Model):
@@ -20,6 +21,8 @@ class PaymentProfile(models.Model):
         ],
         max_length=30,
     )
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -54,6 +57,8 @@ class Payment(models.Model):
         "Subscription", on_delete=models.SET_NULL, null=True, blank=True
     )
 
+    history = HistoricalRecords()
+
     def __str__(self):
         """Return a string representation of the object."""
         return self.name
@@ -81,6 +86,8 @@ class Subscription(models.Model):
             ("day", "day"),
         ],
     )
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""

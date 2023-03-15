@@ -1,6 +1,7 @@
 """Models of the members extension."""
 from django.contrib.auth import get_user_model
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class TagCategory(models.Model):
@@ -14,6 +15,8 @@ class TagCategory(models.Model):
         on_delete=models.CASCADE,
         help_text="The extension that this tag category belongs to.",
     )
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return string representation."""
@@ -35,6 +38,8 @@ class Tag(models.Model):
         on_delete=models.CASCADE,
         help_text="The extension that this tag belongs to.",
     )
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return string representation."""
