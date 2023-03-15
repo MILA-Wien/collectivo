@@ -1,5 +1,6 @@
 """Models of the members extension."""
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #
@@ -56,6 +57,8 @@ class MembershipType(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return string representation."""
@@ -188,6 +191,8 @@ class Member(models.Model):
 
     # Admin data
     notes = models.TextField(null=True, blank=True)
+
+    history = HistoricalRecords()
 
     def __str__(self):
         """Return string representation."""

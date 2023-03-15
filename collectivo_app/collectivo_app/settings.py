@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "simple_history",
     "collectivo",
     "collectivo.core",
     "collectivo.auth.keycloak",
@@ -91,6 +92,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "collectivo.core.middleware.RequestLogMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 if DEVELOPMENT:

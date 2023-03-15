@@ -33,6 +33,11 @@ class CoreApiTests(TestCase):
         self.user = get_user_model().objects.create_user(username="testuser")
         self.client.force_authenticate(self.user)
 
+    def test_get_api_docs(self):
+        """Test getting the API docs."""
+        res = self.client.get("/api/dev/schema/?version=0.1.0")
+        self.assertEqual(res.status_code, 200)
+
     def test_get_version(self):
         """Test getting current version is correct."""
         res = self.client.get(reverse("collectivo:collectivo.core:version"))

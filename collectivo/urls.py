@@ -15,7 +15,7 @@ for app in settings.INSTALLED_APPS:
         urlpatterns.append(pattern)
 
 # Add debug patterns
-if settings.DEBUG:
+if settings.DEVELOPMENT:
     urlpatterns += [
         # Access static files
         re_path(r"^static/(?P<path>.*)$", serve),

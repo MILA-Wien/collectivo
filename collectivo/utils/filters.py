@@ -51,7 +51,9 @@ def get_filterset_fields(serializer: serializers.Serializer) -> dict:
     return {
         name: filters[type(instance).__name__]
         for name, instance in serializer().fields.items()
-        if type(instance).__name__ in filters and not instance.write_only
+        if type(instance).__name__ in filters
+        and not instance.write_only
+        and name != "history"
     }
 
 

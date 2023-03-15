@@ -13,7 +13,7 @@ class EmailDesignViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailDesignSerializer
-    filterset_fields = get_filterset(serializers.EmailDesignSerializer)
+    filterset_class = get_filterset(serializers.EmailDesignSerializer)
     queryset = models.EmailDesign.objects.all()
 
 
@@ -22,7 +22,7 @@ class EmailTemplateViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailTemplateSerializer
-    filterset_fields = get_filterset(serializers.EmailTemplateSerializer)
+    filterset_class = get_filterset(serializers.EmailTemplateSerializer)
     queryset = models.EmailTemplate.objects.all()
 
 
@@ -31,5 +31,5 @@ class EmailCampaignViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsSuperuser]
     serializer_class = serializers.EmailCampaignSerializer
-    filterset_fields = get_filterset(serializers.EmailCampaignSerializer)
+    filterset_class = get_filterset(serializers.EmailCampaignSerializer)
     queryset = models.EmailCampaign.objects.all()

@@ -52,6 +52,16 @@ class MemberBaseSerializer(serializers.ModelSerializer):
     # }
 
 
+class MemberHistorySerializer(serializers.ModelSerializer):
+    """Serializer for admins to manage member history."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Member.history.model
+        fields = "__all__"
+
+
 class MemberSerializer(MemberBaseSerializer):
     """Serializer for admins to manage members."""
 
@@ -60,6 +70,7 @@ class MemberSerializer(MemberBaseSerializer):
 
         model = models.Member
         fields = "__all__"
+        history = MemberHistorySerializer
 
 
 class MemberProfileSerializer(MemberBaseSerializer):
