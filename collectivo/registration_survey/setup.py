@@ -1,4 +1,4 @@
-"""Setup function for the surveys extension."""
+"""Setup function for the registration_survey extension."""
 
 
 def setup(sender, **kwargs):

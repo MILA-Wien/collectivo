@@ -1,4 +1,4 @@
-"""Serializers of the payments module."""
+"""Serializers of the payments extension."""
 from rest_framework import serializers
 
 from . import models
@@ -10,7 +10,7 @@ class PaymentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = models.Payment
+        model = models.PaymentProfile
         fields = "__all__"
 
 

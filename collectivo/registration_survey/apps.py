@@ -7,7 +7,7 @@ class MembersConfig(AppConfig):
     """Configuration class for the members extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.surveys"
+    name = "collectivo.registration_survey"
     description = "Surveys (work in progress)."
 
     def ready(self):

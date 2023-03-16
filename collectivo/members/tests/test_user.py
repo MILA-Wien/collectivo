@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from collectivo.registration_survey.models import SurveyGroup, SurveySkill
 from collectivo.tags.models import Tag
 from collectivo.utils.test import create_testuser
 
@@ -37,12 +38,23 @@ TEST_MEMBER = {
     "address_country": "my country",
 }
 
+PAYMENT_PROFILE = {
+    "bank_account_owner": "my name",
+    "bank_account_iban": "my iban",
+    "payment_method": "sepa",
+}
+
+SURVEY_PROFILE = {
+    "survey_contact": "my contact",
+    "survey_motivation": "my motivation",
+}
+
 TEST_MEMBER_POST = {
     **TEST_MEMBER,
+    **PAYMENT_PROFILE,
+    **SURVEY_PROFILE,
     "person_type": "natural",
     "membership_type": "active",
-    "survey_contact": "-",
-    "survey_motivation": "-",
     "shares_payment_type": "sepa",
     "statutes_approved": True,
     "shares_tarif": "normal",
@@ -91,6 +103,8 @@ class MembersRegistrationTests(TestCase):
         self.status = models.MembershipStatus.objects.get(
             type__name="Genossenschaft MILA", name="Investierend"
         )
+        self.skill = SurveySkill.objects.create(name="skill")
+        self.group = SurveyGroup.objects.create(name="group")
 
     def test_cannot_access_profile(self):
         """Test that a user cannot access profile if they are not a member."""
@@ -103,8 +117,15 @@ class MembersRegistrationTests(TestCase):
     def create_member(self, payload=TEST_MEMBER_POST):
         """Create a sample member."""
         res = self.client.post(
-            REGISTER_URL, {**payload, "membership_status": self.status.id}
+            REGISTER_URL,
+            {
+                **payload,
+                "membership_status": self.status.id,
+                "skills": [self.skill.id],
+                "groups_interested": [self.group.id],
+            },
         )
+        self.assertEqual(res.status_code, 201)
         member = Member.objects.get(user=res.data["user"])
         return member
 
@@ -119,6 +140,19 @@ class MembersRegistrationTests(TestCase):
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
         self.assertEqual(membership.shares, 9)
+
+        # Automatically created payment profile
+        paymentprofile = member.user.payments
+        for k, v in PAYMENT_PROFILE.items():
+            self.assertEqual(v, getattr(paymentprofile, k))
+
+        surveyprofile = member.user.registration_survey
+        self.assertEqual(surveyprofile.skills.count(), 1)
+        self.assertEqual(surveyprofile.skills.first(), self.skill)
+        self.assertEqual(surveyprofile.groups_interested.count(), 1)
+        self.assertEqual(surveyprofile.groups_interested.first(), self.group)
+        for k, v in SURVEY_PROFILE.items():
+            self.assertEqual(v, getattr(surveyprofile, k))
 
     def test_cannot_create_same_member_twice(self):
         """Test that a member cannot create itself as a member again."""

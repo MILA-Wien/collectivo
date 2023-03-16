@@ -8,7 +8,10 @@ class PaymentProfile(models.Model):
     """An extension of the user model with payment data."""
 
     user = models.OneToOneField(
-        get_user_model(), primary_key=True, on_delete=models.CASCADE
+        get_user_model(),
+        primary_key=True,
+        on_delete=models.CASCADE,
+        related_name="payments",
     )
 
     bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
@@ -17,7 +20,8 @@ class PaymentProfile(models.Model):
     )
     payment_method = models.CharField(
         choices=[
-            ("transfer", "sepa"),
+            ("transfer", "transfer"),
+            ("sepa", "sepa"),
         ],
         max_length=30,
     )

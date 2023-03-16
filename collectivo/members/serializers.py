@@ -4,6 +4,8 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
+from collectivo.payments.serializers import PaymentProfileSerializer
+from collectivo.registration_survey.serializers import SurveyProfileSerializer
 from collectivo.tags.models import Tag
 
 from . import models
@@ -109,8 +111,6 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     Automatically creates a membership for Genossenschaft MILA.
     """
 
-    # TODO: This serializer is not generic, but custom for MILA.
-
     def __init__(self, *args, **kwargs):
         """Fill the possible status options for Genossenschaft MILA."""
         super().__init__(*args, **kwargs)
@@ -134,6 +134,27 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     )
     shares_tarif = serializers.CharField(required=False)
 
+    # Payment profile
+    payment_method = serializers.CharField(required=False)
+    bank_account_iban = serializers.CharField(required=False)
+    bank_account_owner = serializers.CharField(required=False)
+
+    # Registration survey
+    survey_contact = serializers.CharField(required=False)
+    survey_motivation = serializers.CharField(required=False)
+    groups_interested = serializers.ListField(
+        child=serializers.IntegerField(
+            required=False,
+        ),
+        required=False,
+    )
+    skills = serializers.ListField(
+        child=serializers.IntegerField(
+            required=False,
+        ),
+        required=False,
+    )
+
     class Meta:
         """Serializer settings."""
 
@@ -155,11 +176,18 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             "legal_name",
             "legal_type",
             "legal_id",
-            "statutes_approved",  # Related model
-            "public_use_approved",  # Related model
-            "shares_tarif",  # Custom logic field
-            "membership_shares",  # Related model
-            "membership_status",  # Related model
+            "statutes_approved",  # Tags
+            "public_use_approved",  # Tags
+            "shares_tarif",  # Membership
+            "membership_shares",  # Membership
+            "membership_status",  # Membership
+            "payment_method",  # PaymentProfile
+            "bank_account_iban",  # PaymentProfile
+            "bank_account_owner",  # PaymentProfile
+            "survey_contact",  # SurveyProfile
+            "survey_motivation",  # SurveyProfile
+            "groups_interested",  # SurveyProfile
+            "skills",  # SurveyProfile
         ]
         read_only_fields = ["user"]
 
@@ -209,6 +237,21 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             "status": attrs.pop("membership_status", None),
         }
 
+        # Save payment profile data for create
+        self.payment_profile_data = {
+            "payment_method": attrs.pop("payment_method", None),
+            "bank_account_iban": attrs.pop("bank_account_iban", None),
+            "bank_account_owner": attrs.pop("bank_account_owner", None),
+        }
+
+        # Save survey profile data for create
+        self.survey_profile_data = {
+            "survey_contact": attrs.pop("survey_contact", None),
+            "skills": attrs.pop("skills", []),
+            "groups_interested": attrs.pop("groups_interested", []),
+            "survey_motivation": attrs.pop("survey_motivation", None),
+        }
+
         # Save tag fields for create
         self.tag_fields = {
             "Statuten angenommen": attrs.pop("statutes_approved", None),
@@ -222,8 +265,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        """Create a member and a membership."""
-        # TODO: This is still custom for MILA, and should be generalized
+        """Create member, membership, payment profile, and tags."""
 
         with transaction.atomic():
             member = super().create(validated_data)
@@ -240,6 +282,26 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             )
             membership.is_valid(raise_exception=True)
             membership.save()
+
+            # Create payment profile
+            payment_profile = PaymentProfileSerializer(
+                data={
+                    "user": member.user.pk,
+                    **self.payment_profile_data,
+                }
+            )
+            payment_profile.is_valid(raise_exception=True)
+            payment_profile.save()
+
+            # Create survey profile
+            survey_profile = SurveyProfileSerializer(
+                data={
+                    "user": member.user.pk,
+                    **self.survey_profile_data,
+                }
+            )
+            survey_profile.is_valid(raise_exception=True)
+            survey_profile.save()
 
             # Assign tags
             for field in ["Statuten angenommen", "Öffentlichkeitsarbeit"]:

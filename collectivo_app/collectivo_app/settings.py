@@ -50,7 +50,7 @@ _built_in_extensions = [
     "members",
     "emails",
     "tags",
-    "surveys",
+    "registration_survey",
     "payments",
     "shifts",
 ]
