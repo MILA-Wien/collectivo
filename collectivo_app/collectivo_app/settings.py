@@ -6,11 +6,12 @@ the COLLECTIVO_SETTINGS environment variable (see manage.py).
 """
 import os
 from pathlib import Path
-from collectivo.errors import CollectivoError
-from collectivo.version import __version__
-from corsheaders.defaults import default_headers
-from .utils import string_to_list, get_env_bool
 
+from corsheaders.defaults import default_headers
+
+from collectivo.errors import CollectivoError
+
+from .utils import get_env_bool, string_to_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
@@ -34,7 +35,7 @@ else:
     )
 
 # Choose built-in collectivo extensions from environment
-_built_in_extensions = ["members", "direktkredit"]
+_built_in_extensions = ["members", "shifts", "direktkredit"]
 _sub_extensions = []
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:
@@ -312,6 +313,7 @@ COLLECTIVO = {
     "default_auth_manager": "collectivo.auth.manager.KeycloakAuthManager",
     "default_user_model": "collectivo.members.models.Member",
     "default_extension_model": "collectivo.extensions.models.Extension",
+    "default_shifts_model": "collectivo.shifts.models.Shift",
 }
 
 

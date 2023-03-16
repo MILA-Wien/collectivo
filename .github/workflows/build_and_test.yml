@@ -5,7 +5,7 @@ on:
   workflow_call:
   push:
     tags-ignore:
-    - '**'
+      - "**"
   pull_request:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -31,8 +31,7 @@ jobs:
         ports:
           - 5432:5432
         # wait until postgres is ready
-        options:
-          --health-cmd pg_isready
+        options: --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -50,7 +49,6 @@ jobs:
           docker network create -d bridge collectivo
           cd ${GITHUB_WORKSPACE}/docker/keycloak && docker build -t keycloak .
           /usr/bin/docker run -d -p 8080:8080 --network collectivo --name keycloak --hostname keycloak  -e GITHUB_ACTIONS=true -e CI=true keycloak
-
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -87,8 +85,8 @@ jobs:
           TEST_DATABASE_PREFIX: ${{ env.DB_NAME }}
           SECRET_KEY: badkey
           KEYCLOAK_SERVER_URL: http://keycloak:8080
-          KEYCLOAK_CLIENT_SECRET_KEY: '**********'
-          COLLECTIVO_EXTENSIONS: members
+          KEYCLOAK_CLIENT_SECRET_KEY: "**********"
+          COLLECTIVO_EXTENSIONS: members, shifts
           DEBUG: True
           DEVELOPMENT: True
         run: |
@@ -105,7 +103,7 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v1
         with:
-          dest: './logs'
+          dest: "./logs"
       - name: Tar logs
         if: failure()
         run: tar cvzf ./logs.tgz ./logs
@@ -117,7 +115,7 @@ jobs:
           path: ./logs.tgz
 
   test-docker:
-    name: Test docker environement
+    name: Test docker environment
     needs: [test-python]
     runs-on: ubuntu-20.04
     steps:

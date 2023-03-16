@@ -1,26 +1,23 @@
 """Views of the members extension."""
 import logging
-from rest_framework import viewsets, mixins
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from collectivo.auth.permissions import IsAuthenticated
-from collectivo.utils import get_auth_manager
-from collectivo.views import SchemaMixin
-from .permissions import IsMembersAdmin
-from . import models, serializers
-from .models import Member
+
 from django.utils.timezone import localdate
 from keycloak.exceptions import KeycloakDeleteError
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from collectivo.auth.permissions import IsAuthenticated
+from collectivo.filters import get_filterset
+from collectivo.utils import get_auth_manager
+from collectivo.views import SchemaMixin
+
+from . import models, serializers
+from .models import Member
+from .permissions import IsMembersAdmin
 
 logger = logging.getLogger(__name__)
 
 member_fields = [field.name for field in models.Member._meta.get_fields()]
-
-filterset_fields = {
-    "first_name": ("contains",),
-    "last_name": ("contains",),
-    "person_type": ("exact",),
-}
 
 
 class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
@@ -117,9 +114,11 @@ class MemberMixin(SchemaMixin, viewsets.GenericViewSet):
 
         # Send welcome mail
         try:
-            from collectivo.members.emails.models import EmailAutomation
+            from collectivo.members.emails.models import (
+                EmailAutomation,
+                EmailCampaign,
+            )
             from collectivo.members.emails.views import EmailCampaignViewSet
-            from collectivo.members.emails.models import EmailCampaign
             from collectivo.utils import register_viewset
 
             automations = EmailAutomation.objects.filter(trigger="new_member")
@@ -200,8 +199,8 @@ class MembersSummaryViewSet(MemberMixin, mixins.ListModelMixin):
 
     serializer_class = serializers.MemberSummarySerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
-    ordering_fields = member_fields
+    filterset_class = get_filterset(serializers.MemberSummarySerializer)
+    ordering_fields = "__all__"
 
 
 class MembersAdminViewSet(
@@ -219,7 +218,7 @@ class MembersAdminViewSet(
 
     serializer_class = serializers.MemberAdminSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
+    filterset_class = get_filterset(serializers.MemberAdminSerializer)
     ordering_fields = member_fields
 
 
@@ -232,7 +231,7 @@ class MembersAdminCreateViewSet(MemberMixin, mixins.CreateModelMixin):
 
     serializer_class = serializers.MemberAdminCreateSerializer
     permission_classes = [IsMembersAdmin]
-    filterset_fields = filterset_fields
+    filterset_class = get_filterset(serializers.MemberAdminCreateSerializer)
     ordering_fields = member_fields
 
     def perform_create(self, serializer):
@@ -246,6 +245,7 @@ class MemberTagViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     permission_classes = [IsMembersAdmin]
     serializer_class = serializers.MemberTagSerializer
+    filterset_class = get_filterset(serializers.MemberTagSerializer)
     queryset = models.MemberTag.objects.all()
 
     def perform_destroy(self, instance):
