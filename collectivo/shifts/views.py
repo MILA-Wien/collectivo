@@ -9,6 +9,8 @@ from django.forms import ValidationError
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from collectivo.views import SchemaMixin
+
 from . import models, serializers
 
 
@@ -22,7 +24,7 @@ class ShiftFilter(django_filters.FilterSet):
         fields = "__all__"
 
 
-class ShiftViewSet(viewsets.ModelViewSet):
+class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage shifts."""
 
     queryset = models.Shift.objects.all()
@@ -209,14 +211,14 @@ class ShiftViewSet(viewsets.ModelViewSet):
         return Response(response)
 
 
-class AssignmentViewSet(viewsets.ModelViewSet):
+class AssignmentViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage individual shifts."""
 
     queryset = models.Assignment.objects.all()
     serializer_class = serializers.AssignmentSerializer
 
 
-class ShiftUserViewSet(viewsets.ModelViewSet):
+class ShiftUserViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage shift users."""
 
     queryset = models.ShiftUser.objects.all()
