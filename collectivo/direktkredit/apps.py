@@ -16,7 +16,7 @@ def post_migrate_callback(sender, **kwargs):
     register_extension(
         name=name,
         version=__version__,
-        description="An extension to provide a integration with habitat direktkredit",
+        description="An extension with integration with habitat direktkredit",
     )
 
     register_menuitem(
