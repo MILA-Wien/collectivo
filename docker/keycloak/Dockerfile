@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:21.0
+FROM quay.io/keycloak/keycloak:19.0.2
 WORKDIR /opt/keycloak
 COPY ./import/* /opt/keycloak/data/import/
 # for demonstration purposes only, please make sure to use proper certificates in production instead
