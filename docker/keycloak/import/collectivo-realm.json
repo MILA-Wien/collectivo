@@ -777,10 +777,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "hF2EGOwy7QTI5G9SNGFTejsC9j8G5X34",
       "redirectUris": [
-        "http://127.0.0.1:8020/*"
+        "*"
       ],
       "webOrigins": [
-        "http://127.0.0.1:8020"
+        "*"
       ],
       "notBefore": 0,
       "bearerOnly": false,

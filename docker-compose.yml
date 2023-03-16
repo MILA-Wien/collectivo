@@ -198,8 +198,7 @@ services:
         max-size: 50m  
   habidat:
     container_name: habidat
-    #image: habidat/direktkredit:1.1
-    image: nanu/habidat
+    image: habidat/direktkredit:1.1
     restart: always
     volumes:
       - ./docker/habidat/config/config.sample.json:/habidat/config/config.sample.json
