@@ -12,8 +12,6 @@ from .. import models
 from ..models import Member
 
 # TODO: Test invalid payloads
-# TODO: Test register creates payment user
-# TODO: Test register creates survey user
 # TODO: Legal member cannot choose social share
 # TODO: Test conditional fields in schema
 
