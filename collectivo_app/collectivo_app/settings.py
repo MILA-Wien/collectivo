@@ -4,6 +4,7 @@ Default django settings for collectivo_app.
 Will not be used if custom settings are defined through
 the COLLECTIVO_SETTINGS environment variable (see manage.py).
 """
+import logging
 import os
 from pathlib import Path
 
@@ -12,6 +13,8 @@ from corsheaders.defaults import default_headers
 from collectivo.version import __version__
 
 from .utils import get_env_bool, string_to_list
+
+logger = logging.getLogger(__name__)
 
 
 class CollectivoError(Exception):
@@ -54,10 +57,10 @@ _built_in_extensions = [
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:
     if ext not in _built_in_extensions:
-        raise CollectivoError(
-            "Error in environment variable 'COLLECTIVO_EXTENSIONS': "
-            f"'{ext}' is not a built-in extension. "
-            f"Available extensions are: {_built_in_extensions}."
+        _chosen_extensions.remove(ext)
+        logger.warning(
+            f"Environment variable '{ext}' in 'COLLECTIVO_EXTENSIONS' has "
+            f"been ignored. Available extensions are: {_built_in_extensions}."
         )
 
 INSTALLED_APPS = [
