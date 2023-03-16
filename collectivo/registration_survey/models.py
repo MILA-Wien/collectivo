@@ -36,6 +36,6 @@ class SurveyProfile(models.Model):
     survey_contact = models.TextField(null=True, blank=True)
     survey_motivation = models.TextField(null=True, blank=True)
     groups_interested = models.ManyToManyField(
-        "SurveyGroup", related_name="groups_interested", null=True, blank=True
+        "SurveyGroup", related_name="groups_interested", blank=True
     )
-    skills = models.ManyToManyField("SurveySkill", null=True, blank=True)
+    skills = models.ManyToManyField("SurveySkill", blank=True)

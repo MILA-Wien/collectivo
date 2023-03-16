@@ -2,6 +2,8 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+from collectivo.extensions.models import Extension
+
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
@@ -96,7 +98,24 @@ class MembershipManager(models.Manager):
             number = 1
         else:
             number = highest.number + 1
-        return super().create(*args, number=number, **kwargs)
+
+        membership = super().create(*args, number=number, **kwargs)
+        # TODO: Test & Activate this feature
+        # self.send_welcome_mail(membership)
+        return membership
+
+    def send_welcome_mail(self, membership):
+        """Send welcome mail to new member if specified."""
+
+        if membership.type.welcome_mail is not None:
+            from collectivo.emails.models import EmailCampaign
+
+            campaign = EmailCampaign.objects.create(
+                recipients=[membership.member.user],
+                template=membership.type.welcome_mail,
+                extension=Extension.objects.get(name="members"),
+            )
+            campaign.send()
 
 
 class Membership(models.Model):

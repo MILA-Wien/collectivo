@@ -46,14 +46,21 @@ filters = {
 }
 
 
+def get_ordering_fields(serializer: serializers.Serializer) -> list:
+    """Return a list of fields for a serializer for ordering."""
+    return [
+        name
+        for name, instance in serializer().fields.items()
+        if not instance.write_only
+    ]
+
+
 def get_filterset_fields(serializer: serializers.Serializer) -> dict:
-    """Return a dict of filterset fields for a model."""
+    """Return a dict of filterset fields for a serializer."""
     return {
         name: filters[type(instance).__name__]
         for name, instance in serializer().fields.items()
-        if type(instance).__name__ in filters
-        and not instance.write_only
-        and name != "history"
+        if type(instance).__name__ in filters and not instance.write_only
     }
 
 
