@@ -1,14 +1,14 @@
-version: '3.9'
+version: "3.9"
 
 services:
   # A django app that runs collectivo.
   collectivo:
     container_name: collectivo-app
-    restart: 'no'
+    restart: "no"
     build:
       context: .
     ports:
-      - '8000:8000'
+      - "8000:8000"
     # Synchronize source code inside and outside the docker container,
     # and place the collectivo package inside the collectivo app.
     volumes:
@@ -41,9 +41,9 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      DIREKTKREDIT_SERVER_URL: 'http://direktkredit.local:8020'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      DIREKTKREDIT_SERVER_URL: "http://direktkredit.local:8020"
     depends_on:
       - collectivo-db
       - keycloak
@@ -77,8 +77,8 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     depends_on:
       - collectivo
       - redis
@@ -112,8 +112,8 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      CELERY_BROKER: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
-      CELERY_BACKEND: 'redis://:${REDIS_PASSWORD}@redis:6379/0'
+      CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     depends_on:
       - collectivo
       - redis
@@ -123,7 +123,7 @@ services:
     container_name: redis
     image: redis:7-alpine
     ports:
-      - '6379:6379'
+      - "6379:6379"
     command: >
       --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb --maxmemory-policy volatile-lru
 
@@ -132,7 +132,7 @@ services:
     container_name: collectivo-static
     image: nginx:alpine
     ports:
-      - '8002:80'
+      - "8002:80"
     volumes:
       - ./docker/static:/app/static
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
@@ -159,7 +159,7 @@ services:
       VITE_APP_API: http://collectivo.local:8000
       VITE_KEYCLOAK_URL: ${KEYCLOAK_SERVER_URL}
     ports:
-      - '8001:80'
+      - "8001:80"
 
   # Keycloak for authentication.
   keycloak:
@@ -176,7 +176,9 @@ services:
       - ./docker/keycloak/export:/tmp/export
     command: start-dev --import-realm
     ports:
-      - '8080:8080'
+      - "8080:8080"
+
+  # Habidat Direktkredit Verwaltung
   habidat-db:
     image: mariadb
     restart: always
@@ -190,12 +192,13 @@ services:
       - MYSQL_DATABASE=direktkredit
       - MYSQL_USER=direktkredit
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
     logging:
       options:
-        max-size: 50m  
+        max-size: 50m
+
   habidat:
     container_name: habidat
     image: habidat/direktkredit:1.1
@@ -204,9 +207,9 @@ services:
       - ./docker/habidat/config/config.sample.json:/habidat/config/config.sample.json
       - ./docker/habidat/files:/habidat/public/files
       - ./docker/habidat/images:/habidat/public/images
-      - ./docker/habidat/upload:/habidat/upload  
+      - ./docker/habidat/upload:/habidat/upload
     environment:
-          # please change:
+      # please change:
       - HABIDAT_DK_PROJECT_ID=project
       - HABIDAT_DK_PROJECT_NAME=Projectname
       - HABIDAT_DK_PROJECT_EMAIL=
@@ -214,11 +217,11 @@ services:
       - HABIDAT_DK_ADMIN_EMAIL=admin@example.com
       - HABIDAT_DK_ADMIN_USERNAME=admin
       - HABIDAT_DK_ADMIN_PASSWORD=secret
-      - HABIDAT_DK_SESSION_SECRET=secret      
+      - HABIDAT_DK_SESSION_SECRET=secret
       # no need to change for default setup:
       - HABIDAT_DK_DB_URI=mysql://direktkredit:secret@habidat-db/direktkredit
       - HABIDAT_DK_PORT_HTTP=80
-      - HABIDAT_DK_AUTH_ADMIN_METHOD=local,oidc    # ldap is also possible                             
+      - HABIDAT_DK_AUTH_ADMIN_METHOD=local,oidc # ldap is also possible
       # only if admin auth method includes LDAP:
       #- HABIDAT_DK_AUTH_ADMIN_LDAP_URI=ldap://host:port
       #- HABIDAT_DK_AUTH_ADMIN_LDAP_HOST=host
@@ -237,7 +240,7 @@ services:
       - HABIDAT_DK_AUTH_ADMIN_OIDC_TOKEN_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/token
       - HABIDAT_DK_AUTH_ADMIN_OIDC_USERINFO_URL=${KEYCLOAK_SERVER_URL}/realms/collectivo/protocol/openid-connect/userinfo
       # list of user auth methods (local or oidc)
-      - HABIDAT_DK_AUTH_USER_METHOD=oidc                              
+      - HABIDAT_DK_AUTH_USER_METHOD=oidc
       # only if user auth method includes OIDC:
       - HABIDAT_DK_AUTH_USER_OIDC_LABEL=Keycloak
       - HABIDAT_DK_AUTH_USER_OIDC_ISSUER=${KEYCLOAK_SERVER_URL}/realms/collectivo
@@ -256,7 +259,7 @@ services:
       - 8020:80
     logging:
       options:
-        max-size: 50m        
+        max-size: 50m
 
 volumes:
   collectivo-db-data:
