@@ -140,7 +140,7 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(membership.shares_signed, 9)
 
         # Automatically created payment profile
-        paymentprofile = member.user.payments
+        paymentprofile = member.user.payment_profile
         for k, v in PAYMENT_PROFILE.items():
             self.assertEqual(v, getattr(paymentprofile, k))
 

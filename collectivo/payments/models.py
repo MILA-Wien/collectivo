@@ -11,7 +11,7 @@ class PaymentProfile(models.Model):
         get_user_model(),
         primary_key=True,
         on_delete=models.CASCADE,
-        related_name="payments",
+        related_name="payment_profile",
     )
 
     bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
@@ -55,7 +55,7 @@ class Payment(models.Model):
     type = models.ForeignKey(
         "PaymentType", on_delete=models.PROTECT, null=True, blank=True
     )
-    user = models.ForeignKey(
+    payer = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
 
@@ -98,7 +98,7 @@ class Subscription(models.Model):
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="EUR")
-    user = models.ForeignKey(
+    payer = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
 

@@ -4,7 +4,7 @@ from django.db.models import signals
 from simple_history.models import HistoricalRecords
 
 from collectivo.extensions.models import Extension
-from collectivo.payments.models import Payment
+from collectivo.payments.models import Payment, Subscription
 
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #
@@ -118,7 +118,7 @@ class MembershipManager(models.Manager):
 
             campaign = EmailCampaign.objects.create(
                 recipients=[membership.member.user],
-                template=membership.type.welcome_mail,
+                templat500e=membership.type.welcome_mail,
                 extension=Extension.objects.get(name="members"),
             )
             campaign.send()
@@ -181,16 +181,37 @@ class Membership(models.Model):
                 payment = Payment.objects.create(
                     name="Shares",
                     description=f"{shares_diff} shares for {self.type.name}",
-                    user=self.member.user.payments,
+                    payer=self.member.user.payment_profile,
                     amount=shares_diff * self.type.shares_amount_per_share,
                 )
                 return payment
+
+    def create_subscription_for_fees(self):
+        """Create subscription for membership fees."""
+
+        if self.type.has_fees:
+            if self.fees_subscription is None:
+                sub = Subscription()
+            else:
+                sub = self.fees_subscription
+
+            sub.name = "Fees"
+            sub.description = f"Membership fees for {self.type.name}"
+            sub.amount = self.type.fees_amount_standard
+            sub.payer = self.member.user.payment_profile
+            sub.starting_date = self.started
+            sub.repeat_each = self.type.fees_repeat_each
+            sub.repeat_unit = self.type.fees_repeat_unit
+            sub.save()
+            self.fees_subscription = sub
+            super().save()
 
     def save(self, *args, **kwargs):
         """Save membership and create payments."""
         with transaction.atomic():
             payment = self.create_payment_for_shares()
             super().save(*args, **kwargs)
+            self.create_subscription_for_fees()
             if payment is not None:
                 self.shares_payments.add(payment)
                 super().save()
