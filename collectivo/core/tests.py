@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
+from collectivo.utils.test import create_testuser
 from collectivo.version import __version__
 
 from .permissions import HasGroup, IsSuperuser
@@ -22,6 +23,26 @@ class CoreSetupTests(TestCase):
             self.assertTrue(
                 Menu.objects.filter(extension=extension, name=name).exists()
             )
+
+
+class UserApiTests(TestCase):
+    """Test the user and group endpoints."""
+
+    def setUp(self):
+        """Set up the test client."""
+        self.client = APIClient()
+        self.user = create_testuser(superuser=True)
+        self.client.force_authenticate(self.user)
+
+    def test_user_endpoint(self):
+        """Test the user endpoint."""
+        res = self.client.get(reverse("collectivo:collectivo.core:user-list"))
+        self.assertEqual(res.status_code, 200)
+
+    def test_group_endpoint(self):
+        """Test the group endpoint."""
+        res = self.client.get(reverse("collectivo:collectivo.core:group-list"))
+        self.assertEqual(res.status_code, 200)
 
 
 class CoreApiTests(TestCase):

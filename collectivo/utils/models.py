@@ -21,8 +21,4 @@ class RegisterMixin:
             setattr(instance, key, value)
         instance.save()
 
-        if cls.__name__ == "DashboardTile":
-            print("SAVING DASHBOARD TILE ", instance)
-            print(instance.extension)
-
         return instance

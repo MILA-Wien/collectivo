@@ -1,5 +1,6 @@
 """Models of the members extension."""
-from django.db import models
+from django.db import models, transaction
+from django.db.models import signals
 from simple_history.models import HistoricalRecords
 
 from collectivo.extensions.models import Extension
@@ -127,7 +128,7 @@ class Membership(models.Model):
         "Member", on_delete=models.CASCADE, related_name="memberships"
     )
     number = models.IntegerField(unique=True)
-    active = models.BooleanField(default=False)
+
     started = models.DateField(null=True, blank=True)
     cancelled = models.DateField(null=True, blank=True)
     ended = models.DateField(null=True, blank=True)
@@ -152,6 +153,34 @@ class Membership(models.Model):
 
     history = HistoricalRecords()
 
+    def create_payments(self):
+        """Create payments for shares and fees."""
+        old = Membership.objects.get(pk=self.pk) if self.pk else None
+
+        if self.type.has_shares:
+            old_shares_not_paid = old.shares_not_paid if old else 0
+            shares_new = self.shares_not_paid - old_shares_not_paid
+
+            if shares_new < 0:
+                raise NotImplementedError("Cannot remove shares")
+
+            if shares_new > 0:
+                payment = Payment.objects.create(
+                    name="Shares",
+                    description=f"{shares_new} shares for {self.type.name}",
+                    user=self.member.user,
+                    amount=shares_new * self.type.shares_price,
+                )
+                self.payments.add(payment)
+                super().save()
+
+    def save(self, *args, **kwargs):
+        """Save membership and create payments."""
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            # TODO: Implement this feature
+            # self.create_payments()
+
 
 class MembershipCard(models.Model):
     """A membership card that can be assigned to members."""
@@ -163,6 +192,21 @@ class MembershipCard(models.Model):
     )
 
     history = HistoricalRecords()
+
+
+def update_membership_from_payment(sender, instance, **kwargs):
+    """Update membership from payment."""
+    pass
+
+
+from collectivo.payments.models import Payment
+
+signals.post_save.connect(
+    update_membership_from_payment,
+    sender=Payment,
+    dispatch_uid="update_membership_from_payment",
+    weak=False,
+)
 
 
 # --------------------------------------------------------------------------- #
