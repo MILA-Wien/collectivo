@@ -137,6 +137,7 @@ class Membership(models.Model):
     )
 
     # Optional depending on membership type
+    shares_not_paid = models.IntegerField(null=True, blank=True)
     shares = models.IntegerField(null=True, blank=True)
     fees = models.DecimalField(
         max_digits=100, decimal_places=2, null=True, blank=True

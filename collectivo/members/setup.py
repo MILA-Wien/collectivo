@@ -91,8 +91,7 @@ def setup(sender, **kwargs):
         name="members_registration_tile",
         label="Membership application",
         extension=members_extension,
-        component_name="members_registration_tile",
-        blocked_role_name="members_user",
+        component="members_registration_tile",
     )
 
     for item in MenuItem.objects.filter(extension=members_extension):

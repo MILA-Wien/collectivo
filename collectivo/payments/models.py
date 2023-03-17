@@ -34,11 +34,12 @@ class PaymentProfile(models.Model):
 
 
 class Payment(models.Model):
-    """A payment."""
+    """A payment from a user to the collective."""
 
     name = models.CharField(max_length=255)
-    purpose = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default="EUR")
     user = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -55,10 +56,14 @@ class Payment(models.Model):
     )
 
     created = models.DateTimeField(auto_now_add=True)
-    payed = models.DateTimeField(null=True)
+    paid = models.DateTimeField(null=True)
 
     subscription = models.ForeignKey(
-        "Subscription", on_delete=models.SET_NULL, null=True, blank=True
+        "Subscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
     )
 
     history = HistoricalRecords()
@@ -72,15 +77,17 @@ class Subscription(models.Model):
     """A repetitive payment."""
 
     name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default="EUR")
     user = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    starting_date = models.DateField()
-    ending_date = models.DateField(null=True)
+    starting_date = models.DateField(null=True, blank=True)
+    ending_date = models.DateField(null=True, blank=True)
 
-    repeat_each = models.IntegerField()
+    repeat_each = models.IntegerField(default=1)
     repeat_unit = models.CharField(
         max_length=10,
         choices=[

@@ -9,7 +9,7 @@ from collectivo.utils.history import HistoryMixin
 from collectivo.utils.schema import SchemaMixin
 
 from . import serializers
-from .models import Member
+from .models import Member, Membership
 
 
 class MemberRegisterViewSet(
@@ -21,6 +21,7 @@ class MemberRegisterViewSet(
     Requires authentication.
     """
 
+    queryset = Member.objects.all()
     serializer_class = serializers.MemberRegisterSerializer
     permission_classes = [IsAuthenticated]
 
@@ -47,6 +48,7 @@ class MemberProfileViewSet(
     Requires authentication and registration.
     """
 
+    queryset = Member.objects.all()
     serializer_class = serializers.MemberProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -69,6 +71,7 @@ class MembersViewSet(
     Requires the role 'members_admin'.
     """
 
+    queryset = Member.objects.all()
     serializer_class = serializers.MemberSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]
@@ -83,6 +86,7 @@ class MembershipViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
     Requires the group 'collectivo.members.admin'.
     """
 
+    queryset = Membership.objects.all()
     serializer_class = serializers.MembershipSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]

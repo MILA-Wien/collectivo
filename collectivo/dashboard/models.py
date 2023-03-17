@@ -1,4 +1,5 @@
 """Models of the dashboard extension."""
+from django.contrib.auth.models import Group
 from django.db import models
 
 from collectivo.extensions.models import Extension
@@ -34,9 +35,10 @@ class DashboardTile(models.Model, RegisterMixin):
         cls,
         name: str,
         extension: str | Extension,
+        requires_group: str = None,
         **payload,
     ):
         """Register a new dashboard tile."""
         payload["extension"] = get_instance(Extension, extension)
-
+        payload["requires_group"] = get_instance(Group, requires_group)
         return super().register(name=name, **payload)

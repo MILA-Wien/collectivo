@@ -21,6 +21,6 @@ def setup(sender, **kwargs):
         extension=extension,
         component="membership",
         icon_name="pi-user",
-        required_group="collectivo.payments.admin",
+        requires_group="collectivo.payments.admin",
         menu="admin",
     )

@@ -137,7 +137,7 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
-        self.assertEqual(membership.shares, 9)
+        self.assertEqual(membership.shares_not_paid, 9)
 
         # Automatically created payment profile
         paymentprofile = member.user.payments
@@ -159,7 +159,7 @@ class MembersRegistrationTests(TestCase):
             REGISTER_URL,
             {**TEST_MEMBER_POST, "membership_status": self.status.id},
         )
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 400)
 
     def test_create_member_legal(self):
         """Test that a legal member automatically becomes type investing."""
@@ -170,7 +170,7 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
-        self.assertEqual(membership.shares, 9)
+        self.assertEqual(membership.shares_not_paid, 9)
 
     def test_tags_assigned(self):
         """Test that tags are assigned to the user when a member is created."""

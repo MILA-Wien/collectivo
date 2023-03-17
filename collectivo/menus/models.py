@@ -1,7 +1,9 @@
 """Models of the menus extension."""
+from django.contrib.auth.models import Group
 from django.db import models
 
 from collectivo.extensions.models import Extension
+from collectivo.utils import get_instance
 from collectivo.utils.models import RegisterMixin
 
 
@@ -67,16 +69,17 @@ class MenuItem(models.Model, RegisterMixin):
     @classmethod
     def register(
         cls,
-        name,
+        name: str,
+        extension: str | Extension,
         menu: str | tuple | Menu = None,
-        parent_item=None,
-        required_group: str = None,
-        **menu_item_kwargs,
+        requires_group: str = None,
+        parent_item: "MenuItem" = None,
+        **payload,
     ):
         """Register a new menu item."""
-        item = super().register(
-            name=name, required_role=required_group, **menu_item_kwargs
-        )
+        payload["extension"] = get_instance(Extension, extension)
+        payload["requires_group"] = get_instance(Group, requires_group)
+        item = super().register(name=name, **payload)
         if menu is not None:
             if isinstance(menu, tuple):
                 menu_name = menu[0]

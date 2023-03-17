@@ -23,7 +23,7 @@ class MembershipSerializer(serializers.ModelSerializer):
             "member",
             "type",
             "status",
-            "shares",
+            "shares_not_paid",
         ]
 
 
@@ -193,7 +193,6 @@ class MemberRegisterSerializer(MemberBaseSerializer):
 
     def _convert_membership_status(self, attrs):
         """Adjust membership type based on person type. Custom for MILA."""
-        # TODO: This is still custom for MILA, and should be generalized
 
         pt = attrs.get("person_type")
         if pt == "natural":
@@ -233,7 +232,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
         attrs = self._convert_membership_shares(attrs)
         attrs = self._convert_membership_status(attrs)
         self.membership_data = {
-            "shares": attrs.pop("membership_shares", None),
+            "shares_not_paid": attrs.pop("membership_shares", None),
             "status": attrs.pop("membership_status", None),
         }
 
@@ -267,8 +266,22 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     def create(self, validated_data):
         """Create member, membership, payment profile, and tags."""
 
+        # Ensure that the user is not already a member
+        if models.Member.objects.filter(user=validated_data["user"]).exists():
+            raise ParseError("User is already a member.")
+
         with transaction.atomic():
             member = super().create(validated_data)
+
+            # Create payment profile
+            payment_profile = PaymentProfileSerializer(
+                data={
+                    "user": member.user.pk,
+                    **self.payment_profile_data,
+                }
+            )
+            payment_profile.is_valid(raise_exception=True)
+            payment_profile.save()
 
             # Create membership
             membership = MembershipSerializer(
@@ -282,16 +295,6 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             )
             membership.is_valid(raise_exception=True)
             membership.save()
-
-            # Create payment profile
-            payment_profile = PaymentProfileSerializer(
-                data={
-                    "user": member.user.pk,
-                    **self.payment_profile_data,
-                }
-            )
-            payment_profile.is_valid(raise_exception=True)
-            payment_profile.save()
 
             # Create survey profile
             survey_profile = SurveyProfileSerializer(
