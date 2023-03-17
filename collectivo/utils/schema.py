@@ -42,6 +42,7 @@ input_types = {
     "DateTimeField": "datetime",
     "BooleanField": "checkbox",
     "ManyRelatedField": "multiselect",
+    "ListField": "multiselect",
     "PrimaryKeyRelatedField": "select",
     "PhoneField": "phone",
     "CountryField": "country",

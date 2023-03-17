@@ -27,6 +27,21 @@ class MembershipSerializer(serializers.ModelSerializer):
         ]
 
 
+conditions = {
+    "sepa": {
+        "field": "shares_payment_type",
+        "condition": "exact",
+        "value": "sepa",
+    },
+    "natural": {
+        "field": "person_type",
+        "condition": "exact",
+        "value": "natural",
+    },
+    "legal": {"field": "person_type", "condition": "exact", "value": "legal"},
+}
+
+
 class MemberBaseSerializer(serializers.ModelSerializer):
     """Base serializer for member serializers with extra schema attributes."""
 
@@ -46,12 +61,24 @@ class MemberBaseSerializer(serializers.ModelSerializer):
 
     memberships = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
-    # TODO: Set conditional fields (better in META?)
-    # schema_attrs = {
-    #     field: settings["schema"]
-    #     for field, settings in field_settings.items()
-    #     if "schema" in settings
-    # }
+    schema_attrs = {
+        "birthday": {"condition": conditions["natural"], "required": True},
+        "occupation": {"condition": conditions["natural"], "required": True},
+        "legal_name": {"condition": conditions["legal"], "required": True},
+        "legal_id": {"condition": conditions["legal"], "required": True},
+        "membership_status": {
+            "condition": conditions["natural"],
+            "required": True,
+        },  # TODO: Think through how this could work with manual status
+        "bank_account_owner": {
+            "condition": conditions["sepa"],
+            "required": True,
+        },
+        "bank_account_iban": {
+            "condition": conditions["sepa"],
+            "required": True,
+        },
+    }
 
 
 class MemberHistorySerializer(serializers.ModelSerializer):
