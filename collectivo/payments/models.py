@@ -1,4 +1,4 @@
-"""Models of the payments module."""
+"""Models of the payments extension."""
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -33,13 +33,28 @@ class PaymentProfile(models.Model):
         return str(self.user)
 
 
+class PaymentType(models.Model):
+    """A type of payment."""
+
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=255)
+    extension = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return self.name
+
+
 class Payment(models.Model):
     """A payment from a user to the collective."""
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="EUR")
+    type = models.ForeignKey(
+        "PaymentType", on_delete=models.PROTECT, null=True, blank=True
+    )
     user = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -60,7 +75,7 @@ class Payment(models.Model):
 
     subscription = models.ForeignKey(
         "Subscription",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="payments",
@@ -76,8 +91,11 @@ class Payment(models.Model):
 class Subscription(models.Model):
     """A repetitive payment."""
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
     description = models.CharField(max_length=255)
+    type = models.ForeignKey(
+        "PaymentType", on_delete=models.PROTECT, null=True, blank=True
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="EUR")
     user = models.ForeignKey(

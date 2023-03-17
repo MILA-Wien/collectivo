@@ -29,14 +29,13 @@ def setup(sender, **kwargs):
     except models.MembershipType.DoesNotExist:
         mtype = models.MembershipType.objects.create(
             name="Genossenschaft MILA",
+            has_card=True,
             has_shares=True,
-            shares_price=20,
+            shares_amount_per_share=20,
             shares_number_custom=True,
             shares_number_custom_min=9,
             shares_number_standard=9,
             shares_number_social=1,
-            has_fees=False,
-            has_card=True,
         )
     for name in ["Aktiv", "Investierend"]:
         models.MembershipStatus.objects.get_or_create(

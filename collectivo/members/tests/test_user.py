@@ -137,7 +137,7 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
-        self.assertEqual(membership.shares_not_paid, 9)
+        self.assertEqual(membership.shares_signed, 9)
 
         # Automatically created payment profile
         paymentprofile = member.user.payments
@@ -170,7 +170,7 @@ class MembersRegistrationTests(TestCase):
         self.assertEqual(len(memberships), 1)
         membership = memberships[0]
         self.assertEqual(membership.status, self.status)
-        self.assertEqual(membership.shares_not_paid, 9)
+        self.assertEqual(membership.shares_signed, 9)
 
     def test_tags_assigned(self):
         """Test that tags are assigned to the user when a member is created."""

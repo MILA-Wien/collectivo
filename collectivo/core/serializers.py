@@ -7,7 +7,6 @@ Group = User.groups.field.related_model
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     """Serializer for members to manage their own data."""
 
     class Meta:
@@ -18,7 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-
     """Serializer for members to manage their own data."""
 
     class Meta:

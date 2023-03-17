@@ -4,6 +4,7 @@ from django.db.models import signals
 from simple_history.models import HistoricalRecords
 
 from collectivo.extensions.models import Extension
+from collectivo.payments.models import Payment
 
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #
@@ -11,21 +12,34 @@ from collectivo.extensions.models import Extension
 
 
 class MembershipType(models.Model):
-    """A type of membership. E.g. in a specific organisation."""
+    """A type of membership. E.g. for a specific organisation."""
 
     name = models.CharField(max_length=255, unique=True)
 
     has_shares = models.BooleanField(default=False)
-    shares_price = models.DecimalField(
+    shares_amount_per_share = models.DecimalField(
         max_digits=100, decimal_places=2, null=True, blank=True
     )
     shares_number_custom = models.BooleanField(default=False)
     shares_number_custom_min = models.IntegerField(null=True, blank=True)
+    shares_number_custom_max = models.IntegerField(null=True, blank=True)
     shares_number_standard = models.IntegerField(null=True, blank=True)
     shares_number_social = models.IntegerField(null=True, blank=True)
 
     has_fees = models.BooleanField(default=False)
-    fees_custom = models.BooleanField(default=False)
+    fees_amount_custom = models.BooleanField(default=False)
+    fees_amount_custom_min = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    fees_amount_custom_max = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    fees_amount_standard = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
+    fees_amount_social = models.DecimalField(
+        max_digits=100, decimal_places=2, null=True, blank=True
+    )
     fees_repeat_each = models.IntegerField(default=1)
     fees_repeat_unit = models.CharField(
         max_length=20,
@@ -37,15 +51,6 @@ class MembershipType(models.Model):
             ("day", "day"),
         ],
     )
-    fees_custom_min = models.DecimalField(
-        max_digits=100, decimal_places=2, null=True, blank=True
-    )
-    fees_standard = models.DecimalField(
-        max_digits=100, decimal_places=2, null=True, blank=True
-    )
-    fees_social = models.DecimalField(
-        max_digits=100, decimal_places=2, null=True, blank=True
-    )
 
     has_card = models.BooleanField(default=False)
 
@@ -54,7 +59,7 @@ class MembershipType(models.Model):
     )
     comembership_max = models.IntegerField(null=True, blank=True)
 
-    welcome_mail = models.ForeignKey(
+    email_new_membership = models.ForeignKey(
         "emails.EmailTemplate",
         null=True,
         blank=True,
@@ -71,7 +76,7 @@ class MembershipType(models.Model):
 class MembershipStatus(models.Model):
     """A status that members can have within a membership of a certain type.
 
-    E.g. active or passive member.
+    E.g. active or passive membership within a specific organisation.
     """
 
     name = models.CharField(max_length=255, unique=True)
@@ -138,48 +143,57 @@ class Membership(models.Model):
     )
 
     # Optional depending on membership type
-    shares_not_paid = models.IntegerField(null=True, blank=True)
-    shares = models.IntegerField(null=True, blank=True)
-    fees = models.DecimalField(
-        max_digits=100, decimal_places=2, null=True, blank=True
+    shares_signed = models.PositiveIntegerField(default=0)
+    shares_paid = models.PositiveIntegerField(default=0)
+    fees_amount = models.DecimalField(
+        max_digits=100, decimal_places=2, default=0
     )
     comembership_of = models.ForeignKey(
         "Membership", blank=True, null=True, on_delete=models.CASCADE
     )
 
     # Connection to payment module
-    payments = models.ManyToManyField("payments.Payment")
-    subscriptions = models.ManyToManyField("payments.Subscription")
+    shares_payments = models.ManyToManyField(
+        "payments.Payment", related_name="membership_shares"
+    )
+    fees_subscription = models.ForeignKey(
+        "payments.Subscription",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="membership_fees",
+    )
 
     history = HistoricalRecords()
 
-    def create_payments(self):
-        """Create payments for shares and fees."""
+    def create_payment_for_shares(self):
+        """Create payment for shares."""
         old = Membership.objects.get(pk=self.pk) if self.pk else None
+        old_shares_signed = old.shares_signed if old else 0
 
         if self.type.has_shares:
-            old_shares_not_paid = old.shares_not_paid if old else 0
-            shares_new = self.shares_not_paid - old_shares_not_paid
+            shares_diff = self.shares_signed - old_shares_signed
 
-            if shares_new < 0:
+            if shares_diff < 0:
                 raise NotImplementedError("Cannot remove shares")
 
-            if shares_new > 0:
+            if shares_diff > 0:
                 payment = Payment.objects.create(
                     name="Shares",
-                    description=f"{shares_new} shares for {self.type.name}",
-                    user=self.member.user,
-                    amount=shares_new * self.type.shares_price,
+                    description=f"{shares_diff} shares for {self.type.name}",
+                    user=self.member.user.payments,
+                    amount=shares_diff * self.type.shares_amount_per_share,
                 )
-                self.payments.add(payment)
-                super().save()
+                return payment
 
     def save(self, *args, **kwargs):
         """Save membership and create payments."""
         with transaction.atomic():
+            payment = self.create_payment_for_shares()
             super().save(*args, **kwargs)
-            # TODO: Implement this feature
-            # self.create_payments()
+            if payment is not None:
+                self.shares_payments.add(payment)
+                super().save()
 
 
 class MembershipCard(models.Model):
@@ -196,12 +210,26 @@ class MembershipCard(models.Model):
 
 def update_membership_from_payment(sender, instance, **kwargs):
     """Update membership from payment."""
-    pass
+
+    # Only update if payment has been changed to successfull
+    if instance.status != "success":
+        return
+    if instance.pk:
+        old = Payment.objects.get(pk=instance.pk)
+        if old.status == "success":
+            return
+
+    # Write paid shares to membership
+    if instance.membership_shares.exists():
+        membership = instance.membership_shares.first()
+        shares_paid = int(
+            instance.amount / membership.type.shares_amount_per_share
+        )
+        membership.shares_paid += shares_paid
+        membership.save()
 
 
-from collectivo.payments.models import Payment
-
-signals.post_save.connect(
+signals.pre_save.connect(
     update_membership_from_payment,
     sender=Payment,
     dispatch_uid="update_membership_from_payment",

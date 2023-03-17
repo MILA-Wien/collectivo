@@ -23,7 +23,7 @@ class MembershipSerializer(serializers.ModelSerializer):
             "member",
             "type",
             "status",
-            "shares_not_paid",
+            "shares_signed",
         ]
 
 
@@ -232,7 +232,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
         attrs = self._convert_membership_shares(attrs)
         attrs = self._convert_membership_status(attrs)
         self.membership_data = {
-            "shares_not_paid": attrs.pop("membership_shares", None),
+            "shares_signed": attrs.pop("membership_shares", None),
             "status": attrs.pop("membership_status", None),
         }
 
