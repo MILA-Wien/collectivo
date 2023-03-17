@@ -142,3 +142,6 @@ docker/static
 
 # keycloak export
 docker/keycloak/export
+docker/habidat/db/*
+docker/habidat/files/*
+docker/habidat/images/*

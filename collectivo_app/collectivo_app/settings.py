@@ -53,6 +53,7 @@ _built_in_extensions = [
     "registration_survey",
     "payments",
     "shifts",
+    "direktkredit",
 ]
 _chosen_extensions = string_to_list(os.environ.get("COLLECTIVO_EXTENSIONS"))
 for ext in _chosen_extensions:
