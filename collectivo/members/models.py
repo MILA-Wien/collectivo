@@ -127,12 +127,17 @@ class MembershipManager(models.Manager):
 class Membership(models.Model):
     """A membership of a member."""
 
+    class Meta:
+        """Meta settings."""
+
+        unique_together = ("number", "type")
+
     objects = MembershipManager()
 
-    member = models.ForeignKey(
-        "Member", on_delete=models.CASCADE, related_name="memberships"
+    profile = models.ForeignKey(
+        "MemberProfile", on_delete=models.CASCADE, related_name="memberships"
     )
-    number = models.IntegerField(unique=True)
+    number = models.IntegerField()
 
     started = models.DateField(null=True, blank=True)
     cancelled = models.DateField(null=True, blank=True)
@@ -181,7 +186,7 @@ class Membership(models.Model):
                 payment = Payment.objects.create(
                     name="Shares",
                     description=f"{shares_diff} shares for {self.type.name}",
-                    payer=self.member.user.payment_profile,
+                    payer=self.profile.user.payment,
                     amount=shares_diff * self.type.shares_amount_per_share,
                 )
                 return payment
@@ -198,7 +203,7 @@ class Membership(models.Model):
             sub.name = "Fees"
             sub.description = f"Membership fees for {self.type.name}"
             sub.amount = self.type.fees_amount_standard
-            sub.payer = self.member.user.payment_profile
+            sub.payer = self.profile.user.payment
             sub.starting_date = self.started
             sub.repeat_each = self.type.fees_repeat_each
             sub.repeat_unit = self.type.fees_repeat_unit
@@ -263,12 +268,15 @@ signals.pre_save.connect(
 # --------------------------------------------------------------------------- #
 
 
-class Member(models.Model):
-    """A member of the collective."""
+class MemberProfile(models.Model):
+    """An extension of the user model to handle membership data."""
 
     # Account
     user = models.OneToOneField(
-        "auth.User", primary_key=True, on_delete=models.CASCADE
+        "auth.User",
+        primary_key=True,
+        on_delete=models.CASCADE,
+        related_name="member",
     )
 
     # Personal data

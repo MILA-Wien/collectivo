@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from collectivo.payments.models import Payment, PaymentProfile, Subscription
 from collectivo.utils.test import create_testuser
 
-from ..models import Member, Membership, MembershipType
+from ..models import MemberProfile, Membership, MembershipType
 
 User = get_user_model()
 
@@ -25,7 +25,7 @@ class MembershipSharesTests(TestCase):
             user=self.user,
             payment_method="sepa",
         )
-        self.member = Member.objects.create(user=self.user)
+        self.member = MemberProfile.objects.create(user=self.user)
         self.membership_type = MembershipType.objects.create(
             name="Tests",
             has_shares=True,
@@ -33,7 +33,7 @@ class MembershipSharesTests(TestCase):
             shares_number_custom=True,
         )
         self.membership = Membership.objects.create(
-            member=self.member,
+            profile=self.member,
             type=self.membership_type,
             shares_signed=5,
         )
@@ -91,14 +91,14 @@ class MembershipFeesTests(TestCase):
             user=self.user,
             payment_method="sepa",
         )
-        self.member = Member.objects.create(user=self.user)
+        self.profile = MemberProfile.objects.create(user=self.user)
         self.membership_type = MembershipType.objects.create(
             name="Tests",
             has_fees=True,
             fees_amount_standard=100,
         )
         self.membership = Membership.objects.create(
-            member=self.member,
+            profile=self.profile,
             type=self.membership_type,
             shares_signed=5,
         )

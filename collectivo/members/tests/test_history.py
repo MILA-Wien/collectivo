@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from collectivo.utils.test import create_testuser
 
-from ..models import Member
+from ..models import MemberProfile
 from .test_admin import MEMBER, MEMBERS_URL
 
 User = get_user_model()
@@ -57,7 +57,7 @@ class MembersHistoryTests(TestCase):
         self.client.post(MEMBERS_URL, payload)
 
         # Test the history of the creation
-        member = Member.objects.get(user=user)
+        member = MemberProfile.objects.get(user=user)
         historic_member = member.history.first()
         self.assertEqual(historic_member.get_history_type_display(), "Created")
         self.assertEqual(historic_member.history_user.id, self.superuser.id)

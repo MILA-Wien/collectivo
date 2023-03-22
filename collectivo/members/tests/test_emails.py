@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from collectivo.emails.models import EmailTemplate
 from collectivo.emails.tests import CAMPAIGNS_URL, run_mocked_celery_chain
-from collectivo.members.models import Member
+from collectivo.members.models import MemberProfile
 from collectivo.utils.test import create_testuser
 
 User = get_user_model()
@@ -28,7 +28,9 @@ class MembersEmailsTests(TestCase):
             email="recipient@example.com",
             first_name="recipient",
         )
-        self.member = Member.objects.create(user=self.recipient, phone="42")
+        self.member = MemberProfile.objects.create(
+            user=self.recipient, phone="42"
+        )
         self.template = EmailTemplate.objects.create(
             name="Members Email Test Template",
             subject="Test",

@@ -9,7 +9,7 @@ from collectivo.tags.models import Tag
 from collectivo.utils.test import create_testuser
 
 from .. import models
-from ..models import Member
+from ..models import MemberProfile
 
 # TODO: Test invalid payloads
 # TODO: Legal member cannot choose social share
@@ -124,7 +124,7 @@ class MembersRegistrationTests(TestCase):
             },
         )
         self.assertEqual(res.status_code, 201)
-        member = Member.objects.get(user=res.data["user"])
+        member = MemberProfile.objects.get(user=res.data["user"])
         return member
 
     def test_create_member(self):
@@ -133,14 +133,12 @@ class MembersRegistrationTests(TestCase):
         for key, value in TEST_MEMBER_GET.items():
             self.assertEqual(value, getattr(member, key))
 
-        memberships = member.memberships.all()
-        self.assertEqual(len(memberships), 1)
-        membership = memberships[0]
+        membership = member.memberships.last()
         self.assertEqual(membership.status, self.status)
         self.assertEqual(membership.shares_signed, 9)
 
         # Automatically created payment profile
-        paymentprofile = member.user.payment_profile
+        paymentprofile = member.user.payment
         for k, v in PAYMENT_PROFILE.items():
             self.assertEqual(v, getattr(paymentprofile, k))
 
@@ -197,6 +195,18 @@ class MembersRegistrationTests(TestCase):
         res = self.client.get(MEMBERS_URL)
         self.assertEqual(res.status_code, 403)
 
+    def test_member_with_existing_profile_can_register(self):
+        """Test that a member can register if they have an existing profile."""
+        self.member = MemberProfile.objects.create(user=self.user, phone="42")
+        other_membership_type = models.MembershipType.objects.create(
+            name="Other membership"
+        )
+        models.Membership.objects.create(
+            profile=self.member,
+            type=other_membership_type,
+        )
+        self.test_create_member()
+
 
 class MembersProfileTests(TestCase):
     """Test the private members API for users that are members."""
@@ -216,7 +226,8 @@ class MembersProfileTests(TestCase):
         res = self.client.post(
             REGISTER_URL, {**payload, "membership_status": self.status.id}
         )
-        member = Member.objects.get(user=res.data["user"])
+        self.assertEqual(res.status_code, 201)
+        member = MemberProfile.objects.get(user=res.data["user"])
         return member
 
     def test_get_profile(self):
@@ -236,7 +247,7 @@ class MembersProfileTests(TestCase):
     def test_update_member_admin_fields_fails(self):
         """Test that a member cannot edit admin fields of it's own data."""
         self.client.patch(PROFILE_URL, {"notes": "my note"})
-        member = Member.objects.get(user=self.user)
+        member = MemberProfile.objects.get(user=self.user)
         self.assertNotEqual(getattr(member, "notes"), "my note")
 
     def test_members_profile_schema(self):

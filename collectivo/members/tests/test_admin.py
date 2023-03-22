@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from collectivo.tags.models import Tag
 from collectivo.utils.test import create_testuser
 
-from ..models import Member, Membership, MembershipType
+from ..models import MemberProfile, Membership, MembershipType
 
 User = get_user_model()
 
@@ -44,7 +44,7 @@ class MembersAdminTests(TestCase):
         self.user = create_testuser(superuser=True)
         self.client.force_authenticate(self.user)
         self.membership_type = MembershipType.objects.create(name="Testss")
-        Member.objects.all().delete()
+        MemberProfile.objects.all().delete()
 
     def create_members(self):
         """Create an unordered set of members for testing."""
@@ -74,10 +74,12 @@ class MembersAdminTests(TestCase):
             # Create a member for this user
             payload = {**MEMBER, "user": user.id}
             self.client.post(MEMBERS_URL, payload)
-            member = Member.objects.get(user=user)
+            profile = MemberProfile.objects.get(user=user)
 
             # Create a membership for this member
-            Membership.objects.create(member=member, type=self.membership_type)
+            Membership.objects.create(
+                profile=profile, type=self.membership_type
+            )
 
         tag_ids.append(other_tag.id)
         return ids, tag_ids
@@ -85,7 +87,7 @@ class MembersAdminTests(TestCase):
     def test_create_members(self):
         """Test that admins can create members."""
         self.create_members()
-        self.assertEqual(len(Member.objects.all()), 3)
+        self.assertEqual(len(MemberProfile.objects.all()), 3)
 
     def test_get_members(self):
         """Get members."""
@@ -107,7 +109,7 @@ class MembersAdminTests(TestCase):
             data={"notes": "my note"},
         )
         self.assertEqual(res.status_code, 200)
-        member = Member.objects.get(user=user_id)
+        member = MemberProfile.objects.get(user=user_id)
         self.assertEqual(getattr(member, "notes"), "my note")
 
     def test_sorting(self):

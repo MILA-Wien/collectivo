@@ -9,7 +9,7 @@ from collectivo.utils.history import HistoryMixin
 from collectivo.utils.schema import SchemaMixin
 
 from . import serializers
-from .models import Member, Membership
+from .models import MemberProfile, Membership
 
 
 class MemberRegisterViewSet(
@@ -21,7 +21,7 @@ class MemberRegisterViewSet(
     Requires authentication.
     """
 
-    queryset = Member.objects.all()
+    queryset = MemberProfile.objects.all()
     serializer_class = serializers.MemberRegisterSerializer
     permission_classes = [IsAuthenticated]
 
@@ -48,7 +48,7 @@ class MemberProfileViewSet(
     Requires authentication and registration.
     """
 
-    queryset = Member.objects.all()
+    queryset = MemberProfile.objects.all()
     serializer_class = serializers.MemberProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -56,7 +56,7 @@ class MemberProfileViewSet(
         """Return member object of the currently authenticated user."""
         try:
             return self.queryset.get(user=self.request.user)
-        except Member.DoesNotExist:
+        except MemberProfile.DoesNotExist:
             raise PermissionDenied("User is not registered as a member.")
 
 
@@ -71,7 +71,7 @@ class MembersViewSet(
     Requires the role 'members_admin'.
     """
 
-    queryset = Member.objects.all()
+    queryset = MemberProfile.objects.all()
     serializer_class = serializers.MemberSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.members.admin"]

@@ -6,7 +6,7 @@ from celery.utils.log import get_task_logger
 from django.core import mail
 
 from collectivo.emails.models import EmailCampaign
-from collectivo.members.models import Member
+from collectivo.members.models import MemberProfile
 
 logger = get_task_logger(__name__)
 
@@ -30,7 +30,7 @@ def send_mails_async(results, emails):
     # Add optional tag to recipients if batch is successful
     if campaign.template.tag is not None:
         for email in emails:
-            member = Member.objects.get(email=email.to[0])
+            member = MemberProfile.objects.get(email=email.to[0])
             member.tags.add(campaign.template.tag)
             member.save()
 

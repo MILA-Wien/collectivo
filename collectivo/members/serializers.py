@@ -20,7 +20,7 @@ class MembershipSerializer(serializers.ModelSerializer):
         model = models.Membership
         fields = [
             "id",
-            "member",
+            "profile",
             "type",
             "status",
             "shares_signed",
@@ -87,7 +87,7 @@ class MemberHistorySerializer(serializers.ModelSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = models.Member.history.model
+        model = models.MemberProfile.history.model
         fields = "__all__"
 
 
@@ -97,7 +97,7 @@ class MemberSerializer(MemberBaseSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = models.Member
+        model = models.MemberProfile
         fields = "__all__"
         history = MemberHistorySerializer
 
@@ -108,7 +108,7 @@ class MemberProfileSerializer(MemberBaseSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = models.Member
+        model = models.MemberProfile
         fields = [
             "user",
             "user__first_name",
@@ -185,7 +185,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = models.Member
+        model = models.MemberProfile
         fields = [
             "user",
             "person_type",
@@ -293,12 +293,20 @@ class MemberRegisterSerializer(MemberBaseSerializer):
     def create(self, validated_data):
         """Create member, membership, payment profile, and tags."""
 
-        # Ensure that the user is not already a member
-        if models.Member.objects.filter(user=validated_data["user"]).exists():
-            raise ParseError("User is already a member.")
+        type = models.MembershipType.objects.get(name="Genossenschaft MILA").pk
 
         with transaction.atomic():
-            member = super().create(validated_data)
+            try:
+                member = models.MemberProfile.objects.get(
+                    user=validated_data["user"]
+                )
+                if member.memberships.filter(type=type).exists():
+                    raise ParseError("User is already a MILA e.G. member.")
+                for field, value in validated_data.items():
+                    setattr(member, field, value)
+                member.save()
+            except models.MemberProfile.DoesNotExist:
+                member = super().create(validated_data)
 
             # Create payment profile
             payment_profile = PaymentProfileSerializer(
@@ -313,10 +321,8 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             # Create membership
             membership = MembershipSerializer(
                 data={
-                    "member": member.pk,
-                    "type": models.MembershipType.objects.get(
-                        name="Genossenschaft MILA"
-                    ).pk,
+                    "profile": member.pk,
+                    "type": type,
                     **self.membership_data,
                 }
             )
@@ -341,5 +347,5 @@ class MemberRegisterSerializer(MemberBaseSerializer):
                     tag.users.add(member.user)
                     tag.save()
 
-        member = models.Member.objects.get(pk=member.pk)
+        member = models.MemberProfile.objects.get(pk=member.pk)
         return member
