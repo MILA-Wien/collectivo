@@ -13,3 +13,14 @@ class TagSerializer(serializers.ModelSerializer):
         model = models.Tag
         fields = "__all__"
         read_only_fields = ("id", "extension")
+
+
+class TagCategorySerializer(serializers.ModelSerializer):
+    """Serializer for tag categories."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.TagCategory
+        fields = "__all__"
+        read_only_fields = ("id", "extension")

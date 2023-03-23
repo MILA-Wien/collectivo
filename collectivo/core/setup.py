@@ -33,13 +33,13 @@ def setup(sender, **kwargs):
 
     MenuItem.register(
         name="users",
-        label="Users",
+        label="Accounts",
         extension=extension,
         parent="admin",
         component="users",
         icon_name="pi-key",
         requires_group="collectivo.core.admin",
-        order=100,
+        order=80,
     )
 
     MenuItem.register(

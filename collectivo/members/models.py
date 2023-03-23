@@ -6,6 +6,22 @@ from simple_history.models import HistoricalRecords
 from collectivo.extensions.models import Extension
 from collectivo.payments.models import Payment, Subscription
 
+
+class NameManager(models.Manager):
+    """Manager that allows for registration."""
+
+    def register(self, name, *args, **kwargs):
+        """Get or create a based on attribute "name"."""
+        try:
+            instance = self.get(name=name)
+        except self.model.DoesNotExist:
+            instance = self.model(name=name)
+        for key, value in kwargs.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
+
+
 # --------------------------------------------------------------------------- #
 # Membership types ---------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
@@ -79,9 +95,8 @@ class MembershipStatus(models.Model):
     E.g. active or passive membership within a specific organisation.
     """
 
-    name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
-
+    objects = NameManager()
+    name = models.CharField(unique=True, max_length=255)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -96,19 +111,6 @@ class MembershipStatus(models.Model):
 
 class MembershipManager(models.Manager):
     """Manager for membership models."""
-
-    def create(self, *args, **kwargs):
-        """Create a membership with automatic number."""
-        highest = self.filter(type=kwargs["type"]).order_by("number").last()
-        if highest is None:
-            number = 1
-        else:
-            number = highest.number + 1
-
-        membership = super().create(*args, number=number, **kwargs)
-        # TODO: Test & Activate this feature
-        # self.send_welcome_mail(membership)
-        return membership
 
     def send_welcome_mail(self, membership):
         """Send welcome mail to new member if specified."""
@@ -135,9 +137,12 @@ class Membership(models.Model):
     objects = MembershipManager()
 
     profile = models.ForeignKey(
-        "MemberProfile", on_delete=models.CASCADE, related_name="memberships"
+        "MemberProfile",
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        verbose_name="Member",
     )
-    number = models.IntegerField()
+    number = models.IntegerField(verbose_name="Membership number")
 
     started = models.DateField(null=True, blank=True)
     cancelled = models.DateField(null=True, blank=True)
@@ -159,7 +164,7 @@ class Membership(models.Model):
 
     # Connection to payment module
     shares_payments = models.ManyToManyField(
-        "payments.Payment", related_name="membership_shares"
+        "payments.Payment", related_name="membership_shares", blank=True
     )
     fees_subscription = models.ForeignKey(
         "payments.Subscription",
@@ -211,8 +216,17 @@ class Membership(models.Model):
             self.fees_subscription = sub
             super().save()
 
+    def generate_membership_number(self):
+        """Generate a unique membership number."""
+        highest_number = (
+            Membership.objects.filter(type=self.type).order_by("number").last()
+        )
+        return 1 if highest_number is None else highest_number.number + 1
+
     def save(self, *args, **kwargs):
         """Save membership and create payments."""
+        if self.number is None:
+            self.number = self.generate_membership_number()
         with transaction.atomic():
             payment = self.create_payment_for_shares()
             super().save(*args, **kwargs)
@@ -220,6 +234,13 @@ class Membership(models.Model):
             if payment is not None:
                 self.shares_payments.add(payment)
                 super().save()
+
+    def __str__(self):
+        """Return string representation."""
+        return (
+            f"{self.profile.user.first_name} {self.profile.user.last_name} "
+            f"({self.type.name})"
+        )
 
 
 class MembershipCard(models.Model):

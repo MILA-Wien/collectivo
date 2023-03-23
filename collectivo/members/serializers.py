@@ -18,13 +18,9 @@ class MembershipSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.Membership
-        fields = [
-            "id",
-            "profile",
-            "type",
-            "status",
-            "shares_signed",
-        ]
+        exclude = ["id"]
+        read_only_fields = ["number"]
+        depth = 1
 
 
 conditions = {
@@ -114,6 +110,8 @@ class MemberSerializer(MemberBaseSerializer):
 class MemberProfileSerializer(MemberBaseSerializer):
     """Serializer for members to manage their own data."""
 
+    memberships = MembershipSerializer(many=True, read_only=True)
+
     class Meta:
         """Serializer settings."""
 
@@ -137,7 +135,9 @@ class MemberProfileSerializer(MemberBaseSerializer):
             "legal_name",
             "legal_type",
             "legal_id",
+            "memberships",
         ]
+        read_only_fields = ["memberships"]
 
 
 class MemberRegisterSerializer(MemberBaseSerializer):
@@ -151,10 +151,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
         """Fill the possible status options for Genossenschaft MILA."""
         super().__init__(*args, **kwargs)
         self.fields["membership_status"].choices = [
-            (x.id, x.name)
-            for x in models.MembershipStatus.objects.filter(
-                type__name="Genossenschaft MILA"
-            ).all()
+            (x.id, x.name) for x in models.MembershipStatus.objects.all()
         ]
 
     # Membership fields for Genossenschaft MILA

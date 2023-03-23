@@ -1,4 +1,4 @@
-"""Views of the members extension."""
+"""Views of the tags extension."""
 import logging
 
 from django.contrib.auth import get_user_model
@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 
 from collectivo.core.permissions import ReadOrIsSuperuser
+from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.schema import SchemaMixin
 
 from . import models, serializers
@@ -21,6 +22,8 @@ class TagViewSet(SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [ReadOrIsSuperuser]
     serializer_class = serializers.TagSerializer
     queryset = models.Tag.objects.all()
+    filterset_class = get_filterset(serializers.TagSerializer)
+    ordering_fields = get_ordering_fields(serializers.TagSerializer)
 
     def perform_destroy(self, instance):
         """Prevent deletion if assigned to users."""
@@ -29,3 +32,13 @@ class TagViewSet(SchemaMixin, viewsets.ModelViewSet):
                 "Cannot delete a tag that is assigned to users."
             )
         return super().perform_destroy(instance)
+
+
+class TagCategoryViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage tag categories."""
+
+    permission_classes = [ReadOrIsSuperuser]
+    serializer_class = serializers.TagCategorySerializer
+    queryset = models.TagCategory.objects.all()
+    filterset_class = get_filterset(serializers.TagCategorySerializer)
+    ordering_fields = get_ordering_fields(serializers.TagCategorySerializer)

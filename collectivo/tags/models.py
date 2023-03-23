@@ -1,7 +1,9 @@
-"""Models of the members extension."""
+"""Models of the tags extension."""
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
+
+from collectivo.utils.texts import EXTENSION_HELP_TEXT
 
 
 class TagCategory(models.Model):
@@ -13,7 +15,7 @@ class TagCategory(models.Model):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        help_text="The extension that this tag category belongs to.",
+        help_text=EXTENSION_HELP_TEXT,
     )
 
     history = HistoricalRecords()
@@ -31,14 +33,14 @@ class Tag(models.Model):
         get_user_model(), related_name="tags", blank=True
     )
     category = models.ForeignKey(
-        "TagCategory", null=True, blank=True, on_delete=models.CASCADE
+        "TagCategory", null=True, blank=True, on_delete=models.PROTECT
     )
     extension = models.ForeignKey(
         "extensions.Extension",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        help_text="The extension that this tag belongs to.",
+        help_text=EXTENSION_HELP_TEXT,
     )
 
     history = HistoricalRecords()

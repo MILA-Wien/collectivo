@@ -1,4 +1,6 @@
 """Setup function for the members extension."""
+from itertools import cycle
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -39,11 +41,8 @@ def setup(sender, **kwargs):
             shares_number_standard=9,
             shares_number_social=1,
         )
-    for name in ["Aktiv", "Investierend"]:
-        models.MembershipStatus.objects.get_or_create(
-            name=name,
-            type=mtype,
-        )
+    # for sname in ["Aktiv", "Investierend"]:
+    #     models.MembershipStatus.objects.get_or_create_by_name(name=sname)
 
     members_extension = Extension.register(
         name=MembersConfig.name.split(".")[-1],
@@ -74,7 +73,7 @@ def setup(sender, **kwargs):
 
     DashboardTile.register(
         name="members_registration_tile",
-        label="Membership application",
+        label="Membership",
         extension=members_extension,
         component="members_registration_tile",
     )
@@ -97,8 +96,28 @@ def setup(sender, **kwargs):
     )
 
     if settings.CREATE_TEST_DATA is True:
+        # Create membership types
+        types = []
+        for tname in ["MILA Genossenschaft", "MILA Verein"]:
+            type = models.MembershipType.objects.get_or_create(name=tname)[0]
+            types.append(type)
+
+        # Create membership statuses
+        statuses = []
+        for sname in ["Aktiv", "Investierend"]:
+            status = models.MembershipStatus.objects.register(name=sname)
+            statuses.append(status)
+        status_cycle = cycle(statuses)
+
+        # Create memberships
         for first_name in TEST_USERS:
+            if first_name == "user_not_member":
+                continue
             email = f"test_{first_name}@example.com"
-            models.MemberProfile.objects.get_or_create(
+            profile = models.MemberProfile.objects.get_or_create(
                 user=get_user_model().objects.get(email=email),
-            )
+            )[0]
+            for type in types:
+                models.Membership.objects.get_or_create(
+                    profile=profile, type=type, status=next(status_cycle)
+                )
