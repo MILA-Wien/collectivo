@@ -31,6 +31,7 @@ class MembershipType(models.Model):
     """A type of membership. E.g. for a specific organisation."""
 
     name = models.CharField(max_length=255, unique=True)
+    types = models.ManyToManyField("MembershipType", blank=True)
 
     has_shares = models.BooleanField(default=False)
     shares_amount_per_share = models.DecimalField(

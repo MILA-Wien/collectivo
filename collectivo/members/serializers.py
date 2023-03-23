@@ -20,7 +20,6 @@ class MembershipSerializer(serializers.ModelSerializer):
         model = models.Membership
         exclude = ["id"]
         read_only_fields = ["number"]
-        depth = 1
 
 
 conditions = {
@@ -232,11 +231,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             if attrs.get("membership_status") is None:
                 raise ParseError("membership_type required for natural person")
         elif pt == "legal":
-            membership_type = models.MembershipType.objects.get(
-                name="Genossenschaft MILA"
-            )
             membership_status = models.MembershipStatus.objects.get(
-                type=membership_type,
                 name="Investierend",
             )
             attrs["membership_status"] = membership_status.pk
@@ -324,6 +319,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
             payment_profile.is_valid(raise_exception=True)
             payment_profile.save()
 
+            print("TYPE", type)
             # Create membership
             membership = MembershipSerializer(
                 data={
@@ -333,6 +329,7 @@ class MemberRegisterSerializer(MemberBaseSerializer):
                 }
             )
             membership.is_valid(raise_exception=True)
+            print(membership.validated_data)
             membership.save()
 
             # Create survey profile

@@ -29,9 +29,9 @@ def setup(sender, **kwargs):
     Group.objects.get_or_create(name="collectivo.members.user")
 
     try:
-        mtype = models.MembershipType.objects.get(name="Genossenschaft MILA")
+        models.MembershipType.objects.get(name="Genossenschaft MILA")
     except models.MembershipType.DoesNotExist:
-        mtype = models.MembershipType.objects.create(
+        models.MembershipType.objects.create(
             name="Genossenschaft MILA",
             has_card=True,
             has_shares=True,
@@ -41,8 +41,6 @@ def setup(sender, **kwargs):
             shares_number_standard=9,
             shares_number_social=1,
         )
-    # for sname in ["Aktiv", "Investierend"]:
-    #     models.MembershipStatus.objects.get_or_create_by_name(name=sname)
 
     members_extension = Extension.register(
         name=MembersConfig.name.split(".")[-1],
