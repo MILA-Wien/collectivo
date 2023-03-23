@@ -70,37 +70,36 @@ class MenuItem(models.Model, RegisterMixin):
     def register(
         cls,
         name: str,
+        parent: "str | tuple | Menu | MenuItem",
         extension: str | Extension,
-        menu: str | tuple | Menu = None,
         requires_group: str = None,
-        parent_item: "MenuItem" = None,
         **payload,
     ):
         """Register a new menu item."""
         payload["extension"] = get_instance(Extension, extension)
         payload["requires_group"] = get_instance(Group, requires_group)
         item = super().register(name=name, **payload)
-        if menu is not None:
-            if isinstance(menu, tuple):
-                menu_name = menu[0]
-                menu_extension_name = [1]
-            elif isinstance(menu, Menu):
-                menu_name = menu.name
-                menu_extension_name = menu.extension.name
-            elif isinstance(menu, str):
-                menu_name = menu
-                menu_extension_name = "core"
-            else:
-                raise ValueError("Invalid menu type")
-            item.add_to_menu(menu_name, menu_extension_name)
-        if parent_item is not None:
-            parent_item.items.add(item)
-            parent_item.save()
+
+        if isinstance(parent, tuple):
+            menu_name = parent[0]
+            menu_extension_name = [1]
+            parent = item.get_menu(menu_name, menu_extension_name)
+        elif isinstance(parent, str):
+            menu_name = parent
+            menu_extension_name = "core"
+            parent = item.get_menu(menu_name, menu_extension_name)
+        elif isinstance(parent, Menu):
+            pass
+        elif isinstance(parent, MenuItem):
+            pass
+        else:
+            raise ValueError("Invalid menu type")
+        parent.items.add(item)
+        parent.save()
         return item
 
-    def add_to_menu(self, menu_name, extension_name="core"):
+    def get_menu(self, menu_name, extension_name="core"):
         """Add this item to a menu."""
         extension = Extension.objects.get(name=extension_name)
         menu = Menu.objects.get(name=menu_name, extension=extension)
-        menu.items.add(self)
-        return self
+        return menu

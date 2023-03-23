@@ -8,7 +8,7 @@ from collectivo.version import __version__
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    dashboard_extension = Extension.register(
+    extension = Extension.register(
         name=DashboardConfig.name.split(".")[-1],
         description=DashboardConfig.description,
         version=__version__,
@@ -17,9 +17,9 @@ def setup(sender, **kwargs):
     MenuItem.register(
         name="dashboard",
         label="Dashboard",
-        extension=dashboard_extension,
-        component_name="dashboard",
+        extension=extension,
+        component="dashboard",
         icon_name="pi-home",
-        menu_name="main",
+        parent="main",
         order=0,
     )

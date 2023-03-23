@@ -18,7 +18,7 @@ TEST_USERS = ["superuser", "user_not_member", "user_not_verified"] + [
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    core_extension = Extension.register(
+    extension = Extension.register(
         name=CoreConfig.name.split(".")[-1],
         description=CoreConfig.description,
         version=__version__,
@@ -28,16 +28,38 @@ def setup(sender, **kwargs):
         name="collectivo.core.admin",
     )[0]
 
-    Menu.register(name="main", extension=core_extension)
-    Menu.register(name="admin", extension=core_extension)
+    Menu.register(name="main", extension=extension)
+    Menu.register(name="admin", extension=extension)
+
+    MenuItem.register(
+        name="users",
+        label="Users",
+        extension=extension,
+        parent="admin",
+        component="users",
+        icon_name="pi-key",
+        requires_group="collectivo.core.admin",
+        order=100,
+    )
+
+    MenuItem.register(
+        name="settings",
+        label="Settings",
+        extension=extension,
+        parent="admin",
+        component="settings",
+        icon_name="pi-cog",
+        requires_group="collectivo.core.admin",
+        order=100,
+    )
 
     MenuItem.register(
         name="logout",
         label="Log out",
-        extension=core_extension,
-        component_name="logout",
+        extension=extension,
+        component="logout",
         icon_name="pi-sign-out",
-        menu_name="main",
+        parent="main",
         order=99,
     )
 
@@ -52,5 +74,5 @@ def setup(sender, **kwargs):
             )[0]
 
             # Give user permissions
-            if user == "superuser":
+            if first_name == "superuser":
                 user.groups.add(superuser)

@@ -8,7 +8,7 @@ from collectivo.version import __version__
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extensions_extension = Extension.register(
+    extension = Extension.register(
         name=ExtensionsConfig.name.split(".")[-1],
         description=ExtensionsConfig.description,
         version=__version__,
@@ -17,7 +17,10 @@ def setup(sender, **kwargs):
     MenuItem.register(
         name="extensions",
         label="Extensions",
-        extension=extensions_extension,
-        menu_name="admin",
-        component_name="extensions-list",
+        extension=extension,
+        parent="admin",
+        component="admin",
+        requires_group="collectivo.core.admin",
+        icon_name="pi-box",
+        order=90,
     )

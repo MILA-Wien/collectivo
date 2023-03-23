@@ -45,7 +45,7 @@ class MenusAPITests(TestCase):
                 name=f"test_item_{order}",
                 label=f"Test Item {order}",
                 extension=self.extension,
-                menu=test_menu,
+                parent=test_menu,
                 order=order,
             )
 
@@ -55,7 +55,7 @@ class MenusAPITests(TestCase):
             name="test_item_4",
             label="Test Item 4",
             extension=self.extension,
-            menu=test_menu,
+            parent=test_menu,
             order=4,
             requires_group=self.group,
         )

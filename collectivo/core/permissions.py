@@ -8,6 +8,7 @@ from rest_framework.permissions import BasePermission
 def is_in_group(user, group_name: str) -> bool | None:
     """Check if user is in group."""
     try:
+        print(user.groups.all())
         return (
             Group.objects.get(name=group_name)
             .user_set.filter(id=user.id)

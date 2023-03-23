@@ -46,17 +46,21 @@ class MemberBaseSerializer(serializers.ModelSerializer):
     """Base serializer for member serializers with extra schema attributes."""
 
     # Display user fields on the same level as member fields
+    id = serializers.SerializerMethodField()
     user__first_name = serializers.CharField(
-        source="user.first_name", read_only=True
+        source="user.first_name", read_only=True, label="First name"
     )
     user__last_name = serializers.CharField(
-        source="user.last_name", read_only=True
+        source="user.last_name", read_only=True, label="Last name"
     )
-    user__email = serializers.EmailField(source="user.email", read_only=True)
+    user__email = serializers.EmailField(
+        source="user.email", read_only=True, label="Email"
+    )
     user__tags = serializers.PrimaryKeyRelatedField(
         many=True,
         source="user.tags",
         read_only=True,
+        label="Tags",
     )
 
     memberships = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -65,6 +69,7 @@ class MemberBaseSerializer(serializers.ModelSerializer):
         "birthday": {"condition": conditions["natural"], "required": True},
         "occupation": {"condition": conditions["natural"], "required": True},
         "legal_name": {"condition": conditions["legal"], "required": True},
+        "legal_type": {"condition": conditions["legal"], "required": True},
         "legal_id": {"condition": conditions["legal"], "required": True},
         "membership_status": {
             "condition": conditions["natural"],
@@ -79,6 +84,10 @@ class MemberBaseSerializer(serializers.ModelSerializer):
             "required": True,
         },
     }
+
+    def get_id(self, obj):
+        """Return user id."""
+        return obj.user.id
 
 
 class MemberHistorySerializer(serializers.ModelSerializer):

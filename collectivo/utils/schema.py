@@ -102,7 +102,7 @@ class SchemaMixin:
             field_type = field_obj.__class__.__name__
             data[field_name] = field_data = {
                 "field_type": field_type,
-                "input_type": input_types[field_type],
+                "input_type": input_types.get(field_type, "text"),
             }
 
             # Convert CharField to textarea if no max_length is set (TextField)

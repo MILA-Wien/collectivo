@@ -24,7 +24,7 @@ def setup(sender, **kwargs):
     MenuItem.register(
         name="direktkredit",
         label="Direktkredite",
-        menu="main",
+        parent="main",
         extension=extension,
         requires_group="collectivo.direktkredit.user",
         link=os.environ.get("DIREKTKREDIT_SERVER_URL") + "/login-oidc",
@@ -43,10 +43,12 @@ def setup(sender, **kwargs):
 
     MenuItem.register(
         name="direktkredit_admin",
-        label="Direktkredite Admin",
-        menu="admin",
+        label="Direct loans",
+        icon_name="pi-money-bill",
+        parent="admin",
         extension=extension,
-        requires_group="collectivo.direktkredit.admin",
+        requires_group="collectivo.core.admin",
         link=os.environ.get("DIREKTKREDIT_SERVER_URL") + "/login-oidc-admin",
         target="blank",
+        order=29,
     )

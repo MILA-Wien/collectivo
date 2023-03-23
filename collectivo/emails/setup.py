@@ -21,10 +21,11 @@ def setup(sender, **kwargs):
         name="emails",
         label="Emails",
         extension=extension,
-        component_name="dashboard",
+        component="admin",
         icon_name="pi-envelope",
-        menu_name="admin",
-        order=11,
+        requires_group="collectivo.core.admin",
+        parent="admin",
+        order=10,
     )
 
     # TODO: Renovate this

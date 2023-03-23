@@ -16,11 +16,12 @@ def setup(sender, **kwargs):
     )
 
     MenuItem.register(
-        name="payments",
+        name="payments_admin",
         label="Payments",
         extension=extension,
-        component="membership",
-        icon_name="pi-user",
-        requires_group="collectivo.payments.admin",
-        menu="admin",
+        component="admin",
+        icon_name="pi-money-bill",
+        requires_group="collectivo.core.admin",
+        parent="admin",
+        order=20,
     )

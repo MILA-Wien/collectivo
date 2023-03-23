@@ -20,7 +20,7 @@ class DashboardTile(models.Model, RegisterMixin):
     extension = models.ForeignKey(
         "extensions.Extension", on_delete=models.CASCADE
     )
-    component_name = models.CharField(max_length=255)
+    component = models.CharField(max_length=255)
     order = models.FloatField(default=1)
     requires_group = models.ForeignKey(
         "auth.Group", on_delete=models.CASCADE, null=True

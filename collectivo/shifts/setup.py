@@ -7,7 +7,6 @@ from collectivo.version import __version__
 from .apps import ShiftsConfig
 
 
-# TODO: Add required groups
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
@@ -22,20 +21,25 @@ def setup(sender, **kwargs):
         label="Shifts",
         extension=extension,
         component="shifts_user",
-        menu_name="main",
+        requires_group="collectivo.shifts.user",
+        parent="main",
     )
 
     MenuItem.register(
         name="shifts_admin",
-        label="Shifts Administration",
+        label="Shift management",
+        icon_name="pi-calendar",
         extension=extension,
-        component="shifts_admin",
-        menu_name="admin",
+        component="admin",
+        requires_group="collectivo.core.admin",
+        parent="admin",
+        order=30,
     )
 
     DashboardTile.register(
         name="shifts_user_tile",
         label="Shifts",
         extension=extension,
-        component_name="shifts_user_tile",
+        component="shifts_user_tile",
+        requires_group="collectivo.shifts.user",
     )

@@ -1,8 +1,10 @@
 """Setup function for the members extension."""
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import signals
 
+from collectivo.core.setup import TEST_USERS
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.members.apps import MembersConfig
@@ -49,41 +51,25 @@ def setup(sender, **kwargs):
         version=__version__,
     )
 
-    members_admin_item = MenuItem.register(
-        name="members_admin",
-        label="Members",
-        extension=members_extension,
-        required_role_name="members_admin",
-        icon_name="pi-users",
-        menu_name="main",
-    )
-
     MenuItem.register(
         name="members_table",
         label="Members",
         extension=members_extension,
-        component="members",
-        icon_name="pi-list",
-        parent_item=members_admin_item,
-    )
-
-    MenuItem.register(
-        name="members_tags",
-        label="Tags",
-        extension=members_extension,
-        component="tags",
-        icon_name="pi-tags",
-        parent_item=members_admin_item,
+        component="admin",
+        requires_group="collectivo.core.admin",
+        icon_name="pi-users",
+        parent="admin",
+        order=0,
     )
 
     MenuItem.register(
         name="members_profile",
         label="Membership",
         extension=members_extension,
-        component="membership",
+        component="profile",
         icon_name="pi-user",
         required_role_name="members_user",
-        menu_name="main",
+        parent="main",
     )
 
     DashboardTile.register(
@@ -109,3 +95,10 @@ def setup(sender, **kwargs):
         dispatch_uid="add_user_to_members_user_group",
         weak=False,
     )
+
+    if settings.CREATE_TEST_DATA is True:
+        for first_name in TEST_USERS:
+            email = f"test_{first_name}@example.com"
+            models.MemberProfile.objects.get_or_create(
+                user=get_user_model().objects.get(email=email),
+            )
