@@ -3,7 +3,7 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
-class MembersConfig(AppConfig):
+class SurveyConfig(AppConfig):
     """Configuration class for the members extension."""
 
     default_auto_field = "django.db.models.BigAutoField"

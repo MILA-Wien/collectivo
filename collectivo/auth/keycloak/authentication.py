@@ -20,7 +20,6 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         try:
             return self.authenticate_with_keycloak(request)
         except Exception as e:
-            print(e)
             raise AuthenticationFailed() from e
 
     def authenticate_with_keycloak(self, request):

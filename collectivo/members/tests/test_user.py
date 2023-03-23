@@ -98,9 +98,7 @@ class MembersRegistrationTests(TestCase):
         self.client = APIClient()
         self.user = create_testuser(TEST_USER)
         self.client.force_authenticate(self.user)
-        self.status = models.MembershipStatus.objects.get(
-            type__name="Genossenschaft MILA", name="Investierend"
-        )
+        self.status = models.MembershipStatus.objects.get(name="Investierend")
         self.skill = SurveySkill.objects.create(name="skill")
         self.group = SurveyGroup.objects.create(name="group")
 

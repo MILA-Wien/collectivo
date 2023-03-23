@@ -1,6 +1,7 @@
-"""URL patterns of the emails module."""
-from django.urls import path, include
+"""URL patterns of the payments module."""
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from . import views
 
 app_name = "collectivo.payments"

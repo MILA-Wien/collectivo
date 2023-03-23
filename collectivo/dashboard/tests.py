@@ -59,7 +59,6 @@ class DashboardPrivateAPITests(TestCase):
     def test_post_tile_fails(self):
         """Test users cannot edit tiles."""
         res = self.client.post(TILES_URL)
-        print(res.data)
         self.assertEqual(res.status_code, 403)
 
 

@@ -64,7 +64,6 @@ class EmailsTests(TestCase):
         obj = EmailCampaign.objects.get(pk=res.data["id"])
         self.assertEqual(obj.status, "success")
         self.assertEqual(len(mail.outbox), 2)
-        print(mail.outbox[0].recipients())
         self.assertEqual(
             mail.outbox[0].recipients()[0], "recipient_01@example.com"
         )
