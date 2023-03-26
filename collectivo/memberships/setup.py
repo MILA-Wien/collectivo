@@ -27,16 +27,9 @@ def setup(sender, **kwargs):
         name="memberships_user",
         label="Membership",
         extension=extension,
-        component="user",
+        component="profile",
         icon_name="pi-id-card",
         parent="main",
-    )
-
-    DashboardTile.register(
-        name="members_registration_tile",
-        label="Membership",
-        extension=extension,
-        component="members_registration_tile",
     )
 
     # Admin objects
@@ -53,14 +46,28 @@ def setup(sender, **kwargs):
 
     if settings.COLLECTIVO["dev.create_test_data"] is True:
         # Create membership types
-        types = []
-        for tname in ["MILA Genossenschaft", "MILA Verein"]:
-            type = models.MembershipType.objects.get_or_create(name=tname)[0]
-            types.append(type)
+
+        mst1 = models.MembershipType.objects.register(
+            name="Test Membership Type 1 (Shares)",
+            description="This is a type of membership that where members can"
+            " hold shares.",
+            has_shares=True,
+            shares_amount_per_share=100,
+            shares_number_custom=True,
+            shares_number_custom_min=1,
+        )
+        mst2 = models.MembershipType.objects.register(
+            name="Test Membership Type 1 (Fees)",
+            description="This is a type of membership that where members have"
+            " to pay monthly fees.",
+            has_fees=True,
+            fees_amount_standard=100,
+        )
+        types = [mst1, mst2]
 
         # Create membership statuses
         statuses = []
-        for sname in ["Aktiv", "Investierend"]:
+        for sname in ["Test Status 1", "Test Status 2"]:
             status = models.MembershipStatus.objects.register(name=sname)
             statuses.append(status)
         status_cycle = cycle(statuses)
@@ -71,7 +78,12 @@ def setup(sender, **kwargs):
                 continue
             email = f"test_{first_name}@example.com"
             user = get_user_model().objects.get(email=email)
+            for m in user.memberships.all():
+                m.delete()
             for type in types:
                 models.Membership.objects.get_or_create(
-                    user=user, type=type, status=next(status_cycle)
+                    user=user,
+                    type=type,
+                    status=next(status_cycle),
+                    shares_signed=10,
                 )

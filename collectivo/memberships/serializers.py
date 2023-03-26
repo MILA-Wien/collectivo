@@ -11,8 +11,20 @@ class MembershipSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.Membership
-        exclude = ["id"]
-        read_only_fields = ["number"]
+        fields = "__all__"
+        read_only_fields = ["id", "number"]
+
+
+class MembershipSelfSerializer(serializers.ModelSerializer):
+    """Serializer for memberships."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Membership
+        fields = "__all__"
+        read_only_fields = ["id", "number"]
+        depth = 1
 
 
 class MembershipTypeSerializer(serializers.ModelSerializer):
@@ -22,7 +34,8 @@ class MembershipTypeSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.MembershipType
-        exclude = ["id"]
+        fields = "__all__"
+        read_only_fields = ["id"]
 
 
 class MembershipStatusSerializer(serializers.ModelSerializer):
@@ -32,4 +45,5 @@ class MembershipStatusSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.MembershipStatus
-        exclude = ["id"]
+        fields = "__all__"
+        read_only_fields = ["id"]

@@ -61,7 +61,7 @@ class MembershipPayments(models.Model):
             )
             sub.amount = self.membership.type.fees_amount_standard
             sub.payer = self.membership.user.payment_profile
-            sub.starting_date = self.membership.started
+            sub.starting_date = self.membership.date_started
             sub.repeat_each = self.membership.type.fees_repeat_each
             sub.repeat_unit = self.membership.type.fees_repeat_unit
             sub.save()

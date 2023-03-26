@@ -89,6 +89,10 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
         },
     }
 
+    # User fields
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+
     # Membership fields for Genossenschaft MILA
     membership_shares = serializers.IntegerField(required=False)
     membership_status = serializers.ChoiceField(choices=[], required=False)
@@ -129,6 +133,8 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             "user",
+            "first_name",
+            "last_name",
             "person_type",
             "gender",
             "birthday",
@@ -165,7 +171,9 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
         pt = attrs.get("person_type")
         if pt == "natural":
             if attrs.get("membership_status") is None:
-                raise ParseError("membership_type required for natural person")
+                raise ParseError(
+                    "membership_status required for natural person"
+                )
         elif pt == "legal":
             membership_status = MembershipStatus.objects.get(
                 name="Investierend",
@@ -191,6 +199,12 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Validate and transform tag fields before validation."""
+
+        # Save user data
+        self.user_data = {
+            "first_name": attrs.pop("first_name", None),
+            "last_name": attrs.pop("last_name", None),
+        }
 
         # Save membership data for create
         attrs = self._convert_membership_shares(attrs)
@@ -241,6 +255,11 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
                 setattr(profile, field, value)
             profile.save()
 
+            # Update user
+            profile.user.first_name = self.user_data["first_name"]
+            profile.user.last_name = self.user_data["last_name"]
+            profile.user.save()
+
             # Create payment profile
             payment_profile = PaymentProfile.objects.get(user=profile.user)
             payment_profile_serializer = PaymentProfileSerializer(
@@ -262,11 +281,20 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
             membership_serializer.save()
 
             # Create survey profile
+            try:
+                survey_profile = models.SurveyProfile.objects.get(
+                    user=profile.user
+                )
+            except models.SurveyProfile.DoesNotExist:
+                survey_profile = models.SurveyProfile.objects.create(
+                    user=profile.user
+                )
             survey_profile = SurveyProfileSerializer(
+                survey_profile,
                 data={
                     "user": profile.user.pk,
                     **self.survey_profile_data,
-                }
+                },
             )
             survey_profile.is_valid(raise_exception=True)
             survey_profile.save()

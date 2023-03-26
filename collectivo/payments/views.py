@@ -1,34 +1,58 @@
 """Views of the payments extension."""
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
-from collectivo.utils.mixins import SchemaMixin
-from collectivo.utils.permissions import HasGroup
+from collectivo.utils.filters import get_filterset, get_ordering_fields
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin, SelfMixin
+from collectivo.utils.permissions import HasGroup, IsAuthenticated
 
 from . import models, serializers
 
 
-class PaymentProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage payment users."""
+class ProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """ViewSet for admins to manage payment profiles."""
 
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.PaymentProfileSerializer
     queryset = models.Payment.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
+
+
+class ProfileSelfViewSet(
+    SelfMixin,
+    SchemaMixin,
+    HistoryMixin,
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
+    """ViewSet for users to manage their own payment profile."""
+
+    queryset = models.Payment.objects.all()
+    serializer_class = serializers.PaymentProfileSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class PaymentViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage payments."""
+    """ViewSet for admins to manage payments."""
 
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.PaymentSerializer
     queryset = models.Payment.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class SubscriptionViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage subscriptions."""
+    """ViewSet for admins to manage subscriptions."""
 
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.SubscriptionSerializer
-    queryset = models.Payment.objects.all()
+    queryset = models.Subscription.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)

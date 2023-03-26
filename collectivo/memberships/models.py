@@ -16,17 +16,46 @@ class MembershipType(models.Model):
     objects = NameManager()
 
     name = models.CharField(max_length=255, unique=True)
-    statuses = models.ManyToManyField("MembershipStatus", blank=True)
-
-    has_shares = models.BooleanField(default=False)
-    shares_amount_per_share = models.DecimalField(
-        max_digits=100, decimal_places=2, null=True, blank=True
+    description = models.TextField(null=True, blank=True)
+    statuses = models.ManyToManyField(
+        "MembershipStatus",
+        help_text="The possible statuses that a membership of this type can have.",
+        blank=True,
     )
-    shares_number_custom = models.BooleanField(default=False)
-    shares_number_custom_min = models.IntegerField(null=True, blank=True)
-    shares_number_custom_max = models.IntegerField(null=True, blank=True)
-    shares_number_standard = models.IntegerField(null=True, blank=True)
-    shares_number_social = models.IntegerField(null=True, blank=True)
+
+    has_shares = models.BooleanField(
+        default=False,
+        help_text="Whether users need to buy shares to become members.",
+    )
+    shares_amount_per_share = models.DecimalField(
+        max_digits=100,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="The amount of money that has to be paid per share.",
+    )
+    shares_number_custom = models.BooleanField(
+        default=False,
+        help_text="Whether members can choose a custom number of shares.",
+    )
+    shares_number_custom_min = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="The minimum number of shares for custom numbers of shares.",
+    )
+    shares_number_custom_max = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="The maximum number of shares for custom numbers of shares.",
+    )
+    shares_number_standard = models.IntegerField(
+        null=True, blank=True, help_text="The default number of shares."
+    )
+    shares_number_social = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="A reduced number of shares.",
+    )
 
     has_fees = models.BooleanField(default=False)
     fees_amount_custom = models.BooleanField(default=False)
@@ -54,6 +83,12 @@ class MembershipType(models.Model):
         ],
     )
 
+    currency = models.CharField(
+        max_length=3,
+        default="EUR",
+        help_text="The currency used for fees and shares.",
+    )
+
     comembership_of = models.ForeignKey(
         "MembershipType", null=True, blank=True, on_delete=models.CASCADE
     )
@@ -70,6 +105,7 @@ class MembershipStatus(models.Model):
     """A status of a membership (sub-type)."""
 
     objects = NameManager()
+
     name = models.CharField(unique=True, max_length=255)
     history = HistoricalRecords()
 
@@ -98,9 +134,9 @@ class Membership(models.Model):
     )
     number = models.IntegerField(verbose_name="Membership number")
 
-    started = models.DateField(null=True, blank=True)
-    cancelled = models.DateField(null=True, blank=True)
-    ended = models.DateField(null=True, blank=True)
+    date_started = models.DateField(null=True, blank=True)
+    date_cancelled = models.DateField(null=True, blank=True)
+    date_ended = models.DateField(null=True, blank=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
     status = models.ForeignKey(
         "MembershipStatus", null=True, blank=True, on_delete=models.CASCADE

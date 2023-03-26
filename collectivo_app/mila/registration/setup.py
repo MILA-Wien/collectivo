@@ -1,10 +1,11 @@
 """Setup function for the registration_survey extension."""
+from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.memberships.models import MembershipStatus, MembershipType
-from collectivo.menus.models import MenuItem
 from collectivo.version import __version__
 
 from .apps import SurveyConfig
+from .models import SurveyGroup, SurveySkill
 
 
 def setup(sender, **kwargs):
@@ -16,20 +17,42 @@ def setup(sender, **kwargs):
         version=__version__,
     )
 
-    MenuItem.register(
-        name="survey_admin",
-        label="Surveys",
+    DashboardTile.register(
+        name="mila_membership_tile",
+        label="Membership",
         extension=extension,
-        component="admin",
-        icon_name="pi-pencil",
-        requires_group="collectivo.core.admin",
-        parent="admin",
-        order=50,
+        component="mila_membership_tile",
     )
 
     for tname in ["Genossenschaft MILA", "Verein MILA"]:
-        MembershipType.objects.get_or_create(name=tname)
+        MembershipType.objects.register(name=tname)
 
     # Create membership statuses
     for sname in ["Aktiv", "Investierend"]:
         MembershipStatus.objects.register(name=sname)
+
+    # Create survey skills
+    for sname in [
+        "Immobilien/Architektur/Planung",
+        "Einzelhandel",
+        "Handwerk (Elektrik, Tischlerei, …)",
+        "Genossenschaft/Partizipation/Organisationsentwicklung",
+        "Kommunikation (Medien, Grafik, Text,…)",
+        "IT/Digitales",
+        "Finanzen (BWL, Buchhaltung,…)",
+    ]:
+        SurveySkill.objects.register(name=sname)
+
+    # Create survey groups
+    for gname in [
+        "Infogespräche",
+        "Sortiment",
+        "Öffentlichkeitsarbeit",
+        "Finanzen",
+        "Genossenschaft",
+        "IT und Digitales",
+        "Events",
+        "Standort",
+        "Minimarkt",
+    ]:
+        SurveyGroup.objects.register(name=gname)

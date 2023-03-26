@@ -70,8 +70,8 @@ class Payment(models.Model):
         ],
     )
 
-    created = models.DateTimeField(auto_now_add=True)
-    paid = models.DateTimeField(null=True)
+    date_due = models.DateTimeField(null=True)
+    date_paid = models.DateTimeField(null=True)
 
     subscription = models.ForeignKey(
         "Subscription",
@@ -102,8 +102,19 @@ class Subscription(models.Model):
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    starting_date = models.DateField(null=True, blank=True)
-    ending_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        max_length=10,
+        default="draft",
+        choices=[
+            ("draft", "draft"),
+            ("paused", "paused"),
+            ("active", "active"),
+            ("ended", "ended"),
+        ],
+    )
+
+    date_started = models.DateField(null=True, blank=True)
+    date_ended = models.DateField(null=True, blank=True)
 
     repeat_each = models.IntegerField(default=1)
     repeat_unit = models.CharField(

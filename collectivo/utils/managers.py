@@ -3,10 +3,10 @@ from django.db import models
 
 
 class NameManager(models.Manager):
-    """Manager that allows for registration."""
+    """Manager with a registration function for models with a name."""
 
     def register(self, name, *args, **kwargs):
-        """Get or create a based on attribute "name"."""
+        """Update or create instance based on the attribute "name"."""
         try:
             instance = self.get(name=name)
         except self.model.DoesNotExist:

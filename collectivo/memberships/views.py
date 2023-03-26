@@ -25,7 +25,7 @@ class MembershipUserViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
     """ViewSet for users to see their own memberships."""
 
     queryset = Membership.objects.all()
-    serializer_class = serializers.MembershipSerializer
+    serializer_class = serializers.MembershipSelfSerializer
     permission_classes = [IsAuthenticated]
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)

@@ -2,10 +2,13 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from collectivo.utils.managers import NameManager
+
 
 class SurveySkill(models.Model):
     """A skill that can be selected in the survey."""
 
+    objects = NameManager()
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -16,6 +19,7 @@ class SurveySkill(models.Model):
 class SurveyGroup(models.Model):
     """A group that can be selected in the survey."""
 
+    objects = NameManager()
     name = models.CharField(max_length=255)
 
     def __str__(self):

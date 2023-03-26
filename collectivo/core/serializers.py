@@ -13,7 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = User
-        fields = ["first_name", "last_name", "email", "groups"]
+        fields = ["id", "first_name", "last_name", "email", "groups"]
+        read_only_fields = ["id"]
         extra_kwargs = {"groups": {"label": "Permissions"}}
 
 

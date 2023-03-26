@@ -12,9 +12,9 @@ router.register("types", views.MembershipTypeViewSet)
 router.register("statuses", views.MembershipStatusViewSet, basename="status")
 
 self_router = DefaultRouter()
-self_router.register("self", views.MembershipUserViewSet)
+self_router.register("", views.MembershipUserViewSet)
 
 urlpatterns = [
+    path("api/memberships/memberships/self/", include(self_router.urls)),
     path("api/memberships/", include(router.urls)),
-    path("api/memberships/memberships/", include(self_router.urls)),
 ]

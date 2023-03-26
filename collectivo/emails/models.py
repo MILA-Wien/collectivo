@@ -3,13 +3,17 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+from collectivo.utils.managers import NameManager
+
 
 class EmailDesign(models.Model):
     """A design of an email, which can be applied to a template."""
 
+    objects = NameManager()
+    history = HistoricalRecords()
+
     name = models.CharField(max_length=255, unique="True")
     body = models.TextField()
-    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -18,6 +22,9 @@ class EmailDesign(models.Model):
 
 class EmailTemplate(models.Model):
     """A template of an email, which can be applied to a campaign."""
+
+    objects = NameManager()
+    history = HistoricalRecords()
 
     name = models.CharField(max_length=255, unique="True")
     design = models.ForeignKey(
@@ -31,7 +38,6 @@ class EmailTemplate(models.Model):
         null=True,
         help_text="This tag will be added to recipients if campaign is sent.",
     )
-    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -40,6 +46,8 @@ class EmailTemplate(models.Model):
 
 class EmailCampaign(models.Model):
     """An email campaign that can be used to send mass emails."""
+
+    history = HistoricalRecords()
 
     template = models.ForeignKey(
         "emails.EmailTemplate", on_delete=models.SET_NULL, null=True
@@ -64,7 +72,6 @@ class EmailCampaign(models.Model):
         blank=True,
         help_text="The extension that created this campaign.",
     )
-    history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""

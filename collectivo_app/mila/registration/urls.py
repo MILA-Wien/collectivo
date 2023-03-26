@@ -10,8 +10,8 @@ app_name = "mila.registration"
 
 router = DefaultRouter()
 router.register("profiles", views.SurveyProfileViewSet)
-router.register("skills", views.SurveyGroupViewSet)
-router.register("groups", views.SurveySkillViewSet)
+router.register("skills", views.SurveySkillViewSet)
+router.register("groups", views.SurveyGroupViewSet)
 
 
 me_router = DirectDetailRouter()

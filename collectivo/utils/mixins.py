@@ -2,11 +2,23 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
+from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 
 from collectivo.utils.permissions import IsAuthenticated, IsSuperuser
 
 from .schema import get_model_schema
+
+
+class SelfMixin:
+    """Filter queryset with the requests' user."""
+
+    def get_object(self):
+        """Return queryset entry with the request's user."""
+        try:
+            return self.queryset.get(user=self.request.user)
+        except self.queryset.model.DoesNotExist:
+            raise ParseError(f"{self.queryset.model} does not exist for user.")
 
 
 class SchemaMixin:

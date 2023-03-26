@@ -22,9 +22,6 @@ conditions = {
 class ProfileBaseSerializer(serializers.ModelSerializer):
     """Base serializer for member serializers with extra schema attributes."""
 
-    # Display user as id so that the frontend always gets an id field
-    id = serializers.SerializerMethodField()
-
     # Display user fields on the same level as member fields
     user__first_name = serializers.CharField(
         source="user.first_name", read_only=True, label="First name"
@@ -34,12 +31,6 @@ class ProfileBaseSerializer(serializers.ModelSerializer):
     )
     user__email = serializers.EmailField(
         source="user.email", read_only=True, label="Email"
-    )
-    user__tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        source="user.tags",
-        read_only=True,
-        label="Tags",
     )
 
     schema_attrs = {
@@ -57,6 +48,16 @@ class ProfileBaseSerializer(serializers.ModelSerializer):
 
 class ProfileAdminSerializer(ProfileBaseSerializer):
     """Serializer for admins to manage members."""
+
+    # Display user as id so that the frontend always gets an id field
+    id = serializers.SerializerMethodField()
+
+    user__tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        source="user.tags",
+        read_only=True,
+        label="Tags",
+    )
 
     class Meta:
         """Serializer settings."""

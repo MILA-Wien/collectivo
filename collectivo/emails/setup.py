@@ -1,9 +1,14 @@
 """Setup function of the menus extension."""
+from django.contrib.auth import get_user_model
+
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
 from collectivo.version import __version__
 
 from .apps import EmailsConfig
+from .models import EmailCampaign, EmailDesign, EmailTemplate
+
+User = get_user_model()
 
 
 def setup(sender, **kwargs):
@@ -28,20 +33,25 @@ def setup(sender, **kwargs):
         order=10,
     )
 
-    # TODO: Renovate this
-    if settings.DEVELOPMENT:
-        pass
-    #     try:
-    #         res = register_email_design(
-    #             name="Test design",
-    #             body='<html><body style="margin:0;padding:40px;word-spacing:'
-    #             'normal;background-color:#fff;">{{content}}</body></html>',
-    #         )
-    #         register_email_template(
-    #             name="Test template",
-    #             design=res.data["id"],
-    #             subject="Test email",
-    #             body="This is a test email to {{member.first_name}}.",
-    #         )
-    #     except Exception as e:
-    #         logger.debug(e)
+    statuses = ["success", "pending", "draft"]
+    if settings.COLLECTIVO["dev.create_test_data"] is True:
+        for i in range(3):
+            design = EmailDesign.objects.register(
+                name=f"Test design {i+1}",
+                body='<html><body style="margin:0;padding:40px;word-spacing:'
+                'normal;background-color:#fff;">{{content}}</body></html>',
+            )
+            template = EmailTemplate.objects.register(
+                name=f"Test template {i+1}",
+                design=design,
+                subject=f"Test email {i+1}",
+                body="This is a test email to {{member.first_name}}.",
+            )
+            try:
+                campaign = EmailCampaign.objects.get(template=template)
+            except EmailCampaign.DoesNotExist:
+                campaign = EmailCampaign.objects.create(template=template)
+            campaign.status = statuses[i]
+            test_users = User.objects.filter(email__startswith="test")
+            campaign.recipients.set(test_users)
+            campaign.save()

@@ -1,9 +1,8 @@
 """Views of the profiles extension."""
 from rest_framework import mixins, viewsets
-from rest_framework.exceptions import ParseError
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin, SelfMixin
 from collectivo.utils.permissions import HasGroup, IsAuthenticated
 
 from . import serializers
@@ -11,6 +10,7 @@ from .models import UserProfile
 
 
 class ProfileUserViewSet(
+    SelfMixin,
     SchemaMixin,
     HistoryMixin,
     viewsets.GenericViewSet,
@@ -22,13 +22,6 @@ class ProfileUserViewSet(
     queryset = UserProfile.objects.all()
     serializer_class = serializers.ProfileUserSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        """Return member object of the currently authenticated user."""
-        try:
-            return self.queryset.get(user=self.request.user)
-        except UserProfile.DoesNotExist:
-            raise ParseError("User has no profile.")
 
 
 class ProfileAdminViewSet(
