@@ -17,17 +17,10 @@ from .utils import get_env_bool, string_to_list
 logger = logging.getLogger(__name__)
 
 
-class CollectivoError(Exception):
-    """Custom error type for collectivo."""
-
-    pass
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = get_env_bool("DEBUG", False)
 DEVELOPMENT = get_env_bool("DEVELOPMENT", False)
-CREATE_TEST_DATA = DEVELOPMENT
 
 if os.environ.get("ALLOWED_HOSTS") is not None:
     ALLOWED_HOSTS = string_to_list(os.environ.get("ALLOWED_HOSTS"))
@@ -40,17 +33,19 @@ elif DEVELOPMENT:
         "collectivo.local",
     ]
 else:
-    raise CollectivoError(
+    logger.warning(
         "You must set the environment variable "
         "ALLOWED_HOSTS if DEVELOPMENT is False."
     )
 
 # Choose built-in collectivo extensions from environment
 _built_in_extensions = [
-    "members",
+    "members",  # TODO: Deprecate
+    "profiles",
+    "memberships",
+    "memberships.payments",
     "emails",
     "tags",
-    "registration_survey",
     "payments",
     "shifts",
     "direktkredit",
@@ -65,24 +60,30 @@ for ext in _chosen_extensions:
         )
 
 INSTALLED_APPS = [
+    # Django core apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party apps
+    "corsheaders",
+    "django_filters",
+    "rest_framework",
+    "drf_spectacular",
     "simple_history",
+    # Collectivo core apps
     "collectivo",
     "collectivo.core",
     "collectivo.auth.keycloak",
     "collectivo.menus",
     "collectivo.extensions",
     "collectivo.dashboard",
-    "corsheaders",
-    "django_filters",
-    "rest_framework",
-    "drf_spectacular",
+    # Collectivo custom extensions
     *[f"collectivo.{ext}" for ext in _chosen_extensions],
+    # TODO: Move this to MILA Repository
+    "mila.registration",
 ]
 
 MIDDLEWARE = [
@@ -327,6 +328,7 @@ DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_FROM")
 
 # Settings for collectivo
 COLLECTIVO = {
+    "dev.create_test_data": DEVELOPMENT,
     "keycloak.synchronize": True,
     "keycloak.server_url": os.environ.get("KEYCLOAK_SERVER_URL"),
     "keycloak.realm_name": os.environ.get("KEYCLOAK_REALM_NAME", "collectivo"),

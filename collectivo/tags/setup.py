@@ -29,6 +29,6 @@ def setup(sender, **kwargs):
         order=2,
     )
 
-    if settings.CREATE_TEST_DATA:
+    if settings.COLLECTIVO["dev.create_test_data"]:
         for i in range(100):
             Tag.objects.get_or_create(name=f"Test tag {i}")

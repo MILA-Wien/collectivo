@@ -1,22 +1,17 @@
 """Views of the extensions module."""
-from rest_framework import viewsets
+from rest_framework.mixins import ListModelMixin
+from rest_framework.viewsets import GenericViewSet
 
 from collectivo.core.permissions import IsSuperuser
-from collectivo.utils.history import HistoryMixin
-from collectivo.utils.schema import SchemaMixin
+from collectivo.utils.mixins import SchemaMixin
 
 from .models import Extension
-from .serializers import ExtensionCreateSerializer, ExtensionSerializer
+from .serializers import ExtensionSerializer
 
 
-class ExtensionViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
+class ExtensionViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
     """Manage extensions."""
 
     queryset = Extension.objects.all()
+    serializer_class = ExtensionSerializer
     permission_classes = [IsSuperuser]
-
-    def get_serializer_class(self):
-        """Set name to read-only except for create."""
-        if self.request.method == "POST":
-            return ExtensionCreateSerializer
-        return ExtensionSerializer

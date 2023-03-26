@@ -2,7 +2,7 @@ name: Release to docker hub
 on:
   push:
     tags:
-      - '*'
+      - "*"
 jobs:
   publish:
     runs-on: ubuntu-latest

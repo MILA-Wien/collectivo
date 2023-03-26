@@ -10,9 +10,8 @@ from collectivo.version import __version__
 
 User = get_user_model()
 
-TEST_USERS = ["superuser", "user_not_member", "user_not_verified"] + [
-    f"member_{str(i).zfill(2)}" for i in range(1, 4)
-]
+TEST_MEMBERS = ["superuser"] + [f"member_{str(i).zfill(2)}" for i in range(5)]
+TEST_USERS = TEST_MEMBERS + ["user_not_member", "user_not_verified"]
 
 
 def setup(sender, **kwargs):
@@ -28,20 +27,38 @@ def setup(sender, **kwargs):
         name="collectivo.core.admin",
     )[0]
 
+    # User menu
     Menu.register(name="main", extension=extension)
-    Menu.register(name="admin", extension=extension)
+    MenuItem.register(
+        name="profile",
+        label="Profile",
+        extension=extension,
+        component="profile",
+        icon_name="pi-user",
+        parent="main",
+    )
+    MenuItem.register(
+        name="logout",
+        label="Log out",
+        extension=extension,
+        component="logout",
+        icon_name="pi-sign-out",
+        parent="main",
+        order=99,
+    )
 
+    # Admin menu
+    Menu.register(name="admin", extension=extension)
     MenuItem.register(
         name="users",
-        label="Accounts",
+        label="Users",
         extension=extension,
         parent="admin",
         component="users",
-        icon_name="pi-key",
+        icon_name="pi-users",
         requires_group="collectivo.core.admin",
-        order=80,
+        order=00,
     )
-
     MenuItem.register(
         name="settings",
         label="Settings",
@@ -53,17 +70,7 @@ def setup(sender, **kwargs):
         order=100,
     )
 
-    MenuItem.register(
-        name="logout",
-        label="Log out",
-        extension=extension,
-        component="logout",
-        icon_name="pi-sign-out",
-        parent="main",
-        order=99,
-    )
-
-    if settings.CREATE_TEST_DATA is True:
+    if settings.COLLECTIVO["dev.create_test_data"] is True:
         for first_name in TEST_USERS:
             email = f"test_{first_name}@example.com"
             user = User.objects.get_or_create(

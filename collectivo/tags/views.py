@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from collectivo.core.permissions import ReadOrIsSuperuser
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.schema import SchemaMixin
+from collectivo.utils.mixins import SchemaMixin
 
 from . import models, serializers
 

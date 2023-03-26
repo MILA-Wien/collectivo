@@ -13,7 +13,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     # Activate test users in Keycloak
-    if settings.CREATE_TEST_DATA is True:
+    if settings.COLLECTIVO["dev.create_test_data"] is True:
         keycloak = KeycloakAPI()
         for first_name in TEST_USERS:
             user = User.objects.get(first_name=first_name)

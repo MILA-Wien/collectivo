@@ -2,7 +2,7 @@
 from rest_framework import viewsets
 
 from collectivo.core.permissions import HasGroup
-from collectivo.utils.schema import SchemaMixin
+from collectivo.utils.mixins import SchemaMixin
 
 from . import models, serializers
 

@@ -11,7 +11,7 @@ class PaymentProfile(models.Model):
         get_user_model(),
         primary_key=True,
         on_delete=models.CASCADE,
-        related_name="payment",
+        related_name="payment_profile",
     )
 
     bank_account_iban = models.CharField(max_length=255, null=True, blank=True)

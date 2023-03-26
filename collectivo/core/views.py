@@ -8,8 +8,7 @@ from rest_framework.views import APIView
 
 from collectivo.core.permissions import IsSuperuser
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.history import HistoryMixin
-from collectivo.utils.schema import SchemaMixin
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin
 from collectivo.version import __version__
 
 from . import serializers

@@ -5,6 +5,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("collectivo.urls")),
+    path("", include("mila.registration.urls")),
 ]
 
 handler400 = "rest_framework.exceptions.bad_request"

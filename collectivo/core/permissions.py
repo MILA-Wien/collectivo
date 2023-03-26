@@ -17,6 +17,14 @@ def is_in_group(user, group_name: str) -> bool | None:
         return None
 
 
+class IsAuthenticated(BasePermission):
+    """Allow access only to authenticated users."""
+
+    def has_permission(self, request, view):
+        """Check if user is authenticated."""
+        return request.user and request.user.is_authenticated
+
+
 class IsSuperuser(BasePermission):
     """Allow access only to superusers."""
 

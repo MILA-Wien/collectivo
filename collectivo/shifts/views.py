@@ -9,7 +9,7 @@ from django.forms import ValidationError
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from collectivo.utils.schema import SchemaMixin
+from collectivo.utils.mixins import SchemaMixin
 
 from . import models, serializers
 
