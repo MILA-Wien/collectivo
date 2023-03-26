@@ -2,9 +2,9 @@
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ParseError
 
-from collectivo.core.permissions import HasGroup, IsAuthenticated
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.permissions import HasGroup, IsAuthenticated
 
 from . import serializers
 from .models import UserProfile

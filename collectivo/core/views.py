@@ -6,9 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from collectivo.core.permissions import IsSuperuser
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.permissions import IsSuperuser
 from collectivo.version import __version__
 
 from . import serializers

@@ -1,9 +1,9 @@
 """Views of the emails module."""
 from rest_framework import viewsets
 
-from collectivo.core.permissions import IsSuperuser
 from collectivo.utils.filters import get_filterset
 from collectivo.utils.mixins import SchemaMixin
+from collectivo.utils.permissions import IsSuperuser
 
 from . import models, serializers
 

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from collectivo.core.permissions import IsSuperuser
+from collectivo.utils.permissions import IsSuperuser
 
 from . import models, serializers
 

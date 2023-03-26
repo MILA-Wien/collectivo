@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 
-from collectivo.core.permissions import ReadOrIsSuperuser
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import SchemaMixin
+from collectivo.utils.permissions import ReadOrIsSuperuser
 
 from . import models, serializers
 

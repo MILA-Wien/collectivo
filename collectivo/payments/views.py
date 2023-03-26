@@ -1,8 +1,8 @@
 """Views of the payments extension."""
 from rest_framework import viewsets
 
-from collectivo.core.permissions import HasGroup
 from collectivo.utils.mixins import SchemaMixin
+from collectivo.utils.permissions import HasGroup
 
 from . import models, serializers
 

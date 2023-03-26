@@ -1,9 +1,9 @@
 """Views of the registration survey extension."""
 from rest_framework import mixins, viewsets
 
-from collectivo.core.permissions import IsAuthenticated, IsSuperuser
 from collectivo.profiles.models import UserProfile
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.permissions import IsAuthenticated, IsSuperuser
 
 from . import models, serializers
 

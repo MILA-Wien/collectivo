@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from collectivo.core.permissions import IsAuthenticated, IsSuperuser
+from collectivo.utils.permissions import IsAuthenticated, IsSuperuser
 
 from .schema import get_model_schema
 

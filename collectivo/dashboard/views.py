@@ -2,7 +2,7 @@
 from django.db.models import Q
 from rest_framework import viewsets
 
-from collectivo.core.permissions import ReadOrIsSuperuser
+from collectivo.utils.permissions import ReadOrIsSuperuser
 
 from . import models, serializers
 

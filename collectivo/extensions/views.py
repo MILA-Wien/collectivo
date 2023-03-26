@@ -2,8 +2,8 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from collectivo.core.permissions import IsSuperuser
 from collectivo.utils.mixins import SchemaMixin
+from collectivo.utils.permissions import IsSuperuser
 
 from .models import Extension
 from .serializers import ExtensionSerializer

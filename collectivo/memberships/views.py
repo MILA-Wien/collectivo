@@ -2,9 +2,9 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from collectivo.core.permissions import HasGroup, IsAuthenticated
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.permissions import HasGroup, IsAuthenticated
 
 from . import serializers
 from .models import Membership, MembershipStatus, MembershipType
