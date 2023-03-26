@@ -27,7 +27,7 @@ def setup(sender, **kwargs):
         parent="main",
         extension=extension,
         requires_group="collectivo.direktkredit.user",
-        link=os.environ.get("DIREKTKREDIT_SERVER_URL") + "/login-oidc",
+        link=f"{os.environ.get('DIREKTKREDIT_SERVER_URL')}/login-oidc",
         target="blank",
     )
 
@@ -40,7 +40,7 @@ def setup(sender, **kwargs):
     )
 
     # Admin objects
-
+    # TODO Warning if os environ var is missing
     MenuItem.register(
         name="direktkredit_admin",
         label="Direct loans",
