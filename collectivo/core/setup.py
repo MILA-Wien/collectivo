@@ -73,12 +73,14 @@ def setup(sender, **kwargs):
     if settings.COLLECTIVO["dev.create_test_data"] is True:
         for first_name in TEST_USERS:
             email = f"test_{first_name}@example.com"
-            user = User.objects.get_or_create(
-                username=email,
-                email=email,
-                first_name=first_name,
-                last_name="Example",
-            )[0]
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                user = User.objects.create(email=email)
+            user.username = email
+            user.first_name = first_name
+            user.last_name = "Example"
+            user.save()
 
             # Give user permissions
             if first_name == "superuser":
