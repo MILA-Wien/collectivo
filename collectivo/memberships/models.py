@@ -17,9 +17,11 @@ class MembershipType(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
+
+    # TODO: Validation for this field
     statuses = models.ManyToManyField(
         "MembershipStatus",
-        help_text="The possible statuses that a membership of this type can have.",
+        help_text="The statuses that a membership of this type can have.",
         blank=True,
     )
 

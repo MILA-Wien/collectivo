@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from collectivo.core.setup import TEST_MEMBERS
-from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
 from collectivo.version import __version__

@@ -16,8 +16,15 @@ User = get_user_model()
 REGISTER_URL = reverse("mila.registration:register")
 REGISTER_SCHEMA_URL = reverse("mila.registration:register-schema")
 
+TEST_USER = {
+    "email": "some_member@example.com",
+    "username": "some_member@example.com",
+    "first_name": "firstname",
+    "last_name": "lastname",
+}
 
-TEST_MEMBER = {
+
+TEST_PROFILE = {
     "gender": "diverse",
     "address_street": "my street",
     "address_number": "1",
@@ -38,7 +45,8 @@ SURVEY_PROFILE = {
 }
 
 TEST_MEMBER_POST = {
-    **TEST_MEMBER,
+    **TEST_USER,
+    **TEST_PROFILE,
     **PAYMENT_PROFILE,
     **SURVEY_PROFILE,
     "person_type": "natural",
@@ -46,19 +54,6 @@ TEST_MEMBER_POST = {
     "shares_payment_type": "sepa",
     "statutes_approved": True,
     "shares_tarif": "normal",
-}
-
-TEST_MEMBER_GET = {
-    **TEST_MEMBER,
-    # "membership_start": localdate(),
-    # "email": "some_member@example.com",
-}
-
-TEST_USER = {
-    "email": "some_member@example.com",
-    "username": "some_member@example.com",
-    "firstName": "firstname",
-    "lastName": "lastname",
 }
 
 
@@ -92,7 +87,7 @@ class MilaRegistrationTests(TestCase):
     def test_create_member(self):
         """Test that an authenticated user can create itself as a member."""
         member = self.create_member()
-        for key, value in TEST_MEMBER_GET.items():
+        for key, value in TEST_PROFILE.items():
             self.assertEqual(value, getattr(member, key))
 
         membership = member.user.memberships.last()

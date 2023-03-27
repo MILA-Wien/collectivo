@@ -41,10 +41,10 @@ class EmailsTests(TestCase):
         self.user = create_testuser(superuser=True)
         self.client.force_authenticate(self.user)
         res = self.client.post(
-            DESIGNS_URL, {"name": "Test design 2", "body": "TEST {{content}}"}
+            DESIGNS_URL, {"name": "a great design", "body": "TEST {{content}}"}
         )
         self.template_data = {
-            "name": "Test template 2",
+            "name": "a great template",
             "subject": "Test",
             "design": res.data["id"],
             "body": "First name: {{user.first_name}} <br/> New line",
