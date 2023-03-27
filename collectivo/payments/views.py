@@ -11,10 +11,10 @@ from . import models, serializers
 class ProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
     """ViewSet for admins to manage payment profiles."""
 
+    queryset = models.PaymentProfile.objects.all()
+    serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
-    serializer_class = serializers.PaymentProfileSerializer
-    queryset = models.Payment.objects.all()
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
 
@@ -29,7 +29,7 @@ class ProfileSelfViewSet(
 ):
     """ViewSet for users to manage their own payment profile."""
 
-    queryset = models.Payment.objects.all()
+    queryset = models.PaymentProfile.objects.all()
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [IsAuthenticated]
     filterset_class = get_filterset(serializer_class)
