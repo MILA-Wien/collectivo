@@ -32,13 +32,3 @@ class TagViewSet(SchemaMixin, viewsets.ModelViewSet):
                 "Cannot delete a tag that is assigned to users."
             )
         return super().perform_destroy(instance)
-
-
-class TagCategoryViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """Manage tag categories."""
-
-    permission_classes = [ReadOrIsSuperuser]
-    serializer_class = serializers.TagCategorySerializer
-    queryset = models.TagCategory.objects.all()
-    filterset_class = get_filterset(serializers.TagCategorySerializer)
-    ordering_fields = get_ordering_fields(serializers.TagCategorySerializer)
