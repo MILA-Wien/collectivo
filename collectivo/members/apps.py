@@ -5,20 +5,21 @@ from django.db.models.signals import post_migrate
 
 def post_migrate_callback(sender, **kwargs):
     """Initialize extension after database is ready."""
-    from django.contrib.auth import get_user_model
-    from mila.registration.models import SurveyProfile
 
-    from collectivo.memberships.models import (
-        Membership,
-        MembershipStatus,
-        MembershipType,
-    )
-    from collectivo.payments.models import PaymentProfile
-    from collectivo.profiles.models import UserProfile
+    pass
+    # from django.contrib.auth import get_user_model
 
-    from .models import Member
+    # # from mila.registration.models import SurveyProfile
+    # # from collectivo.memberships.models import (
+    # #     Membership,
+    # #     MembershipStatus,
+    # #     MembershipType,
+    # # )
+    # # from collectivo.payments.models import PaymentProfile
+    # # from collectivo.profiles.models import UserProfile
+    # # from .models import Member
 
-    User = get_user_model()
+    # User = get_user_model()
 
     # Custom migrations
 
@@ -94,7 +95,7 @@ def post_migrate_callback(sender, **kwargs):
     #     }
     #     for paymentfield, memberfield in payment_profile_fields.items():
     #         if getattr(member, memberfield):
-    #             setattr(payment_profile, paymentfield, getattr(member, memberfield))
+    #      setattr(payment_profile, paymentfield, getattr(member, memberfield))
 
     #     # Create memberships
     #     try:

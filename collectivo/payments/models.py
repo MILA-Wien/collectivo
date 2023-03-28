@@ -38,7 +38,12 @@ class PaymentType(models.Model):
 
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255)
-    extension = models.CharField(max_length=255, null=True, blank=True)
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -57,6 +62,12 @@ class Payment(models.Model):
     )
     payer = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     status = models.CharField(
@@ -100,6 +111,12 @@ class Subscription(models.Model):
     currency = models.CharField(max_length=3, default="EUR")
     payer = models.ForeignKey(
         "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     status = models.CharField(

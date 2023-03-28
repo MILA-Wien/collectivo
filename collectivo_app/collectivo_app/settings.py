@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     *[f"collectivo.{ext}" for ext in _chosen_extensions],
     # TODO: Move this to MILA Repository
     "mila.registration",
+    "mila.direktkredit",
 ]
 
 MIDDLEWARE = [

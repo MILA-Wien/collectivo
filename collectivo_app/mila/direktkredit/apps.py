@@ -8,8 +8,7 @@ class DirektkreditConfig(AppConfig):
     """Configuration class for the direktkredit extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.direktkredit"
-    description = "Integration with the direct loan system from habidat."
+    name = "mila.direktkredit"
 
     def ready(self):
         """

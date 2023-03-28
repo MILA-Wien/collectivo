@@ -47,10 +47,12 @@ def setup(sender, **kwargs):
                 subject=f"Test email {i+1}",
                 body="This is a test email to {{member.first_name}}.",
             )
-            try:
-                campaign = EmailCampaign.objects.get(template=template)
-            except EmailCampaign.DoesNotExist:
-                campaign = EmailCampaign.objects.create(template=template)
+
+            # Reset campaigns that use the test template
+            campaigns = EmailCampaign.objects.filter(template=template)
+            for campaign in campaigns:
+                campaign.delete()
+            campaign = EmailCampaign.objects.create(template=template)
             campaign.status = statuses[i]
             test_users = User.objects.filter(email__startswith="test")
             campaign.recipients.set(test_users)

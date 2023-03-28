@@ -1,10 +1,8 @@
-"""Setup function for the registration_survey extension."""
+"""Setup function for the MILA registration extension."""
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.memberships.models import MembershipStatus, MembershipType
-from collectivo.version import __version__
 
-from .apps import SurveyConfig
 from .models import SurveyGroup, SurveySkill
 
 
@@ -12,9 +10,10 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=SurveyConfig.name.split(".")[-1],
-        description=SurveyConfig.description,
-        version=__version__,
+        name="mila_registration",
+        label="MILA Registration",
+        description="Membership registration for MILA.",
+        version="1.0.0",
     )
 
     DashboardTile.register(

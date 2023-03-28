@@ -8,7 +8,6 @@ class SurveyConfig(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "mila.registration"
-    description = "Registration form for MILA."
 
     def ready(self):
         """

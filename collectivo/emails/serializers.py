@@ -61,7 +61,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
             "status_message",
             "created",
             "sent",
-            "automation",
+            "extension",
         )
 
     def validate(self, attrs):

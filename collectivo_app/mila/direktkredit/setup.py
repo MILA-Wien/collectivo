@@ -1,26 +1,22 @@
-"""Setup function of the test_extension extension."""
+"""Setup function of the mila direktkredit extension."""
 import os
 
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.version import __version__
-
-from .apps import DirektkreditConfig
 
 
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    name = DirektkreditConfig.name.split(".")[-1]
     extension = Extension.register(
-        name=name,
-        description=DirektkreditConfig.description,
-        version=__version__,
+        name="mila_direktkredit",
+        label="MILA Direktkredit",
+        description="Integration with the direct loan system from habitat.",
+        version="1.0.0",
     )
 
     # User objects
-
     MenuItem.register(
         name="direktkredit",
         label="Direktkredite",
