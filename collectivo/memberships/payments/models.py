@@ -27,6 +27,13 @@ class MembershipPayments(models.Model):
         related_name="membership_fees",
     )
 
+    def delete(self):
+        """Delete subscription if membership is deleted."""
+        with transaction.atomic():
+            if self.fees_subscription is not None:
+                self.fees_subscription.delete()
+            super().delete()
+
     def create_payment_for_shares(self):
         """Create payment for shares."""
         mtype = self.membership.type
@@ -43,6 +50,9 @@ class MembershipPayments(models.Model):
                     description=f"{shares_diff} shares for {mtype.name}",
                     payer=self.membership.user.payment_profile,
                     amount=shares_diff * mtype.shares_amount_per_share,
+                    status="pending",
+                    currency=mtype.currency,
+                    date_due=self.membership.date_started,
                 )
                 return payment
 

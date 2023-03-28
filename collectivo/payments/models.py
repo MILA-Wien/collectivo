@@ -70,8 +70,8 @@ class Payment(models.Model):
         ],
     )
 
-    date_due = models.DateTimeField(null=True)
-    date_paid = models.DateTimeField(null=True)
+    date_due = models.DateField(null=True)
+    date_paid = models.DateField(null=True)
 
     subscription = models.ForeignKey(
         "Subscription",

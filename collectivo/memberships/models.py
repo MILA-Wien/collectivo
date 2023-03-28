@@ -136,7 +136,7 @@ class Membership(models.Model):
     )
     number = models.IntegerField(verbose_name="Membership number")
 
-    date_started = models.DateField(null=True, blank=True)
+    date_started = models.DateField(null=True, blank=True, auto_now_add=True)
     date_cancelled = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)

@@ -77,8 +77,6 @@ def setup(sender, **kwargs):
                 continue
             email = f"test_{first_name}@example.com"
             user = get_user_model().objects.get(email=email)
-            for m in user.memberships.all():
-                m.delete()
             for type in types:
                 models.Membership.objects.get_or_create(
                     user=user,
