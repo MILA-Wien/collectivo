@@ -7,7 +7,6 @@ from collectivo.core.apps import CoreConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
 from collectivo.utils.dev import DEV_USERS
-from collectivo.version import __version__
 
 User = get_user_model()
 

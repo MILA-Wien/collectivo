@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.version import __version__
 
 from .apps import EmailsConfig
 from .models import EmailCampaign, EmailDesign, EmailTemplate

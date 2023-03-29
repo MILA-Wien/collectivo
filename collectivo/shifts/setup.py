@@ -2,7 +2,6 @@
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.version import __version__
 
 from .apps import ShiftsConfig
 

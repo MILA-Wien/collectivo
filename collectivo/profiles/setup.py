@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 
 from collectivo.extensions.models import Extension
 from collectivo.utils.dev import DEV_MEMBERS
-from collectivo.version import __version__
 
 from . import models
 from .apps import ProfilesConfig

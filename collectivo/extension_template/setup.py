@@ -1,6 +1,5 @@
 """Setup function of the extension_template extension."""
 from collectivo.extensions.models import Extension
-from collectivo.version import __version__
 
 from .apps import ExtensionConfig
 

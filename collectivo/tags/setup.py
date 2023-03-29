@@ -3,7 +3,6 @@ from django.conf import settings
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.version import __version__
 
 from .apps import TagsConfig
 from .models import Tag
