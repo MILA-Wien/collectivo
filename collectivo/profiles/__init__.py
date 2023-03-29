@@ -1,1 +1,1 @@
-"""A built-in collectivo extension to manage members of a collective."""
+"""A built-in extension of collectivo to manage user profiles."""

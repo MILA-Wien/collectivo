@@ -4,7 +4,7 @@ from itertools import cycle
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from collectivo.core.setup import TEST_MEMBERS
+from collectivo.core.setup import DEV_MEMBERS
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
 from collectivo.version import __version__
@@ -73,7 +73,7 @@ def setup(sender, **kwargs):
         status_cycle = cycle(statuses)
 
         # Create memberships
-        for first_name in TEST_MEMBERS:
+        for first_name in DEV_MEMBERS:
             if first_name == "user_not_member":
                 continue
             email = f"test_{first_name}@example.com"

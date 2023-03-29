@@ -8,7 +8,7 @@ from .serializers import TokenSerializer
 
 
 class KeycloakTokenView(APIView):
-    """API views of the keycloak token."""
+    """View to receive keycloak token for development."""
 
     keycloak_manager = KeycloakAPI().openid
 

@@ -10,8 +10,8 @@ from collectivo.version import __version__
 
 User = get_user_model()
 
-TEST_MEMBERS = ["superuser"] + [f"member_{str(i).zfill(2)}" for i in range(5)]
-TEST_USERS = TEST_MEMBERS + ["user_not_member", "user_not_verified"]
+DEV_MEMBERS = ["superuser"] + [f"member_{str(i).zfill(2)}" for i in range(5)]
+DEV_USERS = DEV_MEMBERS + ["user_not_member", "user_not_verified"]
 
 
 def setup(sender, **kwargs):
@@ -71,7 +71,7 @@ def setup(sender, **kwargs):
     )
 
     if settings.COLLECTIVO["dev.create_test_data"] is True:
-        for first_name in TEST_USERS:
+        for first_name in DEV_USERS:
             email = f"test_{first_name}@example.com"
             try:
                 user = User.objects.get(email=email)

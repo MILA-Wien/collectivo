@@ -1,4 +1,4 @@
-"""Tests for the keycloak extension."""
+"""Tests for the keycloak auth extension."""
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from keycloak.exceptions import (

@@ -1,1 +1,1 @@
-"""User experience module for collectivo."""
+"""A built-in extension of collectivo to enable authentication via keycloak."""

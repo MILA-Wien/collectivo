@@ -1,4 +1,4 @@
-"""Setup function of the menus extension."""
+"""Setup function of the payments extension."""
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
 from collectivo.version import __version__
