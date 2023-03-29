@@ -141,9 +141,11 @@ class Membership(models.Model):
     date_started = models.DateField(null=True, blank=True, default=date.today)
     date_cancelled = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
-    type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        "MembershipType", on_delete=models.PROTECT, related_name="memberships"
+    )
     status = models.ForeignKey(
-        "MembershipStatus", null=True, blank=True, on_delete=models.CASCADE
+        "MembershipStatus", null=True, blank=True, on_delete=models.PROTECT
     )
 
     # Optional depending on membership type

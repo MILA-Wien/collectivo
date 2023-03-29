@@ -121,9 +121,9 @@ class MilaRegistrationTests(TestCase):
     def test_tags_assigned(self):
         """Test that tags are assigned to the user when a member is created."""
         member = self.create_member()
-        tag = Tag.objects.get_or_create(name="Statuten angenommen")[0]
+        tag = Tag.objects.get_or_create(name="Satzung angenommen")[0]
         self.assertIn(tag, member.user.tags.all())
-        tag = Tag.objects.get_or_create(name="Öffentlichkeitsarbeit")[0]
+        tag = Tag.objects.get_or_create(name="Öffentliche Verwendung")[0]
         self.assertNotIn(tag, member.user.tags.all())
 
     def test_statutes_not_approved_raises_error(self):

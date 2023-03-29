@@ -300,7 +300,7 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
             survey_profile.save()
 
             # Assign tags
-            for field in ["Statuten angenommen", "Öffentlichkeitsarbeit"]:
+            for field in ["Satzung angenommen", "Öffentliche Verwendung"]:
                 value = self.tag_fields[field] or False
                 if value is True:
                     tag = Tag.objects.get_or_create(name=field)[0]
