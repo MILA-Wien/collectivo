@@ -29,46 +29,48 @@ def post_migrate_callback(sender, **kwargs):
     # Custom migrations
 
     # Create test member
-    member = Member.objects.create(
-        email="test_member_01@example.com",
-        first_name="MTEST First Name",
-        last_name="MTEST Last Name",
-        person_type="legal",
-        gender="female",
-        address_street="MTEST Street",
-        address_number="MTEST Number",
-        address_stair="MTEST Stair",
-        address_door="MTEST Door",
-        address_postcode="MTEST Postcode",
-        address_city="MTEST City",
-        address_country="MTEST Country",
-        phone="MTEST Phone",
-        birthday="1990-01-01",
-        occupation="MTEST Occupation",
-        legal_name="MTEST Legal Name",
-        legal_type="MTEST Legal Type",
-        legal_id="MTEST Legal ID",
-        membership_start="2021-01-01",
-        membership_type="investing",
-        shares_number=42,
-        shares_payment_type="transfer",
-        bank_account_iban="MTEST IBAN",
-        bank_account_owner="MTEST Bank Account Owner",
-        survey_contact="MTEST Survey Contact",
-        survey_motivation="MTEST Survey Motivation",
-    )
-    member.groups_interested.set(
-        [MemberGroup.objects.get_or_create(label="Finanzen")[0]]
-    )
-    member.skills.set(
-        [MemberSkill.objects.get_or_create(label="IT/Digitales")[0]]
-    )
-    member.tags.set(
-        [
-            MemberTag.objects.get_or_create(label="Public use approved")[0],
-            MemberTag.objects.get_or_create(label="MTEST Tag")[0],
-        ]
-    )
+    # This code is only for testing the migration, now disabled for production
+    # The whole app will be removed after migration
+    # member = Member.objects.create(
+    #     email="test_member_01@example.com",
+    #     first_name="MTEST First Name",
+    #     last_name="MTEST Last Name",
+    #     person_type="legal",
+    #     gender="female",
+    #     address_street="MTEST Street",
+    #     address_number="MTEST Number",
+    #     address_stair="MTEST Stair",
+    #     address_door="MTEST Door",
+    #     address_postcode="MTEST Postcode",
+    #     address_city="MTEST City",
+    #     address_country="MTEST Country",
+    #     phone="MTEST Phone",
+    #     birthday="1990-01-01",
+    #     occupation="MTEST Occupation",
+    #     legal_name="MTEST Legal Name",
+    #     legal_type="MTEST Legal Type",
+    #     legal_id="MTEST Legal ID",
+    #     membership_start="2021-01-01",
+    #     membership_type="investing",
+    #     shares_number=42,
+    #     shares_payment_type="transfer",
+    #     bank_account_iban="MTEST IBAN",
+    #     bank_account_owner="MTEST Bank Account Owner",
+    #     survey_contact="MTEST Survey Contact",
+    #     survey_motivation="MTEST Survey Motivation",
+    # )
+    # member.groups_interested.set(
+    #     [MemberGroup.objects.get_or_create(label="Finanzen")[0]]
+    # )
+    # member.skills.set(
+    #     [MemberSkill.objects.get_or_create(label="IT/Digitales")[0]]
+    # )
+    # member.tags.set(
+    #     [
+    #         MemberTag.objects.get_or_create(label="Public use approved")[0],
+    #         MemberTag.objects.get_or_create(label="MTEST Tag")[0],
+    #     ]
+    # )
 
     # Create membership type vor Genossenschaft
     membership_eg = MembershipType.objects.register(
