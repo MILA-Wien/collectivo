@@ -1,7 +1,6 @@
 """Setup function for the MILA registration extension."""
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
-from collectivo.memberships.models import MembershipStatus, MembershipType
 
 from .models import SurveyGroup, SurveySkill
 
@@ -22,13 +21,6 @@ def setup(sender, **kwargs):
         extension=extension,
         component="mila_membership_tile",
     )
-
-    for tname in ["Genossenschaft MILA", "Verein MILA"]:
-        MembershipType.objects.register(name=tname)
-
-    # Create membership statuses
-    for sname in ["Aktiv", "Investierend"]:
-        MembershipStatus.objects.register(name=sname)
 
     # Create survey skills
     for sname in [
