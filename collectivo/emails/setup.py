@@ -1,4 +1,4 @@
-"""Setup function of the menus extension."""
+"""Setup function of the emails extension."""
 from django.contrib.auth import get_user_model
 
 from collectivo.extensions.models import Extension

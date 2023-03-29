@@ -1,4 +1,4 @@
-"""Setup function of the menus extension."""
+"""Setup function of the dashboard extension."""
 from collectivo.dashboard.apps import DashboardConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem

@@ -1,4 +1,4 @@
-"""Setup function for the users module."""
+"""Setup function for the extensions module."""
 from collectivo.extensions.apps import ExtensionsConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem

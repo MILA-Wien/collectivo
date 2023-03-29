@@ -18,6 +18,7 @@ def setup(sender, **kwargs):
     MenuItem.register(
         name="shifts_user",
         label="Shifts",
+        icon_name="pi-calendar",
         extension=extension,
         component="shifts_user",
         requires_group="collectivo.shifts.user",

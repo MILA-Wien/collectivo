@@ -1,4 +1,4 @@
-"""Tests of the extensions extension."""
+"""Tests of the extensions module."""
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
