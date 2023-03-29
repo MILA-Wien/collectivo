@@ -244,9 +244,14 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create member, membership, payment profile, and tags."""
 
-        type = MembershipType.objects.get(
-            name="MILA Mitmach-Supermarkt e. G."
-        ).pk
+        try:
+            type = MembershipType.objects.get(
+                name="MILA Mitmach-Supermarkt e. G."
+            ).pk
+        except MembershipType.DoesNotExist:
+            type = MembershipType.objects.create(
+                name="MILA Mitmach-Supermarkt e. G.",
+            ).pk
 
         with transaction.atomic():
             profile = UserProfile.objects.get(user=validated_data["user"])
