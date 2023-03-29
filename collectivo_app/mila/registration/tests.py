@@ -67,7 +67,9 @@ class MilaRegistrationTests(TestCase):
         self.client.force_authenticate(self.user)
         self.skill = models.SurveySkill.objects.get_or_create(name="sk1")[0]
         self.group = models.SurveyGroup.objects.get_or_create(name="gr1")[0]
-        self.status = MembershipStatus.objects.get(name="Investierend")
+        self.status = MembershipStatus.objects.get_or_create(
+            name="Investierend"
+        )[0]
 
     def create_member(self, payload=TEST_MEMBER_POST):
         """Create a sample member."""

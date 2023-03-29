@@ -1,4 +1,4 @@
-"""Setup function of the test_extension extension."""
+"""Setup function of the extension_template extension."""
 from collectivo.extensions.models import Extension
 from collectivo.version import __version__
 

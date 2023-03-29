@@ -77,6 +77,7 @@ class Payment(models.Model):
             ("draft", "draft"),
             ("pending", "pending"),
             ("success", "success"),
+            ("canceled", "canceled"),
             ("failure", "failure"),
         ],
     )

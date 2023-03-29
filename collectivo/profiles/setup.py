@@ -2,8 +2,8 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from collectivo.core.setup import DEV_MEMBERS
 from collectivo.extensions.models import Extension
+from collectivo.utils.dev import DEV_MEMBERS
 from collectivo.version import __version__
 
 from . import models
@@ -14,7 +14,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     Extension.register(
-        name=ProfilesConfig.name.split(".")[-1],
+        name=ProfilesConfig.name,
         description=ProfilesConfig.description,
         version=__version__,
     )

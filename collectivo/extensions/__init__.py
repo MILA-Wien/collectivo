@@ -1,1 +1,1 @@
-"""Extensions module for collectivo."""
+"""A built-in extension of collectivo to manage extensions."""

@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from collectivo.core.setup import DEV_USERS
+from collectivo.utils.dev import DEV_USERS
 
 from .api import KeycloakAPI
 

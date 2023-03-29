@@ -10,7 +10,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=PaymentsConfig.name.split(".")[-1],
+        name=PaymentsConfig.name,
         description=PaymentsConfig.description,
         version=__version__,
     )

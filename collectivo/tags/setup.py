@@ -13,7 +13,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=TagsConfig.name.split(".")[-1],
+        name=TagsConfig.name,
         description=TagsConfig.description,
         version=__version__,
     )

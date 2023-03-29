@@ -1,4 +1,4 @@
-"""Views of the members extension."""
+"""Views of the memberships extension."""
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 

@@ -26,9 +26,5 @@ class KeycloakTokenView(APIView):
         username = request.data["username"]
         password = request.data["password"]
         token = self.keycloak_manager.token(username, password)
-
-        # TODO: Error for wrong password
-        data = {
-            "access_token": token["access_token"],
-        }
+        data = {"access_token": token["access_token"]}
         return Response(data)

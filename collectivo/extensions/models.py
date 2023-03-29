@@ -29,3 +29,16 @@ class Extension(models.Model, RegisterMixin):
     def __str__(self):
         """Return string representation of the model."""
         return self.name
+
+    @classmethod
+    def register(cls, name, *args, **kwargs):
+        """
+        Register an extension.
+
+        If an extension with that name already exists, it is updated.
+
+        If the name has a dot (.), it is assumed to be a module name and the
+        last part is used as the name of the extension.
+        """
+        name = name.split(".")[-1]
+        return super().register(name, *args, **kwargs)

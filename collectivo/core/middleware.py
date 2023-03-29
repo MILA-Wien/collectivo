@@ -1,4 +1,4 @@
-"""Middlewares of the core extension for logging."""
+"""Middlewares of the core extension for logging and request tracing."""
 import logging
 import socket
 import time

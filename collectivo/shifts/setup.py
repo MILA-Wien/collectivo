@@ -11,7 +11,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=ShiftsConfig.name.split(".")[-1],
+        name=ShiftsConfig.name,
         description=ShiftsConfig.description,
         version=__version__,
     )

@@ -1,1 +1,1 @@
-"""Memberships extension of collectivo."""
+"""A built-in extension of collectivo to manage memberships."""

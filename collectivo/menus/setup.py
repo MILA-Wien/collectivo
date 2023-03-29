@@ -8,7 +8,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     Extension.register(
-        name=MenusConfig.name.split(".")[-1],
+        name=MenusConfig.name,
         description=MenusConfig.description,
         version=__version__,
     )

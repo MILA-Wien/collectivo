@@ -6,19 +6,17 @@ from django.contrib.auth.models import Group
 from collectivo.core.apps import CoreConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
+from collectivo.utils.dev import DEV_USERS
 from collectivo.version import __version__
 
 User = get_user_model()
-
-DEV_MEMBERS = ["superuser"] + [f"member_{str(i).zfill(2)}" for i in range(5)]
-DEV_USERS = DEV_MEMBERS + ["user_not_member", "user_not_verified"]
 
 
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=CoreConfig.name.split(".")[-1],
+        name=CoreConfig.name,
         description=CoreConfig.description,
         version=__version__,
     )

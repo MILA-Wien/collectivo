@@ -17,7 +17,7 @@ def setup(sender, **kwargs):
     from django.conf import settings
 
     extension = Extension.register(
-        name=EmailsConfig.name.split(".")[-1],
+        name=EmailsConfig.name,
         description=EmailsConfig.description,
         version=__version__,
     )
