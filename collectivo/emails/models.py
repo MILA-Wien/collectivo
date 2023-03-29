@@ -32,12 +32,6 @@ class EmailTemplate(models.Model):
     )
     subject = models.CharField(max_length=255)
     body = models.TextField()
-    tag = models.ForeignKey(
-        "tags.Tag",
-        on_delete=models.SET_NULL,
-        null=True,
-        help_text="This tag will be added to recipients if campaign is sent.",
-    )
 
     def __str__(self):
         """Return a string representation of the object."""

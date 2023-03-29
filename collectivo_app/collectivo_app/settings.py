@@ -45,6 +45,7 @@ _built_in_extensions = [
     "memberships",
     "memberships.payments",
     "emails",
+    "emails.tags",
     "tags",
     "payments",
     "shifts",

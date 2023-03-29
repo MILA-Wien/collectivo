@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from collectivo.tags.models import Tag
 from collectivo.utils.test import create_testuser
 
 from .models import EmailCampaign
@@ -43,24 +44,28 @@ class EmailsTests(TestCase):
         res = self.client.post(
             DESIGNS_URL, {"name": "a great design", "body": "TEST {{content}}"}
         )
+        self.tag = Tag.objects.create(name="email_test_tag")
         self.template_data = {
             "name": "a great template",
             "subject": "Test",
             "design": res.data["id"],
             "body": "First name: {{user.first_name}} <br/> New line",
+            "tag__tag": self.tag.pk,
         }
-        self.recipients = [
+        self.recipient_objects = [
             User.objects.create_user(
                 username=f"recipient_0{i}@example.com",
                 first_name=f"recipient_0{i}",
                 email=f"recipient_0{i}@example.com",
-            ).pk
+            )
             for i in [1, 2]
         ]
+        self.recipients = [u.pk for u in self.recipient_objects]
 
     def _batch_assertions(self, res):
         """Assert the results of a batch email request."""
         self.assertEqual(res.status_code, 201)
+
         obj = EmailCampaign.objects.get(pk=res.data["id"])
         self.assertEqual(obj.status, "success")
         self.assertEqual(len(mail.outbox), 2)
@@ -75,6 +80,11 @@ class EmailsTests(TestCase):
         self.assertEqual(
             mail.outbox[0].body,
             "TEST First name: recipient_01  \nNew line\n\n",
+        )
+
+        # TODO: Move to emails_tags tests
+        self.assertTrue(
+            self.recipient_objects[0].tags.filter(pk=self.tag.pk).exists()
         )
 
     @patch("collectivo.emails.serializers.chain")

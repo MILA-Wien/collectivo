@@ -29,10 +29,11 @@ def send_mails_async(results, emails):
         # TODO Send an email to the admins
 
     # Add optional tag to recipients if batch is successful
-    if campaign.template.tag is not None:
+    # TODO: Make tag optional for loose coupling
+    if campaign.template.tag.tag is not None:
         for email in emails:
             user = User.objects.get(email=email.to[0])
-            tag = campaign.template.tag
+            tag = campaign.template.tag.tag
             tag.refresh_from_db()
             tag.users.add(user)
             tag.save()

@@ -31,12 +31,23 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
     """Serializer for email templates."""
 
     schema_attrs = {"body": {"input_type": "html"}}
+    tag__tag = serializers.PrimaryKeyRelatedField(
+        source="tag.tag", queryset=Tag.objects.all(), required=False
+    )
 
     class Meta:
         """Serializer settings."""
 
         model = models.EmailTemplate
         fields = "__all__"
+
+    def create(self, validated_data):
+        """Create a new template."""
+        tag = validated_data.pop("tag")["tag"]
+        obj = super().create(validated_data)
+        obj.tag.tag = tag
+        obj.tag.save()
+        return obj
 
 
 class EmailCampaignSerializer(serializers.ModelSerializer):

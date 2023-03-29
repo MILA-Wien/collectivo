@@ -86,7 +86,7 @@ jobs:
           SECRET_KEY: badkey
           KEYCLOAK_SERVER_URL: http://keycloak:8080
           KEYCLOAK_CLIENT_SECRET_KEY: "**********"
-          COLLECTIVO_EXTENSIONS: profiles, memberships, emails, tags, payments, memberships.payments, shifts
+          COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
           DEBUG: True
           DEVELOPMENT: True
           DIREKTKREDIT_SERVER_URL: "http://direktkredit.local:8020"

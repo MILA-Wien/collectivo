@@ -32,7 +32,7 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
@@ -68,7 +68,7 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
@@ -104,7 +104,7 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
