@@ -57,8 +57,9 @@ def setup(sender, **kwargs):
         )
         mst2 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Fees)",
-            description="This is a type of membership that where members have"
-            " to pay monthly fees.",
+            description="""This is a type of membership that where members have
+             to pay monthly fees.
+            <p style="font-weight: bold">This is a bold paragraph.</p>""",
             has_fees=True,
             fees_amount_standard=100,
         )

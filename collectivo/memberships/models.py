@@ -1,4 +1,6 @@
 """Models of the memberships extension."""
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -136,7 +138,7 @@ class Membership(models.Model):
     )
     number = models.IntegerField(verbose_name="Membership number")
 
-    date_started = models.DateField(null=True, blank=True, auto_now_add=True)
+    date_started = models.DateField(null=True, blank=True, default=date.today)
     date_cancelled = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
     type = models.ForeignKey("MembershipType", on_delete=models.CASCADE)

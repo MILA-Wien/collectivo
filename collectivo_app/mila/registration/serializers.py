@@ -231,13 +231,13 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
 
         # Save tag fields for create
         self.tag_fields = {
-            "Statuten angenommen": attrs.pop("statutes_approved", None),
-            "Öffentlichkeitsarbeit": attrs.pop("public_use_approved", None),
+            "Satzung angenommen": attrs.pop("statutes_approved", None),
+            "Öffentliche Verwendung": attrs.pop("public_use_approved", None),
         }
 
         # Ensure that the statutes are approved
-        if self.tag_fields["Statuten angenommen"] is not True:
-            raise ParseError("statutes_approved: This field must be True.")
+        if self.tag_fields["Satzung angenommen"] is not True:
+            raise ParseError("Satzung angenommen: This field must be True.")
 
         return super().validate(attrs)
 
