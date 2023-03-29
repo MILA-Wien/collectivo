@@ -19,7 +19,7 @@ def setup(sender, **kwargs):
     extension = Extension.register(
         name=EmailsConfig.name,
         description=EmailsConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     MenuItem.register(

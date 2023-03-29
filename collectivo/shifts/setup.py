@@ -13,7 +13,7 @@ def setup(sender, **kwargs):
     extension = Extension.register(
         name=ShiftsConfig.name,
         description=ShiftsConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     MenuItem.register(

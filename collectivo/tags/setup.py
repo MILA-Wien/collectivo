@@ -13,9 +13,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=TagsConfig.name,
-        description=TagsConfig.description,
-        version=__version__,
+        name=TagsConfig.name, description=TagsConfig.description, built_in=True
     )
 
     MenuItem.register(

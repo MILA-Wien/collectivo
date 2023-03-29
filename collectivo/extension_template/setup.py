@@ -10,7 +10,5 @@ def setup(sender, **kwargs):
 
     name = ExtensionConfig.name.split(".")[-1]  # Remove collectivo. prefix
     Extension.register(
-        name=name,
-        description=ExtensionConfig.description,
-        version=__version__,
+        name=name, description=ExtensionConfig.description, built_in=True
     )

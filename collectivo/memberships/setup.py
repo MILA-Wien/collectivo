@@ -18,7 +18,7 @@ def setup(sender, **kwargs):
     extension = Extension.register(
         name=apps.ExtensionConfig.name,
         description=apps.ExtensionConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     # User objects

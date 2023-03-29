@@ -16,9 +16,7 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     extension = Extension.register(
-        name=CoreConfig.name,
-        description=CoreConfig.description,
-        version=__version__,
+        name=CoreConfig.name, description=CoreConfig.description, built_in=True
     )
 
     superuser = Group.objects.get_or_create(

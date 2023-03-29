@@ -16,7 +16,7 @@ def setup(sender, **kwargs):
     Extension.register(
         name=ProfilesConfig.name,
         description=ProfilesConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     if settings.COLLECTIVO["dev.create_test_data"] is True:

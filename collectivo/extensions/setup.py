@@ -11,7 +11,7 @@ def setup(sender, **kwargs):
     extension = Extension.register(
         name=ExtensionsConfig.name,
         description=ExtensionsConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     MenuItem.register(

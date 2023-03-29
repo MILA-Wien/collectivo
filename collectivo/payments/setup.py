@@ -12,7 +12,7 @@ def setup(sender, **kwargs):
     extension = Extension.register(
         name=PaymentsConfig.name,
         description=PaymentsConfig.description,
-        version=__version__,
+        built_in=True,
     )
 
     MenuItem.register(

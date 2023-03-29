@@ -10,5 +10,5 @@ def setup(sender, **kwargs):
     Extension.register(
         name=MenusConfig.name,
         description=MenusConfig.description,
-        version=__version__,
+        built_in=True,
     )
