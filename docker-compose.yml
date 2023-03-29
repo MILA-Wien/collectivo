@@ -82,6 +82,7 @@ services:
     depends_on:
       - collectivo
       - redis
+      - keycloak
 
   # Another celery worker for chron jobs.
   celery-beat:
@@ -117,6 +118,7 @@ services:
     depends_on:
       - collectivo
       - redis
+      - keycloak
 
   # A communication broker for celery.
   redis:
