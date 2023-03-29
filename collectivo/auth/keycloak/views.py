@@ -10,14 +10,14 @@ from .serializers import TokenSerializer
 class KeycloakTokenView(APIView):
     """View to receive keycloak token for development."""
 
-    keycloak_manager = KeycloakAPI().openid
-
     def get_serializer(self, *args, **kwargs):
         """Return serializer for OpenAPI."""
         return TokenSerializer(*args, **kwargs)
 
     def post(self, request):
         """Return access/bearer token for given credentials."""
+        keycloak_manager = KeycloakAPI().openid
+
         # Validate input
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -25,6 +25,6 @@ class KeycloakTokenView(APIView):
         # Get token
         username = request.data["username"]
         password = request.data["password"]
-        token = self.keycloak_manager.token(username, password)
+        token = keycloak_manager.token(username, password)
         data = {"access_token": token["access_token"]}
         return Response(data)

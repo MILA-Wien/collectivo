@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import signals
+from keycloak.exceptions import KeycloakGetError
 
 from collectivo.auth.keycloak.api import KeycloakAPI
 
@@ -22,10 +23,8 @@ class KeycloakUser(models.Model):
         Get or create keycloak user if a new instance is created.
         Update keycloak user if an existing instance is updated.
         """
-        if self.uuid is None:
-            self.uuid = self.get_or_create_keycloak_user()
-        else:
-            self.update_keycloak_user()
+        self.uuid = self.get_or_create_keycloak_user()
+        self.update_keycloak_user()
         super().save(*args, **kwargs)
 
     def save_without_sync(self, *args, **kwargs):
@@ -34,12 +33,25 @@ class KeycloakUser(models.Model):
 
     def get_or_create_keycloak_user(self):
         """Return existing user id or create new auth user."""
-        auth = KeycloakAPI()
-        uuid = auth.get_user_id(self.user.email)
+        keycloak = KeycloakAPI()
+
+        # If user has uuid, check if the uuid exists on keycloak
+        if self.uuid is not None:
+            try:
+                keycloak.get_user(self.uuid)
+                return self.uuid
+            except KeycloakGetError:
+                pass
+
+        # If user has no uuid, check if user exists on keycloak
+        uuid = keycloak.get_user_id(self.user.email)
+
+        # If user does not exist on keycloak, create new keycloak user
         if uuid is None:
-            uuid = auth.create_user(
+            uuid = keycloak.create_user(
                 self.user.first_name, self.user.last_name, self.user.email
             )
+
         return uuid
 
     def update_keycloak_user(self):
