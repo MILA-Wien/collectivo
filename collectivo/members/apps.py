@@ -22,7 +22,7 @@ def post_migrate_callback(sender, **kwargs):
     from collectivo.profiles.models import UserProfile
     from collectivo.tags.models import Tag
 
-    from .models import Member, MemberGroup, MemberSkill, MemberTag
+    from .models import Member  # , MemberGroup, MemberSkill, MemberTag
 
     User = get_user_model()
 
