@@ -40,7 +40,6 @@ else:
 
 # Choose built-in collectivo extensions from environment
 _built_in_extensions = [
-    "members",  # TODO: Deprecate
     "profiles",
     "memberships",
     "memberships.payments",
