@@ -2,11 +2,18 @@
 from rest_framework import serializers
 
 
-class UserPkModelSerializer(serializers.ModelSerializer):
-    """Base serializer for models that have a user as primary key."""
+class UserIsPk(serializers.ModelSerializer):
+    """Serializer for models with user as primary key with user id as id."""
 
-    # Display user as id so that the frontend always gets an id field
     id = serializers.SerializerMethodField()
+
+    def get_id(self, obj):
+        """Return user id."""
+        return obj.user.id
+
+
+class UserFields(serializers.ModelSerializer):
+    """Serializer for models with user relation with user fields as fields."""
 
     # Display user fields on the same level as member fields
     user__first_name = serializers.CharField(
@@ -18,7 +25,3 @@ class UserPkModelSerializer(serializers.ModelSerializer):
     user__email = serializers.EmailField(
         source="user.email", read_only=True, label="Email"
     )
-
-    def get_id(self, obj):
-        """Return user id."""
-        return obj.user.id

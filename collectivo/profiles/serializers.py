@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from collectivo.utils.serializers import UserPkModelSerializer
+from collectivo.utils.serializers import UserFields, UserIsPk
 
 from . import models
 
@@ -21,7 +21,7 @@ conditions = {
 }
 
 
-class ProfileBaseSerializer(UserPkModelSerializer):
+class ProfileBaseSerializer(UserIsPk, UserFields):
     """Base serializer for member serializers with extra schema attributes."""
 
     schema_attrs = {

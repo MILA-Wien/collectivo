@@ -10,12 +10,12 @@ from collectivo.payments.models import PaymentProfile
 from collectivo.payments.serializers import PaymentProfileSerializer
 from collectivo.profiles.models import UserProfile
 from collectivo.tags.models import Tag
-from collectivo.utils.serializers import UserPkModelSerializer
+from collectivo.utils.serializers import UserFields, UserIsPk
 
 from . import models
 
 
-class SurveyProfileSerializer(UserPkModelSerializer):
+class SurveyProfileSerializer(UserIsPk, UserFields):
     """Serializer for registration surveys."""
 
     class Meta:

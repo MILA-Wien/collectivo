@@ -1,12 +1,12 @@
 """Serializers of the payments extension."""
 from rest_framework import serializers
 
-from collectivo.utils.serializers import UserPkModelSerializer
+from collectivo.utils.serializers import UserFields, UserIsPk
 
 from . import models
 
 
-class PaymentProfileSerializer(UserPkModelSerializer):
+class PaymentProfileSerializer(UserIsPk, UserFields):
     """Serializer for payment profiles."""
 
     class Meta:
