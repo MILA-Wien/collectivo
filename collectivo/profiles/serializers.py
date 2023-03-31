@@ -2,6 +2,8 @@
 
 from rest_framework import serializers
 
+from collectivo.utils.serializers import UserPkModelSerializer
+
 from . import models
 
 conditions = {
@@ -19,19 +21,8 @@ conditions = {
 }
 
 
-class ProfileBaseSerializer(serializers.ModelSerializer):
+class ProfileBaseSerializer(UserPkModelSerializer):
     """Base serializer for member serializers with extra schema attributes."""
-
-    # Display user fields on the same level as member fields
-    user__first_name = serializers.CharField(
-        source="user.first_name", read_only=True, label="First name"
-    )
-    user__last_name = serializers.CharField(
-        source="user.last_name", read_only=True, label="Last name"
-    )
-    user__email = serializers.EmailField(
-        source="user.email", read_only=True, label="Email"
-    )
 
     schema_attrs = {
         "birthday": {"condition": conditions["natural"], "required": True},
@@ -40,10 +31,6 @@ class ProfileBaseSerializer(serializers.ModelSerializer):
         "legal_type": {"condition": conditions["legal"], "required": True},
         "legal_id": {"condition": conditions["legal"], "required": True},
     }
-
-    def get_id(self, obj):
-        """Return user id."""
-        return obj.user.id
 
 
 class ProfileAdminSerializer(ProfileBaseSerializer):
