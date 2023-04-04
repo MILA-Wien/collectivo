@@ -2,6 +2,7 @@
 from rest_framework import mixins, viewsets
 
 from collectivo.profiles.models import UserProfile
+from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
 from collectivo.utils.permissions import (
     IsAuthenticated,
@@ -18,6 +19,8 @@ class SurveyProfileViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [IsSuperuser]
     serializer_class = serializers.SurveyProfileSerializer
     queryset = models.SurveyProfile.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class SurveyGroupViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
@@ -26,6 +29,8 @@ class SurveyGroupViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [ReadOrIsSuperuser]
     serializer_class = serializers.SurveyGroupSerializer
     queryset = models.SurveyGroup.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class SurveySkillViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
@@ -34,6 +39,8 @@ class SurveySkillViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     permission_classes = [ReadOrIsSuperuser]
     serializer_class = serializers.SurveySkillSerializer
     queryset = models.SurveySkill.objects.all()
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class MilaRegisterViewSet(
