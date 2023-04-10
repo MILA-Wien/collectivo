@@ -16,14 +16,14 @@ class PaymentProfileSerializer(UserIsPk, UserFields):
         fields = "__all__"
 
 
-class PaymentSerializer(serializers.ModelSerializer):
-    """Serializer for payments."""
+# class PaymentSerializer(serializers.ModelSerializer):
+#     """Serializer for payments."""
 
-    class Meta:
-        """Serializer settings."""
+#     class Meta:
+#         """Serializer settings."""
 
-        model = models.Payment
-        fields = "__all__"
+#         model = models.Payment
+#         fields = "__all__"
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

@@ -15,8 +15,8 @@ class ProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
-    filterset_class = get_filterset(serializer_class)
-    ordering_fields = get_ordering_fields(serializer_class)
+    # filterset_class = get_filterset(serializer_class)
+    # ordering_fields = get_ordering_fields(serializer_class)
 
 
 class ProfileSelfViewSet(
@@ -32,19 +32,19 @@ class ProfileSelfViewSet(
     queryset = models.PaymentProfile.objects.all()
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [IsAuthenticated]
-    filterset_class = get_filterset(serializer_class)
-    ordering_fields = get_ordering_fields(serializer_class)
+    # filterset_class = get_filterset(serializer_class)
+    # ordering_fields = get_ordering_fields(serializer_class)
 
 
-class PaymentViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """ViewSet for admins to manage payments."""
+# class PaymentViewSet(SchemaMixin, viewsets.ModelViewSet):
+#     """ViewSet for admins to manage payments."""
 
-    permission_classes = [HasGroup]
-    required_groups = ["collectivo.payments.admin"]
-    serializer_class = serializers.PaymentSerializer
-    queryset = models.Payment.objects.all()
-    filterset_class = get_filterset(serializer_class)
-    ordering_fields = get_ordering_fields(serializer_class)
+#     permission_classes = [HasGroup]
+#     required_groups = ["collectivo.payments.admin"]
+#     serializer_class = serializers.PaymentSerializer
+#     queryset = models.Payment.objects.all()
+#     # filterset_class = get_filterset(serializer_class)
+#     # ordering_fields = get_ordering_fields(serializer_class)
 
 
 class SubscriptionViewSet(SchemaMixin, viewsets.ModelViewSet):
@@ -54,5 +54,5 @@ class SubscriptionViewSet(SchemaMixin, viewsets.ModelViewSet):
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.SubscriptionSerializer
     queryset = models.Subscription.objects.all()
-    filterset_class = get_filterset(serializer_class)
-    ordering_fields = get_ordering_fields(serializer_class)
+    # filterset_class = get_filterset(serializer_class)
+    # ordering_fields = get_ordering_fields(serializer_class)

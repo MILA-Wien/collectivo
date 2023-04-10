@@ -110,26 +110,26 @@ def payments_to_membership(sender, instance, **kwargs):
         membership.save()
 
 
-signals.pre_save.connect(
-    payments_to_membership,
-    sender=Payment,
-    dispatch_uid="payments_to_membership",
-    weak=False,
-)
+# signals.pre_save.connect(
+#     payments_to_membership,
+#     sender=Payment,
+#     dispatch_uid="payments_to_membership",
+#     weak=False,
+# )
 
 
-def membership_to_payments(sender, instance, created, **kwargs):
-    """Update membership payments when membership changes."""
-    if created:
-        connector = MembershipPayments.objects.create(membership=instance)
-    else:
-        connector = instance.payments
-    connector.save()
+# def membership_to_payments(sender, instance, created, **kwargs):
+#     """Update membership payments when membership changes."""
+#     if created:
+#         connector = MembershipPayments.objects.create(membership=instance)
+#     else:
+#         connector = instance.payments
+#     connector.save()
 
 
-signals.post_save.connect(
-    membership_to_payments,
-    sender=Membership,
-    dispatch_uid="membership_to_payments",
-    weak=False,
-)
+# signals.post_save.connect(
+#     membership_to_payments,
+#     sender=Membership,
+#     dispatch_uid="membership_to_payments",
+#     weak=False,
+# )
