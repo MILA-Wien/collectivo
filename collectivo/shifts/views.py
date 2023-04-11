@@ -1,5 +1,9 @@
 """Views of the user experience module."""
 
+from collections import Counter
+from django.db.models import Q
+from django.db.models import F
+
 from datetime import datetime
 
 import django_filters
@@ -223,6 +227,20 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
         # 4. Return list of shifts including shifts with virtual dates
         return Response(response)
 
+class ShiftOpenShiftsViewSet(ShiftViewSet):
+    """Manage shifts."""
+
+    queryset = models.Shift.objects.all()
+    serializer_class = serializers.ShiftOpenShiftsSerializer
+    filterset_class = ShiftFilter
+
+    def get_queryset(self):
+        """Get only shifts where assignments is less than required users."""
+        queryset = models.Shift.objects.all()
+        queryset = queryset.filter(
+            Q(assigned_users__lt=F("shift_required_users"))
+        )
+        return queryset
 
 class AssignmentViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage individual shifts."""

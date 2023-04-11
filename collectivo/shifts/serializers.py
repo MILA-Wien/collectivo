@@ -37,7 +37,13 @@ class ShiftSerializer(serializers.ModelSerializer):
         )
         return ShiftUserSerializer(assigned_users, many=True).data
 
+class ShiftOpenShiftsSerializer(ShiftSerializer):
+    class Meta:
+        """Serializer settings."""
 
+        model = Shift
+        fields = "__all__"
+            
 class AssignmentSerializer(serializers.ModelSerializer):
     """Serializer for individual shift."""
 
