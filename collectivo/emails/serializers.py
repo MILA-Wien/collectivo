@@ -32,7 +32,10 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
 
     schema_attrs = {"body": {"input_type": "html"}}
     tag__tag = serializers.PrimaryKeyRelatedField(
-        source="tag.tag", queryset=Tag.objects.all(), required=False
+        source="tag.tag",
+        queryset=Tag.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:
@@ -43,8 +46,22 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a new template."""
+        if "tag" not in validated_data:
+            return super().create(validated_data)
+
         tag = validated_data.pop("tag")["tag"]
         obj = super().create(validated_data)
+        obj.tag.tag = tag
+        obj.tag.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        """Update an existing template."""
+        if "tag" not in validated_data:
+            return super().create(validated_data)
+
+        tag = validated_data.pop("tag")["tag"]
+        obj = super().update(instance, validated_data)
         obj.tag.tag = tag
         obj.tag.save()
         return obj
