@@ -15,15 +15,6 @@ class PaymentProfile(models.Model):
         help_text="The user that owns this profile.",
     )
 
-    # TODO: Use user id as default
-    accounting_id = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text="A key to identify this entity in the accounting system.",
-    )
-
-    # Payment details
     payment_method = models.CharField(
         choices=[
             ("transfer", "transfer"),
@@ -232,26 +223,3 @@ class Subscription(models.Model):
     def __str__(self):
         """Return a string representation of the object."""
         return self.name
-
-
-class Payment(models.Model):
-    """A transaction of money."""
-
-    paid = models.DateField(null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_from = models.ForeignKey(
-        "PaymentProfile", on_delete=models.PROTECT, related_name="payments_out"
-    )
-    payment_to = models.ForeignKey(
-        "PaymentProfile", on_delete=models.PROTECT, related_name="payments_in"
-    )
-    invoice = models.ForeignKey(
-        "Invoice",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="payments",
-    )
-    notes = models.TextField(blank=True)
-
-    history = HistoricalRecords()
