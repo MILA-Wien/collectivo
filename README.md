@@ -110,7 +110,7 @@ To set up a development system of collectivo on your local machine:
 The development system will be accessible via the following paths:
 
 - Frontend: `http://collectivo.local:8001`
-- Backend (API docs): `http://collectivo.local:8000/api/docs/`
+- Backend (API docs): `http://collectivo.local:8000/api/dev/docs/`
 - Keycloak (Console): `http://keycloak:8080/admin/master/console/`
 
 The following test users can be used to log in on the development system:
