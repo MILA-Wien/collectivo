@@ -126,7 +126,7 @@ To set up a development server for the frontend, follow the instructions at [col
 
 ## API Documentation
 
-The API is documented automatically with SWAGGER UI and can be viewed via `/api/docs/`.
+The API is documented automatically with SWAGGER UI and can be viewed via `/api/dev/docs/`.
 The API uses [AcceptHeaderVersioning](https://www.django-rest-framework.org/api-guide/versioning/#acceptheaderversioning). The version of the API is the same as the version of collectivo.
 
 ### Schemas (Work in progress)
