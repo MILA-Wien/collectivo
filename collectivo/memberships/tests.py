@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-from collectivo.payments.models import Invoice, ItemEntry
+from collectivo.payments.models import ItemEntry
 from collectivo.utils.test import create_testadmin, create_testuser
 
 from .models import Membership, MembershipType
@@ -16,6 +16,7 @@ User = get_user_model()
 CREATE_INVOICES_URL = reverse(
     "collectivo:collectivo.memberships:membership-create_invoices"
 )
+MEMBERSHIP_URL_NAME = "collectivo:collectivo.memberships:membership-detail"
 
 
 class MembershipsSetupTests(TestCase):
@@ -80,3 +81,17 @@ class MembershipsPaymentsTests(TestCase):
         self.assertEqual(len(entries), 2)
         entry = entries.last()
         self.assertEqual(entry.amount, 3)
+
+        # Shares paid is shown correctly in membership serializer
+        url = reverse(
+            MEMBERSHIP_URL_NAME,
+            kwargs={"pk": self.membership.pk},
+        )
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["shares_paid"], 0)
+        entry.invoice.status = "paid"
+        entry.invoice.save()
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["shares_paid"], 3)

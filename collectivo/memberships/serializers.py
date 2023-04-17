@@ -2,6 +2,7 @@
 from django.db.models import Avg, Max, Sum
 from rest_framework import serializers
 
+from collectivo.extensions.models import Extension
 from collectivo.utils.serializers import UserFields
 
 from . import models
@@ -10,12 +11,46 @@ from . import models
 class MembershipSerializer(UserFields):
     """Serializer for memberships."""
 
+    shares_paid = serializers.SerializerMethodField()
+
     class Meta:
         """Serializer settings."""
 
         model = models.Membership
         fields = "__all__"
         read_only_fields = ["id", "number"]
+
+    def get_shares_paid(self, obj):
+        """Get shares paid for this membership."""
+        if not obj.type.has_shares:
+            return 0
+        try:
+            from collectivo.payments.models import (
+                ItemEntry,
+                ItemType,
+                ItemTypeCategory,
+            )
+        except ImportError:
+            return 0
+
+        extension = Extension.objects.get(name="memberships")
+        item_category = ItemTypeCategory.objects.get_or_create(
+            name="Shares", extension=extension
+        )[0]
+        item_type = ItemType.objects.get_or_create(
+            name=obj.type.name,
+            category=item_category,
+            extension=extension,
+        )[0]
+        entries = ItemEntry.objects.filter(
+            type=item_type,
+            invoice__payment_from=obj.user,
+            invoice__status="paid",
+        )
+        return (
+            sum([entry.amount * entry.price for entry in entries])
+            / obj.type.shares_amount_per_share
+        )
 
 
 class MembershipSelfSerializer(serializers.ModelSerializer):

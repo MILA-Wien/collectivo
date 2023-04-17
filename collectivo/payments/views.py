@@ -15,8 +15,8 @@ class ProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
-    # filterset_class = get_filterset(serializer_class)
-    # ordering_fields = get_ordering_fields(serializer_class)
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class ProfileSelfViewSet(
@@ -32,8 +32,8 @@ class ProfileSelfViewSet(
     queryset = models.PaymentProfile.objects.all()
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [IsAuthenticated]
-    # filterset_class = get_filterset(serializer_class)
-    # ordering_fields = get_ordering_fields(serializer_class)
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class InvoiceViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
@@ -43,8 +43,8 @@ class InvoiceViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.InvoiceSerializer
     queryset = models.Invoice.objects.all()
-    # filterset_class = get_filterset(serializer_class)
-    # ordering_fields = get_ordering_fields(serializer_class)
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)
 
 
 class SubscriptionViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
@@ -54,5 +54,5 @@ class SubscriptionViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     required_groups = ["collectivo.payments.admin"]
     serializer_class = serializers.SubscriptionSerializer
     queryset = models.Subscription.objects.all()
-    # filterset_class = get_filterset(serializer_class)
-    # ordering_fields = get_ordering_fields(serializer_class)
+    filterset_class = get_filterset(serializer_class)
+    ordering_fields = get_ordering_fields(serializer_class)

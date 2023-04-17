@@ -152,7 +152,6 @@ class Membership(models.Model):
 
     # Optional depending on membership type
     shares_signed = models.PositiveIntegerField(default=0)
-    shares_paid = models.PositiveIntegerField(default=0)
     fees_amount = models.DecimalField(
         max_digits=100, decimal_places=2, default=0
     )
@@ -185,7 +184,8 @@ class Membership(models.Model):
     def create_invoices(self):
         """Create invoices for this membership.
 
-        This method depends to the collectivo.payments extension."""
+        This method depends to the collectivo.payments extension.
+        """
         try:
             from collectivo.payments.models import (
                 Invoice,
