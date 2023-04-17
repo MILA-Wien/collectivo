@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     # TODO: Move this to MILA Repository
     "mila.registration",
     "mila.direktkredit",
+    "mila.lotzapp",
 ]
 
 MIDDLEWARE = [

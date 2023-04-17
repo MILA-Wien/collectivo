@@ -61,6 +61,8 @@ class ItemType(models.Model):
     category = models.ForeignKey(
         "ItemTypeCategory",
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
     extension = models.ForeignKey(
         "extensions.Extension",
@@ -90,6 +92,7 @@ class ItemEntry(models.Model):
     )
     amount = models.DecimalField(
         max_digits=10,
+        default=1,
         decimal_places=2,
         help_text="The amount of units of the item.",
     )

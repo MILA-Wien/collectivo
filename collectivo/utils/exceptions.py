@@ -2,13 +2,19 @@
 from rest_framework.exceptions import APIException
 
 
-class CollectivoAPIException(APIException):
+class APIException(APIException):
     """Base exception for collectivo."""
 
     pass
 
 
-class ExtensionNotInstalled(CollectivoAPIException):
+class ImproperlyConfigured(APIException):
+    """Exception for when a setting is not configured correctly."""
+
+    status_code = 400
+
+
+class ExtensionNotInstalled(APIException):
     """Exception for when an extension is not installed."""
 
-    pass
+    status_code = 400
