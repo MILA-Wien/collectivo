@@ -10,6 +10,13 @@ from . import models
 class MembershipSerializer(UserFields):
     """Serializer for memberships."""
 
+    user__tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        source="user.tags",
+        read_only=True,
+        label="Tags",
+    )
+
     class Meta:
         """Serializer settings."""
 
