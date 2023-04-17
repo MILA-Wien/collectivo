@@ -28,6 +28,10 @@ class DashboardTileButton(models.Model):
         ],
     )
 
+    def __str__(self):
+        """Return string representation of the model."""
+        return self.label
+
 
 class DashboardTile(models.Model, RegisterMixin):
     """A component that can be included in the dashboard."""

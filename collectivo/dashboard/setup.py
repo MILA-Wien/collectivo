@@ -25,7 +25,7 @@ def setup(sender, **kwargs):
 
     MenuItem.register(
         name="admin",
-        label="Dashboard tiles",
+        label="Dashboard",
         extension=extension,
         component="admin",
         icon_name="pi-th-large",
