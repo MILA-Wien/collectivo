@@ -42,7 +42,6 @@ else:
 _built_in_extensions = [
     "profiles",
     "memberships",
-    "memberships.payments",
     "emails",
     "emails.tags",
     "tags",

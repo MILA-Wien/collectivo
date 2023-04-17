@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+from collectivo.extensions.models import Extension
+from collectivo.utils.exceptions import ExtensionNotInstalled
 from collectivo.utils.managers import NameManager
 
 # --------------------------------------------------------------------------- #
@@ -179,3 +181,55 @@ class Membership(models.Model):
             f"{self.user.first_name} {self.user.last_name} "
             f"({self.type.name})"
         )
+
+    def create_invoices(self):
+        """Create invoices for this membership.
+
+        This method depends to the collectivo.payments extension."""
+        try:
+            from collectivo.payments.models import (
+                Invoice,
+                ItemEntry,
+                ItemType,
+                ItemTypeCategory,
+            )
+        except ImportError:
+            raise ExtensionNotInstalled("collectivo.payments")
+
+        if self.type.has_shares:
+            extension = Extension.objects.get(name="memberships")
+            item_category = ItemTypeCategory.objects.get_or_create(
+                name="Shares", extension=extension
+            )[0]
+            item_type = ItemType.objects.get_or_create(
+                name=self.type.name,
+                category=item_category,
+                extension=extension,
+            )[0]
+            entries = ItemEntry.objects.filter(
+                type=item_type,
+                invoice__payment_from=self.user,
+            )
+
+            # Get current status
+            invoiced = sum([entry.amount * entry.price for entry in entries])
+            to_pay = self.type.shares_amount_per_share * self.shares_signed
+
+            # Create invoice if needed
+            if invoiced < to_pay:
+                invoice = Invoice.objects.create(
+                    payment_from=self.user,
+                    date_due=date.today(),
+                    status="open",
+                )
+                price = self.type.shares_amount_per_share
+                ItemEntry.objects.create(
+                    invoice=invoice,
+                    type=item_type,
+                    amount=(to_pay - invoiced) / price,
+                    price=price,
+                )
+
+        if self.type.has_fees:
+            # TODO: Logic for fees
+            pass

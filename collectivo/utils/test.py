@@ -8,15 +8,16 @@ User = get_user_model()
 
 
 def create_testuser(
+    username="testuser",
     groups: list[str] = None,
     superuser: bool = False,
 ) -> tuple[APIClient, User]:
-    """Return a user given groups."""
+    """Return a user with given groups."""
     try:
-        User.objects.get(username="testuser").delete()
+        User.objects.get(username=username).delete()
     except User.DoesNotExist:
         pass
-    user = User.objects.create_user(username="testuser")
+    user = User.objects.create_user(username=username)
     groups = groups or []
     if superuser and "collectivo.core.admin" not in groups:
         groups.append("collectivo.core.admin")
@@ -25,7 +26,10 @@ def create_testuser(
     return user
 
 
-class UtilsTests(TestCase):
-    """Test collectivo utility functions."""
-
-    pass
+def create_testadmin(
+    username="testadmin",
+    groups: list[str] = None,
+    superuser: bool = True,
+) -> tuple[APIClient, User]:
+    """Return a superuser with given groups."""
+    return create_testuser(username, groups, superuser)

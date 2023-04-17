@@ -1,5 +1,9 @@
 """Views of the memberships extension."""
+from django.db import transaction
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
@@ -19,6 +23,20 @@ class MembershipAdminViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
     required_groups = ["collectivo.memberships.admin"]
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
+
+    @extend_schema(responses={200: OpenApiResponse()})
+    @action(
+        url_path="create_invoices",
+        url_name="create_invoices",
+        methods=["post"],
+        detail=False,
+    )
+    def create_invoices(self, request, *args, **kwargs):
+        """Create invoices for all memberships."""
+        with transaction.atomic():
+            for membership in self.get_queryset():
+                membership.create_invoices()
+        return Response({"message": "Invoices created."})
 
 
 class MembershipUserViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
