@@ -234,7 +234,9 @@ class ShiftAPITests(TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 1)
-        self.assertEqual(res.data[0]["shift_title"], "first_repeating_monthly_shift")
+        self.assertEqual(
+            res.data[0]["shift_title"], "first_repeating_monthly_shift"
+        )
 
     def test_to_filter_virtually_created_repeating_monthly_shifts(self):
         """Test virtually creating shifts.
@@ -255,8 +257,12 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 3)
         self.assertEqual(res.data[0]["shift_title"], "first_regular_shift")
-        self.assertEqual(res.data[1]["shift_title"], "first_repeating_monthly_shift")
-        self.assertEqual(res.data[2]["shift_title"], "second_repeating_monthly_shift")
+        self.assertEqual(
+            res.data[1]["shift_title"], "first_repeating_monthly_shift"
+        )
+        self.assertEqual(
+            res.data[2]["shift_title"], "second_repeating_monthly_shift"
+        )
         self.assertEqual(res.data[1]["shift_starting_date"], "2023-02-13")
 
     def test_creating_two_shifts_with_same_id(self):
@@ -313,11 +319,16 @@ class ShiftAPITests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 2)
         self.assertEqual(res.data[0]["shift_starting_date"], "2023-09-11")
-        self.assertEqual(res.data[0]["shift_title"], "second_repeating_monthly_shift")
+        self.assertEqual(
+            res.data[0]["shift_title"], "second_repeating_monthly_shift"
+        )
         # self.assertEqual(res.data[1]["shift_starting_date"], "2023-09-04")
-        # self.assertEqual(res.data[1]["shift_title"], "third_repeating_monthly_shift")
+        # self.assertEqual(res.data[1]["shift_title"],
+        # "third_repeating_monthly_shift")
         self.assertEqual(res.data[1]["shift_starting_date"], "2023-09-25")
-        self.assertEqual(res.data[1]["shift_title"], "first_repeating_monthly_shift")
+        self.assertEqual(
+            res.data[1]["shift_title"], "first_repeating_monthly_shift"
+        )
         # self.assertEqual(res.data[3]["shift_starting_date"], "2023-09-19")
         # self.assertEqual(res.data[3]["shift_title"], "first_regular_shift")
 
