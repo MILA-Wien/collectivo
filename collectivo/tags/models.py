@@ -10,6 +10,7 @@ class Tag(models.Model):
     """A tag that can be assigned to users."""
 
     name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
     parent = models.ForeignKey(
         "self",
         null=True,

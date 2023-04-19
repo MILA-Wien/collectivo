@@ -20,6 +20,7 @@ def setup(sender, **kwargs):
         name="mila_membership_tile",
         label="Membership",
         extension=extension,
+        source="component",
         component="mila_membership_tile",
     )
 

@@ -22,3 +22,14 @@ def setup(sender, **kwargs):
         parent="main",
         order=0,
     )
+
+    MenuItem.register(
+        name="admin",
+        label="Dashboard",
+        extension=extension,
+        component="admin",
+        icon_name="pi-th-large",
+        requires_group="collectivo.core.admin",
+        parent="admin",
+        order=80,
+    )

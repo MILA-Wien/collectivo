@@ -10,7 +10,7 @@ from collectivo.utils.test import create_testuser
 
 from .models import DashboardTile
 
-TILES_URL = reverse("collectivo:collectivo.dashboard:tile-list")
+TILES_URL = reverse("collectivo:collectivo.dashboard:tile-self")
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 EXTENSION_NAME = "dashboard"
 
@@ -26,7 +26,7 @@ class DashboardSetupTests(TestCase):
     def test_menu_items_exist(self):
         """Test that the menu items are registered."""
         res = MenuItem.objects.filter(extension__name=EXTENSION_NAME)
-        self.assertEqual(len(res), 1)
+        self.assertEqual(len(res), 2)
 
 
 class DashboardPublicAPITests(TestCase):
@@ -59,7 +59,7 @@ class DashboardPrivateAPITests(TestCase):
     def test_post_tile_fails(self):
         """Test users cannot edit tiles."""
         res = self.client.post(TILES_URL)
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 405)
 
 
 class DashboardAPITests(TestCase):
@@ -83,6 +83,7 @@ class DashboardAPITests(TestCase):
         self.tile = {
             "name": "my_tile",
             "extension": self.ext_name,
+            "source": "component",
             "component_name": "test_component",
         }
 
@@ -102,6 +103,13 @@ class DashboardAPITests(TestCase):
     def test_tile_wrong_role(self):
         """Test menuitem should not appear for user without required role."""
         DashboardTile.register(**self.tile, requires_group=self.wrong_group)
+        res = self.client.get(TILES_URL)
+        items = [i["name"] for i in res.data]
+        self.assertFalse("my_tile" in items)
+
+    def test_tile_not_active(self):
+        """Test tile should not appear if not active."""
+        DashboardTile.register(**self.tile, active=False)
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
