@@ -46,7 +46,7 @@ class DashboardTileViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
                 Q(requires_group=None)
                 | Q(requires_group__in=request.user.groups.all())
             )
-        )
+        ).order_by("order")
         serializer_class = TileDisplaySerializer
 
         page = self.paginate_queryset(queryset)
@@ -54,7 +54,9 @@ class DashboardTileViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
             serializer = serializer_class(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = serializer_class(queryset, many=True)
+        serializer = serializer_class(
+            queryset, many=True, context={"request": request}
+        )
         return Response(serializer.data)
 
 

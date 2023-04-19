@@ -11,6 +11,7 @@ from collectivo.utils.test import create_testuser
 from .models import DashboardTile
 
 TILES_URL = reverse("collectivo:collectivo.dashboard:tile-self")
+TILES_ADMIN_URL_PATH = "collectivo:collectivo.dashboard:tile-detail"
 EXTENSIONS_URL = reverse("collectivo:collectivo.extensions:extension-list")
 EXTENSION_NAME = "dashboard"
 
@@ -70,7 +71,8 @@ class DashboardAPITests(TestCase):
         # Set up client with authenticated user
         self.client = APIClient()
         self.user = create_testuser(
-            groups=["superuser", "test_group", "test_group2"]
+            groups=["test_group", "test_group2"],
+            superuser=True,
         )
         self.client.force_authenticate(self.user)
         self.test_group = Group.objects.get_or_create(name="test_group")[0]
@@ -113,3 +115,15 @@ class DashboardAPITests(TestCase):
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
+
+    def test_tile_templating(self):
+        """Test that django templating language can be used in tile."""
+        DashboardTile.objects.create(
+            name="my_custom_tile",
+            source="db",
+            content="Hello {{user.username}}",
+            order=-9999,
+        )
+        res = self.client.get(TILES_URL)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data[0]["content"], "Hello testuser")

@@ -1,5 +1,7 @@
 """Serializers of the dashboard extension."""
+from django.template import Context, Template
 from rest_framework import serializers
+from rest_framework.exceptions import ParseError
 
 from .models import DashboardTile, DashboardTileButton
 
@@ -34,9 +36,20 @@ class TileDisplaySerializer(serializers.ModelSerializer):
     extension_name = serializers.CharField(
         source="extension.name", read_only=True
     )
+    content = serializers.SerializerMethodField()
 
     class Meta:
         """Serializer settings."""
 
         model = DashboardTile
         fields = "__all__"
+
+    def get_content(self, obj):
+        """Get the content of the tile."""
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            content = Template(obj.content).render(
+                Context({"user": request.user})
+            )
+            return content
+        raise ParseError("No user in context of TileDisplaySerializer.")
