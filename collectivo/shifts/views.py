@@ -270,6 +270,7 @@ class ShiftSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage self user."""
 
     serializer_class = serializers.ShiftUserSerializer
+    #TODO create user if not exists
 
     def get_queryset(self):
         """Get all shifts for the current user."""

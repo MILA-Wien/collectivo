@@ -17,7 +17,7 @@ router.register(
     views.AssignmentViewSet,
     basename="assignment",
 )
-router.register("shift-users", views.ShiftUserViewSet, basename="shift-user")
+router.register("users", views.ShiftUserViewSet, basename="shift-user")
 
 self_router = DefaultRouter()
 self_router.register("", views.ShiftSelfViewSet, basename="shift-self")
