@@ -23,7 +23,9 @@ self_router = DefaultRouter()
 self_router.register("", views.ShiftSelfViewSet, basename="shift-self")
 
 self_user_router = DefaultRouter()
-self_user_router.register("", views.ShiftSelfViewSet, basename="shift-user-self")
+self_user_router.register(
+    "", views.ShiftProfileSelfViewSet, basename="shift-user-self"
+)
 
 open_router = DefaultRouter()
 open_router.register("", views.ShiftOpenShiftsViewSet, basename="shift-open")

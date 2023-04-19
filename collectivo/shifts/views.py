@@ -1,9 +1,5 @@
 """Views of the user experience module."""
 
-from collections import Counter
-from django.db.models import Q
-from django.db.models import F
-
 from datetime import datetime
 
 import django_filters
@@ -100,7 +96,9 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
 
         return queryset
 
-    def create_monthly_virtual_shifts(self, queryset, response, min_date, max_date):
+    def create_monthly_virtual_shifts(
+        self, queryset, response, min_date, max_date
+    ):
         """Create virtual shifts for regular shifts."""
         # Create dictionaries for translation to rrule parameters
         week_dict = {"A": 1, "B": 2, "C": 3, "D": 4}
@@ -205,7 +203,7 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
             response = self.create_monthly_virtual_shifts(
                 queryset, response, min_date, max_date
             )
-        
+
         # TODO create weekly virtual shifts
 
         # 3. Append regular shifts that started before min_date
@@ -231,6 +229,7 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
         # 4. Return list of shifts including shifts with virtual dates
         return Response(response)
 
+
 class ShiftOpenShiftsViewSet(ShiftViewSet):
     """Manage shifts."""
 
@@ -239,6 +238,7 @@ class ShiftOpenShiftsViewSet(ShiftViewSet):
     filterset_class = ShiftFilter
 
     # TODO: Add open shifts filter
+
 
 class AssignmentViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage individual shifts."""
@@ -253,7 +253,8 @@ class AssignmentViewSet(SchemaMixin, viewsets.ModelViewSet):
     # - assged_user
     # - additional_info_individual
     # TODO users shouldn't be able to delete the object
-    # TODO on monthly/weekly shifts, the user should only be able to update the following fields:
+    # TODO on monthly/weekly shifts, the user should only be able to update
+    #   the following fields:
     #  - replacement_user
     #  - additional_info_individual
     #  - open_for_replacement
@@ -266,11 +267,11 @@ class ShiftUserViewSet(SchemaMixin, viewsets.ModelViewSet):
     serializer_class = serializers.ShiftUserSerializer
 
 
-class ShiftSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
+class ShiftProfileSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage self user."""
 
     serializer_class = serializers.ShiftUserSerializer
-    #TODO create user if not exists
+    # TODO create user if not exists
 
     def get_queryset(self):
         """Get all shifts for the current user."""

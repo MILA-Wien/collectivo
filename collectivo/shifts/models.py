@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+
 class Shift(models.Model):
     """A shift to be done by the collective."""
 
@@ -11,12 +12,14 @@ class Shift(models.Model):
     shift_ending_date = models.DateField(blank=True, null=True)
     shift_type = models.CharField(
         help_text=(
-            "Type of shift. Regular shifts are one time shifts. Repeating shifts can be"
-            "weekly or monthly. Extra shifts are shifts that are not part of the"
-            "regular schedule. Holiday shifts are shifts that are not part of the"
-            "regular schedule but are not extra shifts. Other shifts are shifts that"
-            "are not part of the regular schedule and are not extra shifts and are not"
-            "holiday shifts."
+            "Type of shift. Regular shifts are one time shifts."
+            "Repeating shifts can be weekly or monthly."
+            "Extra shifts are shifts that are not part of the"
+            "regular schedule. Holiday shifts are shifts"
+            "that are not part of the regular schedule but are not"
+            "extra shifts. Other shifts are shifts that are not"
+            "part of the regular schedule and are not extra shifts"
+            "and are not holiday shifts."
         ),
         default="fixed",
         max_length=30,
@@ -75,6 +78,7 @@ class Shift(models.Model):
 
     history = HistoricalRecords()
 
+
 class ShiftProfile(models.Model):
     """A user that can be assigned to a shift."""
 
@@ -119,8 +123,6 @@ class ShiftAssignment(models.Model):
     history = HistoricalRecords()
 
 
-
-
 class ShiftSettings(models.Model):
     """Settings for the shift module."""
 
@@ -131,10 +133,11 @@ class ShiftSettings(models.Model):
     # TODO add shift points per role and shift type
     shift_points_period_in_days = models.PositiveSmallIntegerField(default=30)
     shift_points_per_period = models.PositiveSmallIntegerField(default=1)
-    shift_points_subsbtraction_day = models.PositiveSmallIntegerField(default=1)
+    shift_points_subsbtraction_day = models.PositiveSmallIntegerField(
+        default=1
+    )
     disable_shift_points = models.BooleanField(default=True)
     disable_attendance = models.BooleanField(default=True)
     disable_shift_replacement = models.BooleanField(default=True)
-
 
     history = HistoricalRecords()
