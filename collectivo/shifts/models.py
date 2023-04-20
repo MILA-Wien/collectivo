@@ -109,7 +109,12 @@ class ShiftAssignment(models.Model):
 
     # TODO add roles to users and check if user is allowed to change this
     attended = models.BooleanField(default=False)
-    additional_info_individual = models.TextField(max_length=300)
+    additional_info_individual = models.TextField(
+        max_length=300,
+        blank=True,
+        null=True,
+        default=None,
+    )
     replacement_user = models.ForeignKey(
         ShiftProfile,
         on_delete=models.SET_NULL,
