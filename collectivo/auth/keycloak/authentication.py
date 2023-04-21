@@ -25,7 +25,7 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         try:
             return self.authenticate_with_keycloak(request)
         except Exception:
-            logger.exception(f"Authentication failed.")
+            logger.exception("Authentication failed.")
             raise AuthenticationFailed()
 
     def authenticate_with_keycloak(self, request):
