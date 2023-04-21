@@ -13,7 +13,6 @@ class KeycloakUser(models.Model):
     uuid = models.UUIDField(null=True)
     user = models.OneToOneField(
         get_user_model(),
-        primary_key=True,
         on_delete=models.CASCADE,
         related_name="keycloak",
     )
