@@ -10,7 +10,7 @@ from collectivo.auth.keycloak.api import KeycloakAPI
 class KeycloakUser(models.Model):
     """An extension of the user object to connect it to a keycloak account."""
 
-    uuid = models.UUIDField(primary_key=True)
+    uuid = models.UUIDField()
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.CASCADE,
