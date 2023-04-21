@@ -275,6 +275,12 @@ class ShiftProfileSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Get all shifts for the current user."""
-        return models.ShiftProfile.objects.filter(
+        result = models.ShiftProfile.objects.filter(
             user=self.request.user,
         )
+        if not result:
+            models.ShiftProfile.objects.create(user=self.request.user)
+            result = models.ShiftProfile.objects.filter(
+                user=self.request.user,
+            )
+        return result
