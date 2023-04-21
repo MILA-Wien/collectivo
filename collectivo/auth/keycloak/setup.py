@@ -12,6 +12,11 @@ User = get_user_model()
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
+    # Create keycloak user for all users
+    users = User.objects.filter(keycloak__isnull=True)
+    for user in users:
+        user.save()
+
     # Activate test users in Keycloak
     if settings.COLLECTIVO["dev.create_test_data"] is True:
         keycloak = KeycloakAPI()

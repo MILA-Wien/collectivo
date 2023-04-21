@@ -32,21 +32,15 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         data = decode(access_token, options={"verify_signature": False})
         User = get_user_model()
         try:
-            # Try to find User with Keycloak UUID
             user = User.objects.get(keycloak__uuid=data["sub"])
         except User.DoesNotExist:
-            # Get or create User without Keycloak UUID
-            # Keycloak UUID is connected by a post-save signal in .models
-            try:
-                user = User.object.get(email=data["email"])
-                user.save()
-            except User.DoesNotExist:
-                user = User.objects.create(
-                    username=data["email"],
-                    email=data["email"],
-                    first_name=data["given_name"],
-                    last_name=data["family_name"],
-                )
+            user = User.objects.create(
+                username=data["email"],
+                email=data["email"],
+                first_name=data["given_name"],
+                last_name=data["family_name"],
+            )
+            # KeycloakUser is created by a post-save signal in .models
             # User is loaded again to include the KeycloakUser
             user = User.objects.get(keycloak__uuid=data["sub"])
         return (user, access_token)
