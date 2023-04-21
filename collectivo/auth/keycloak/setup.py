@@ -22,7 +22,7 @@ def setup(sender, **kwargs):
         keycloak = KeycloakAPI()
         for first_name in DEV_USERS:
             user = User.objects.get(first_name=first_name)
-            uuid = user.keycloak.uuid
+            uuid = user.keycloak.get_keycloak_user(create=True)
             keycloak.set_user_password(uuid, "Test123!", temporary=False)
             if first_name != "user_not_verified":
                 keycloak.update_user(uuid, email_verified=True)
