@@ -33,8 +33,15 @@ class MembershipSelfSerializer(serializers.ModelSerializer):
 
         model = models.Membership
         fields = "__all__"
-        read_only_fields = ["id", "number"]
         depth = 1
+
+    def get_fields(self):
+        """Set all fields to read only except shares_signed."""
+        fields = super().get_fields()
+        for field_name, field in fields.items():
+            if field_name != "shares_signed":
+                field.read_only = True
+        return fields
 
 
 class MembershipTypeSerializer(serializers.ModelSerializer):
