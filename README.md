@@ -110,7 +110,7 @@ To set up a development system of collectivo on your local machine:
 The development system will be accessible via the following paths:
 
 - Frontend: `http://collectivo.local:8001`
-- Backend (API docs): `http://collectivo.local:8000/api/docs/`
+- Backend (API docs): `http://collectivo.local:8000/api/dev/docs/`
 - Keycloak (Console): `http://keycloak:8080/admin/master/console/`
 
 The following test users can be used to log in on the development system:
@@ -126,7 +126,7 @@ To set up a development server for the frontend, follow the instructions at [col
 
 ## API Documentation
 
-The API is documented automatically with SWAGGER UI and can be viewed via `/api/docs/`.
+The API is documented automatically with SWAGGER UI and can be viewed via `/api/dev/docs/`.
 The API uses [AcceptHeaderVersioning](https://www.django-rest-framework.org/api-guide/versioning/#acceptheaderversioning). The version of the API is the same as the version of collectivo.
 
 ### Schemas (Work in progress)

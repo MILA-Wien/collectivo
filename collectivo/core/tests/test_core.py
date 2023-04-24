@@ -7,10 +7,9 @@ from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu
+from collectivo.utils.permissions import HasGroup, IsSuperuser
 from collectivo.utils.test import create_testuser
 from collectivo.version import __version__
-
-from .permissions import HasGroup, IsSuperuser
 
 
 class CoreSetupTests(TestCase):
@@ -64,6 +63,14 @@ class CoreApiTests(TestCase):
         res = self.client.get(reverse("collectivo:collectivo.core:version"))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["version"], __version__)
+
+    def test_update_username(self):
+        """Test the username is updated when email is changed."""
+        user = get_user_model().objects.create(email="123")
+        self.assertEqual(user.username, "123")
+        user.email = "456"
+        user.save()
+        self.assertEqual(user.username, "456")
 
     def test_is_superuser_permission(self):
         """Test that the superuser permission works correctly."""

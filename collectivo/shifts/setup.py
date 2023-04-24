@@ -40,6 +40,7 @@ def setup(sender, **kwargs):
         name="shifts_user_tile",
         label="Shifts",
         extension=extension,
+        source="component",
         component="shifts_user_tile",
         requires_group="collectivo.shifts.user",
     )

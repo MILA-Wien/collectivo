@@ -1,18 +1,53 @@
 """Serializers of the dashboard extension."""
+from django.template import Context, Template
 from rest_framework import serializers
 
-from .models import DashboardTile
+from .models import DashboardTile, DashboardTileButton
 
 
-class DashboardTileSerializer(serializers.ModelSerializer):
-    """Serializer for existing dashboard tiles."""
+class TileButtonSerializer(serializers.ModelSerializer):
+    """Serializer for dashboard tile buttons."""
 
-    extension_name = serializers.CharField(
-        source="extension.name", read_only=True
-    )
+    class Meta:
+        """Serializer settings."""
+
+        model = DashboardTileButton
+        fields = "__all__"
+
+
+class TileSerializer(serializers.ModelSerializer):
+    """Serializer for dashboard tiles."""
 
     class Meta:
         """Serializer settings."""
 
         model = DashboardTile
         fields = "__all__"
+        extra_kwargs = {
+            "extension": {"read_only": True},
+        }
+
+
+class TileDisplaySerializer(serializers.ModelSerializer):
+    """Serializer to display tiles on the dashboard."""
+
+    buttons = TileButtonSerializer(many=True, read_only=True)
+    extension_name = serializers.CharField(
+        source="extension.name", read_only=True
+    )
+    content = serializers.SerializerMethodField()
+
+    class Meta:
+        """Serializer settings."""
+
+        model = DashboardTile
+        fields = "__all__"
+
+    def get_content(self, obj):
+        """Get the content of the tile."""
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            return Template(obj.content).render(
+                Context({"user": request.user})
+            )
+        return obj.content

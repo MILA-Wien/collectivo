@@ -10,7 +10,7 @@ from collectivo.auth.keycloak.api import KeycloakAPI
 class KeycloakUser(models.Model):
     """An extension of the user object to connect it to a keycloak account."""
 
-    uuid = models.UUIDField(primary_key=True)
+    uuid = models.UUIDField(null=True)
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.CASCADE,
@@ -20,18 +20,18 @@ class KeycloakUser(models.Model):
     def save(self, *args, **kwargs):
         """Save model and synchronize with keycloak.
 
-        Get or create keycloak user if a new instance is created.
-        Update keycloak user if an existing instance is updated.
+        Get and update keycloak user if email exists.
         """
-        self.uuid = self.get_or_create_keycloak_user()
-        self.update_keycloak_user()
+        self.uuid = self.get_keycloak_user()
+        if self.uuid is not None:
+            self.update_keycloak_user()
         super().save(*args, **kwargs)
 
     def save_without_sync(self, *args, **kwargs):
         """Save model without synchronizing with keycloak."""
         super().save(*args, **kwargs)
 
-    def get_or_create_keycloak_user(self):
+    def get_keycloak_user(self, create=False):
         """Return existing user id or create new auth user."""
         keycloak = KeycloakAPI()
 
@@ -46,8 +46,8 @@ class KeycloakUser(models.Model):
         # If user has no uuid, check if user exists on keycloak
         uuid = keycloak.get_user_id(self.user.email)
 
-        # If user does not exist on keycloak, create new keycloak user
-        if uuid is None:
+        # Optional: If user doesn't exist on keycloak, create new keycloak user
+        if uuid is None and create:
             uuid = keycloak.create_user(
                 self.user.first_name, self.user.last_name, self.user.email
             )
@@ -80,28 +80,12 @@ def update_keycloak_user(sender, instance, created, **kwargs):
     try:
         instance.keycloak.save()
     except KeycloakUser.DoesNotExist:
-        if instance.email:
-            KeycloakUser.objects.create(user=instance)
-
-
-def delete_keycloak_user(sender, instance, **kwargs):
-    """Delete related keycloak user when a django user is deleted."""
-    try:
-        instance.keycloak.delete()
-    except KeycloakUser.DoesNotExist:
-        pass
+        KeycloakUser.objects.create(user=instance)
 
 
 signals.post_save.connect(
     update_keycloak_user,
     sender=get_user_model(),
     dispatch_uid="update_keycloak_user",
-    weak=False,
-)
-
-signals.post_delete.connect(
-    delete_keycloak_user,
-    sender=get_user_model(),
-    dispatch_uid="delete_keycloak_user",
     weak=False,
 )

@@ -79,7 +79,9 @@ class ShiftAssignment(models.Model):
         null=True,
         default=None,
     )
-    shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
+    shift = models.ForeignKey(
+        Shift, on_delete=models.CASCADE, related_name="assignments"
+    )
 
     # TODO add roles to users and check if user is allowed to change this
     attended = models.BooleanField(default=False)
@@ -92,7 +94,11 @@ class ShiftProfile(models.Model):
     """A user that can be assigned to a shift."""
 
     user = models.OneToOneField(
-        get_user_model(), primary_key=True, on_delete=models.CASCADE
+        get_user_model(),
+        primary_key=True,
+        on_delete=models.CASCADE,
+        related_name="shift_profile",
     )
+    shift_points = models.IntegerField(default=0)
 
     history = HistoricalRecords()

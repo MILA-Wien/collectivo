@@ -24,6 +24,19 @@ class ShiftFilter(django_filters.FilterSet):
         fields = "__all__"
 
 
+class ShiftSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage shifts."""
+
+    serializer_class = serializers.ShiftSerializer
+    filterset_class = ShiftFilter
+
+    def get_queryset(self):
+        """Get all shifts for the current user."""
+        return models.Shift.objects.filter(
+            assignments__assigned_user__user=self.request.user,
+        )
+
+
 class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage shifts."""
 

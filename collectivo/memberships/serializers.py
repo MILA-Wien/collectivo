@@ -12,6 +12,12 @@ class MembershipSerializer(UserFields):
     """Serializer for memberships."""
 
     shares_paid = serializers.SerializerMethodField()
+    user__tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        source="user.tags",
+        read_only=True,
+        label="Tags",
+    )
 
     class Meta:
         """Serializer settings."""

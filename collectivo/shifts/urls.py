@@ -19,7 +19,10 @@ router.register(
 )
 router.register("shift-users", views.ShiftUserViewSet, basename="shift-user")
 
+self_router = DefaultRouter()
+self_router.register("", views.ShiftSelfViewSet, basename="shift-self")
 
 urlpatterns = [
+    path("api/shifts/shifts/self/", include(self_router.urls)),
     path("api/shifts/", include(router.urls)),
 ]
