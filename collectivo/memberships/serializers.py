@@ -43,6 +43,15 @@ class MembershipSelfSerializer(serializers.ModelSerializer):
                 field.read_only = True
         return fields
 
+    def validate(self, data):
+        """Validate the data."""
+        if data.get("shares_signed", None) is not None:
+            if data["shares_signed"] < self.instance.shares_signed:
+                raise serializers.ValidationError(
+                    "You cannot lower the number of shares you signed."
+                )
+        return data
+
 
 class MembershipTypeSerializer(serializers.ModelSerializer):
     """Serializer for membership types."""
