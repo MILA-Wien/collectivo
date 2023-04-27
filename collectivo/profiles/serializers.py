@@ -7,11 +7,6 @@ from collectivo.utils.serializers import UserFields, UserIsPk
 from . import models
 
 conditions = {
-    "sepa": {
-        "field": "shares_payment_type",
-        "condition": "exact",
-        "value": "sepa",
-    },
     "natural": {
         "field": "person_type",
         "condition": "exact",
@@ -51,6 +46,7 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
 
         model = models.UserProfile
         fields = "__all__"
+        read_only_fields = ["user"]
 
 
 class ProfileUserSerializer(ProfileBaseSerializer):

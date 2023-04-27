@@ -14,6 +14,7 @@ class PaymentProfileSerializer(UserIsPk, UserFields):
 
         model = models.PaymentProfile
         fields = "__all__"
+        read_only_fields = ["user"]
 
 
 class PaymentSerializer(serializers.ModelSerializer):
