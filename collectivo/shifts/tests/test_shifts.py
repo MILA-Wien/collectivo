@@ -117,7 +117,7 @@ class ShiftAPITests(TestCase):
         )
         assignments = ShiftAssignment.objects.all()
         self.assertEqual(assignments[0].attended, False)
-        self.assertEqual(assignments[3].additional_info_individual, "")
+        self.assertEqual(assignments[3].additional_info_individual, None)
 
     def test_assignment_gets_attributes_from_shift(self):
         """Test that assignments get atttributes from shifts."""
