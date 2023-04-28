@@ -8,6 +8,9 @@ app_name = "collectivo.core"
 
 router = DefaultRouter()
 router.register("users", views.UserViewSet)
+router.register(
+    "users-extended", views.UserProfilesViewSet, basename="users-extended"
+)
 router.register("groups", views.GroupViewSet)
 
 urlpatterns = [
