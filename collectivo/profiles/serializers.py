@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from collectivo.utils.serializers import UserFields, UserIsPk
+from collectivo.utils.serializers import UserIsPk
 
 from . import models
 
