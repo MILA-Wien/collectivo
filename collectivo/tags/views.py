@@ -7,13 +7,23 @@ from rest_framework.exceptions import ValidationError
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import SchemaMixin
-from collectivo.utils.permissions import ReadOrIsSuperuser
+from collectivo.utils.permissions import ReadOrIsSuperuser, IsSuperuser
 
 from . import models, serializers
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+class TagProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage tags assigned to users."""
+
+    queryset = User.objects.all()
+    serializer_class = serializers.TagProfileSerializer
+    permission_classes = [IsSuperuser]
+    filterset_class = get_filterset(serializers.TagProfileSerializer)
+    ordering_fields = get_ordering_fields(serializers.TagProfileSerializer)
 
 
 class TagViewSet(SchemaMixin, viewsets.ModelViewSet):

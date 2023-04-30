@@ -11,6 +11,7 @@ from .models import Tag
 
 TAGS_URL = reverse("collectivo:collectivo.tags:tag-list")
 TAG_URL_NAME = "collectivo:collectivo.tags:tag-detail"
+TAG_PROFILES_NAME = "collectivo:collectivo.tags:profile-detail"
 User = get_user_model()
 
 
@@ -59,3 +60,10 @@ class TagsTests(TestCase):
         tags_url = reverse(TAG_URL_NAME, args=[self.tag.pk])
         res = self.client.delete(tags_url)
         self.assertEqual(res.status_code, 204)
+
+    def test_tag_profile(self):
+        """Test getting a tag profile."""
+        self.assign_tag()
+        res = self.client.get(reverse(TAG_PROFILES_NAME, args=[self.user.pk]))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["tags"], [self.tag.pk])

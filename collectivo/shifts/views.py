@@ -13,6 +13,8 @@ from collectivo.utils.mixins import SchemaMixin
 
 from . import models, serializers
 
+# TODO: Add permission_classes
+
 
 class ShiftFilter(django_filters.FilterSet):
     """Class to filter shifts."""
@@ -94,7 +96,9 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
 
         return queryset
 
-    def create_virtual_shifts(self, queryset, response, min_date, max_date):
+    def create_monthly_virtual_shifts(
+        self, queryset, response, min_date, max_date
+    ):
         """Create virtual shifts for regular shifts."""
         # Create dictionaries for translation to rrule parameters
         week_dict = {"A": 1, "B": 2, "C": 3, "D": 4}
@@ -182,39 +186,41 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
             raise ValidationError(
                 "Missing attribute 'shift_starting_date__lte'"
             )
-        # Get all regular shifts
-        queryset_regular = models.Shift.objects.filter(
-            shift_type="regular",
+        # Get all repeating_monthly shifts
+        queryset_monthly = models.Shift.objects.filter(
+            shift_type="repeating_monthly",
         )
 
         # 1. Append unique shifts that are in bound of range
-        if queryset.filter(shift_type="unique").exists():
-            queryset_unique = queryset.filter(shift_type="unique")
+        if queryset.filter(shift_type="regular").exists():
+            queryset_unique = queryset.filter(shift_type="regular")
             for shift in queryset_unique.iterator():
                 response.append(serializers.ShiftSerializer(shift).data)
 
         # 2. Append regular shifts that are in bound of range
-        if queryset.filter(shift_type="regular").exists():
-            queryset = queryset.filter(shift_type="regular")
-            response = self.create_virtual_shifts(
+        if queryset.filter(shift_type="repeating_monthly").exists():
+            queryset = queryset.filter(shift_type="repeating_monthly")
+            response = self.create_monthly_virtual_shifts(
                 queryset, response, min_date, max_date
             )
+
+        # TODO create weekly virtual shifts
 
         # 3. Append regular shifts that started before min_date
         # and fulfill all other parameters
         # TODO use filter class instead of manually filtering
         if (
-            queryset_regular.filter(
+            queryset_monthly.filter(
                 shift_starting_date__lt=min_date,
             ).exists()
-            and self.custom_filter(queryset_regular).exists()
+            and self.custom_filter(queryset_monthly).exists()
         ):
-            queryset_regular = self.custom_filter(queryset_regular)
-            queryset_regular = queryset_regular.filter(
+            queryset_monthly = self.custom_filter(queryset_monthly)
+            queryset_monthly = queryset_monthly.filter(
                 shift_starting_date__lt=min_date,
             )
-            response = self.create_virtual_shifts(
-                queryset_regular,
+            response = self.create_monthly_virtual_shifts(
+                queryset_monthly,
                 response,
                 min_date,
                 max_date,
@@ -224,11 +230,34 @@ class ShiftViewSet(SchemaMixin, viewsets.ModelViewSet):
         return Response(response)
 
 
+class ShiftOpenShiftsViewSet(ShiftViewSet):
+    """Manage shifts."""
+
+    queryset = models.Shift.objects.all()
+    serializer_class = serializers.ShiftOpenShiftsSerializer
+    filterset_class = ShiftFilter
+
+    # TODO: Add open shifts filter
+
+
 class AssignmentViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage individual shifts."""
 
     queryset = models.ShiftAssignment.objects.all()
     serializer_class = serializers.AssignmentSerializer
+    # Todo users should only be able to see their own assignments
+    # TODO users should only be able to create assignments for themselves
+    # TODO users should only be able to update assignments for themselves
+    # TODO users should only be able to delete assignments for themselves
+    # TODO users should only be able to update the following fields:
+    # - assged_user
+    # - additional_info_individual
+    # TODO users shouldn't be able to delete the object
+    # TODO on monthly/weekly shifts, the user should only be able to update
+    #   the following fields:
+    #  - replacement_user
+    #  - additional_info_individual
+    #  - open_for_replacement
 
 
 class ShiftUserViewSet(SchemaMixin, viewsets.ModelViewSet):
@@ -236,3 +265,22 @@ class ShiftUserViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     queryset = models.ShiftProfile.objects.all()
     serializer_class = serializers.ShiftUserSerializer
+
+
+class ShiftProfileSelfViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage self user."""
+
+    serializer_class = serializers.ShiftUserSerializer
+    # TODO create user if not exists
+
+    def get_queryset(self):
+        """Get all shifts for the current user."""
+        result = models.ShiftProfile.objects.filter(
+            user=self.request.user,
+        )
+        if not result:
+            models.ShiftProfile.objects.create(user=self.request.user)
+            result = models.ShiftProfile.objects.filter(
+                user=self.request.user,
+            )
+        return result
