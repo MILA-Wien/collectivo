@@ -1,10 +1,12 @@
 """Serializers of the memberships extension."""
 from django.db.models import Avg, Max, Sum
 from rest_framework import serializers
-
+from django.contrib.auth import get_user_model
 from collectivo.utils.serializers import UserFields
 
 from . import models
+
+User = get_user_model()
 
 
 class MembershipSerializer(UserFields):
@@ -14,7 +16,7 @@ class MembershipSerializer(UserFields):
         many=True,
         source="user.tags",
         read_only=True,
-        label="Tags",
+        label="Memberships",
     )
 
     class Meta:
@@ -35,6 +37,21 @@ class MembershipSelfSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id", "number"]
         depth = 1
+
+
+class MembershipProfileSerializer(serializers.ModelSerializer):
+    """Serializer for tag profiles."""
+
+    memberships = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=models.Membership.objects.all()
+    )
+
+    class Meta:
+        """Serializer settings."""
+
+        model = User
+        fields = ["id", "memberships"]
+        read_only_fields = ["id", "memberships"]
 
 
 class MembershipTypeSerializer(serializers.ModelSerializer):

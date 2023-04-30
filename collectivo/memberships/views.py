@@ -1,13 +1,15 @@
 """Views of the memberships extension."""
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
+from django.contrib.auth import get_user_model
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
 from collectivo.utils.permissions import HasGroup, IsAuthenticated
 
 from . import serializers
 from .models import Membership, MembershipStatus, MembershipType
+
+User = get_user_model()
 
 
 class MembershipAdminViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
@@ -19,6 +21,19 @@ class MembershipAdminViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
     required_groups = ["collectivo.memberships.admin"]
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
+
+
+class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
+    """Manage memberships assigned to users."""
+
+    queryset = User.objects.all()
+    serializer_class = serializers.MembershipProfileSerializer
+    permission_classes = [HasGroup]
+    required_groups = ["collectivo.memberships.admin"]
+    filterset_class = get_filterset(serializers.MembershipProfileSerializer)
+    ordering_fields = get_ordering_fields(
+        serializers.MembershipProfileSerializer
+    )
 
 
 class MembershipUserViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
