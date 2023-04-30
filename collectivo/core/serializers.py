@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfilesSerializer(serializers.ModelSerializer):
-    """Serializer of user, including all profiles."""
+    """Serializer of user, including the fields of all profiles."""
 
     first_name = serializers.CharField()
     last_name = serializers.CharField()
