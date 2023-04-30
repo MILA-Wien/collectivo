@@ -16,7 +16,7 @@ conditions = {
 }
 
 
-class ProfileBaseSerializer(UserIsPk, UserFields):
+class ProfileBaseSerializer(UserIsPk):
     """Base serializer for member serializers with extra schema attributes."""
 
     schema_attrs = {
@@ -33,13 +33,6 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
 
     # Display user as id so that the frontend always gets an id field
     id = serializers.SerializerMethodField()
-
-    user__tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        source="user.tags",
-        read_only=True,
-        label="Tags",
-    )
 
     class Meta:
         """Serializer settings."""
