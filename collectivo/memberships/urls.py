@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register("memberships", views.MembershipAdminViewSet)
 router.register("types", views.MembershipTypeViewSet)
 router.register("statuses", views.MembershipStatusViewSet, basename="status")
+router.register("profiles", views.MembershipProfileViewSet, basename="profile")
 
 self_router = DefaultRouter()
 self_router.register("", views.MembershipUserViewSet)

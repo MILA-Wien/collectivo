@@ -2,16 +2,11 @@
 
 from rest_framework import serializers
 
-from collectivo.utils.serializers import UserFields, UserIsPk
+from collectivo.utils.serializers import UserIsPk
 
 from . import models
 
 conditions = {
-    "sepa": {
-        "field": "shares_payment_type",
-        "condition": "exact",
-        "value": "sepa",
-    },
     "natural": {
         "field": "person_type",
         "condition": "exact",
@@ -21,7 +16,7 @@ conditions = {
 }
 
 
-class ProfileBaseSerializer(UserIsPk, UserFields):
+class ProfileBaseSerializer(UserIsPk):
     """Base serializer for member serializers with extra schema attributes."""
 
     schema_attrs = {
@@ -39,18 +34,12 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
     # Display user as id so that the frontend always gets an id field
     id = serializers.SerializerMethodField()
 
-    user__tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        source="user.tags",
-        read_only=True,
-        label="Tags",
-    )
-
     class Meta:
         """Serializer settings."""
 
         model = models.UserProfile
         fields = "__all__"
+        read_only_fields = ["user"]
 
 
 class ProfileUserSerializer(ProfileBaseSerializer):

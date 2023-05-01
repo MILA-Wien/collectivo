@@ -99,6 +99,4 @@ class ProfileTests(TestCase):
         ]:
             self.assertTrue(c in res.data)
             self.assertTrue("condition" in res.data[c])
-        self.assertEqual(res.data["user__first_name"]["read_only"], True)
-        self.assertEqual(res.data["user__first_name"]["required"], False)
         self.assertEqual(res.data["address_street"]["required"], True)

@@ -45,8 +45,12 @@ services:
       CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
       DIREKTKREDIT_SERVER_URL: "http://direktkredit.local:8020"
     depends_on:
-      - collectivo-db
-      - keycloak
+      collectivo-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
 
   # A celery worker that runs in the background.
   celery:
@@ -83,6 +87,7 @@ services:
       - collectivo
       - redis
       - keycloak
+
 
   # Another celery worker for chron jobs.
   celery-beat:
@@ -126,6 +131,8 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+     test: ["CMD", "redis-cli","ping"]
     command: >
       --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb --maxmemory-policy volatile-lru
 
@@ -147,6 +154,11 @@ services:
     image: postgres:14-alpine
     volumes:
       - collectivo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_DB: collectivo_db
       POSTGRES_USER: ${COLLECTIVO_DB_USER}
@@ -173,9 +185,15 @@ services:
       KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_SERVER_URL}
       ROOT_LOGLEVEL: ALL
       KEYCLOAK_LOGLEVEL: DEBUG
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/realms/master"]
+      interval: 5s
+      timeout: 2s
+      retries: 15
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import:ro
       - ./docker/keycloak/export:/tmp/export
+      - ./docker/keycloak/healthcheck.sh:/healthcheck.sh
     command: start-dev --import-realm
     ports:
       - "8080:8080"
@@ -197,9 +215,6 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
-    logging:
-      options:
-        max-size: 50m
 
   habidat:
     container_name: habidat
@@ -259,9 +274,6 @@ services:
       - habidat-db
     ports:
       - 8020:80
-    logging:
-      options:
-        max-size: 50m
 
 volumes:
   collectivo-db-data:
