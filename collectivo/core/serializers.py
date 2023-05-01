@@ -81,7 +81,6 @@ class UserProfilesSerializer(serializers.ModelSerializer):
 
         model = User
         exclude = [
-            "id",
             "username",
             "password",
             "is_superuser",
