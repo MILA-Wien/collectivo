@@ -4,16 +4,34 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
+from collectivo.utils.permissions import IsSuperuser
 from collectivo.payments.models import Invoice
-
-from .models import LotzappAddress, LotzappInvoice
+from collectivo.utils.mixins import SchemaMixin
+from .models import LotzappAddress, LotzappInvoice, LotzappSettings
+from . import serializers
 
 User = get_user_model()
 
 
+class LotzappSettingsViewSet(
+    SchemaMixin, GenericViewSet, RetrieveModelMixin, UpdateModelMixin
+):
+    """ViewSet to manage lotzapp settings."""
+
+    queryset = LotzappSettings.objects.all()
+    serializer_class = serializers.LotzappSettingsSerializer
+    permission_classes = [IsSuperuser]
+
+    def get_object(self):
+        """Return single entrys."""
+        return self.queryset.get(pk=1)
+
+
 class LotzappInvoiceViewSet(GenericViewSet):
     """ViewSet to manage lotzapp invoice connection."""
+
+    permission_classes = [IsSuperuser]
 
     @extend_schema(responses={200: OpenApiResponse()})
     @action(
@@ -30,7 +48,9 @@ class LotzappInvoiceViewSet(GenericViewSet):
 
 
 class LotzappAddressViewSet(GenericViewSet):
-    """ViewSet to manage lotzapp invoice connection."""
+    """ViewSet to manage lotzapp address connection."""
+
+    permission_classes = [IsSuperuser]
 
     @extend_schema(responses={200: OpenApiResponse()})
     @action(

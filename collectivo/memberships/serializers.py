@@ -50,7 +50,7 @@ class MembershipSerializer(UserFields):
         )[0]
         entries = ItemEntry.objects.filter(
             type=item_type,
-            invoice__payment_from=obj.user,
+            invoice__payment_from=obj.user.account,
             invoice__status="paid",
         )
         return (

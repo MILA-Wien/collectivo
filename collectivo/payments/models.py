@@ -7,7 +7,7 @@ User = get_user_model()
 
 
 class PaymentProfile(models.Model):
-    """An account that can make and receive payments."""
+    """An profile of a user, defining payment methods."""
 
     user = models.OneToOneField(
         User,
@@ -34,7 +34,31 @@ class PaymentProfile(models.Model):
 
     def __str__(self):
         """Return a string representation of the object."""
-        return str(self.user)
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class Account(models.Model):
+    """An account that can make and receive payments."""
+
+    name = models.CharField(max_length=255)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="account",
+        help_text="The user that owns this account.",
+    )
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        if not self.name and self.user:
+            return f"{self.user.first_name} {self.user.last_name}"
+        return self.name
 
 
 class ItemTypeCategory(models.Model):
@@ -115,14 +139,23 @@ class ItemEntry(models.Model):
 
     def __str__(self):
         """Return a string representation of the object."""
-        return str(self.type)
+        return f"{self.type} x {self.amount} @ {self.price}"
 
 
 class Invoice(models.Model):
-    """An invoice for a transaction."""
+    """An invoice."""
 
     payment_from = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name="invoices_out"
+        Account,
+        on_delete=models.PROTECT,
+        related_name="invoices_out",
+        null=True,
+    )
+    payment_to = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="invoices_in",
+        null=True,
     )
 
     extension = models.ForeignKey(
@@ -168,9 +201,16 @@ class Subscription(models.Model):
     name = models.CharField(max_length=50)
 
     payment_from = models.ForeignKey(
-        User,
+        Account,
         on_delete=models.PROTECT,
         related_name="subscriptions_out",
+        null=True,
+    )
+    payment_to = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="subscriptions_in",
+        null=True,
     )
 
     extension = models.ForeignKey(

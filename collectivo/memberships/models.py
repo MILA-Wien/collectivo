@@ -177,8 +177,7 @@ class Membership(models.Model):
     def __str__(self):
         """Return string representation."""
         return (
-            f"{self.user.first_name} {self.user.last_name} "
-            f"({self.type.name})"
+            f"{self.user.first_name} {self.user.last_name} ({self.type.name})"
         )
 
     def create_invoices(self):
@@ -208,7 +207,7 @@ class Membership(models.Model):
             )[0]
             entries = ItemEntry.objects.filter(
                 type=item_type,
-                invoice__payment_from=self.user,
+                invoice__payment_from=self.user.account,
             )
 
             # Get current status
@@ -218,7 +217,7 @@ class Membership(models.Model):
             # Create invoice if needed
             if invoiced < to_pay:
                 invoice = Invoice.objects.create(
-                    payment_from=self.user,
+                    payment_from=self.user.account,
                     date_due=date.today(),
                     status="open",
                 )

@@ -16,8 +16,27 @@ class PaymentProfileSerializer(UserIsPk, UserFields):
         fields = "__all__"
 
 
+class ItemEntrySerializer(serializers.ModelSerializer):
+    """Serializer for items."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.ItemEntry
+        fields = "__all__"
+
+
 class InvoiceSerializer(serializers.ModelSerializer):
     """Serializer for invoices."""
+
+    items = serializers.PrimaryKeyRelatedField(
+        queryset=models.ItemEntry.objects.all(), many=True
+    )
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, obj):
+        """Get the total amount of the invoice."""
+        return sum([item.amount * item.price for item in obj.items.all()])
 
     class Meta:
         """Serializer settings."""

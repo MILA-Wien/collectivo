@@ -44,6 +44,7 @@ input_types = {
     "PrimaryKeyRelatedField": "select",
     "PhoneField": "phone",
     "CountryField": "country",
+    "ListSerializer": "list",
 }
 
 
