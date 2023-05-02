@@ -96,6 +96,24 @@ class MembershipsPaymentsTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["shares_paid"], 3)
 
+
+class MembershipsTests(TestCase):
+    """Test the memberships extension."""
+
+    def setUp(self):
+        """Prepare client and create test user."""
+        self.user = create_testuser()
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+        self.membership_type = MembershipType.objects.create(
+            name="Test Type",
+            has_shares=True,
+            shares_amount_per_share=15,
+        )
+        self.membership = Membership.objects.create(
+            user=self.user, type=self.membership_type, shares_signed=10
+        )
+
     def test_update_shares(self):
         """Test that the shares can be updated."""
         url = reverse(

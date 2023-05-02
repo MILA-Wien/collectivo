@@ -54,19 +54,6 @@ class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
     )
 
 
-class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
-    """Manage memberships assigned to users."""
-
-    queryset = User.objects.all()
-    serializer_class = serializers.MembershipProfileSerializer
-    permission_classes = [HasGroup]
-    required_groups = ["collectivo.memberships.admin"]
-    filterset_class = get_filterset(serializers.MembershipProfileSerializer)
-    ordering_fields = get_ordering_fields(
-        serializers.MembershipProfileSerializer
-    )
-
-
 class MembershipUserViewSet(
     SchemaMixin, ListModelMixin, UpdateModelMixin, GenericViewSet
 ):

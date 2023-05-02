@@ -104,21 +104,6 @@ class MembershipProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "memberships"]
 
 
-class MembershipProfileSerializer(serializers.ModelSerializer):
-    """Serializer for tag profiles."""
-
-    memberships = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=models.Membership.objects.all()
-    )
-
-    class Meta:
-        """Serializer settings."""
-
-        model = User
-        fields = ["id", "memberships"]
-        read_only_fields = ["id", "memberships"]
-
-
 class MembershipTypeSerializer(serializers.ModelSerializer):
     """Serializer for membership types."""
 
