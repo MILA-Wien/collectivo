@@ -72,6 +72,14 @@ class CoreApiTests(TestCase):
         user.save()
         self.assertEqual(user.username, "456")
 
+    def test_capitalize_names(self):
+        """Test the first letter of names is capitalized."""
+        user = get_user_model().objects.create(
+            first_name="test test", last_name="user user"
+        )
+        self.assertEqual(user.first_name, "Test test")
+        self.assertEqual(user.last_name, "User user")
+
     def test_is_superuser_permission(self):
         """Test that the superuser permission works correctly."""
         request = RequestFactory().get("/")

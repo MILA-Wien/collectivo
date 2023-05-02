@@ -1,5 +1,5 @@
 """Views of the memberships extension."""
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from django.contrib.auth import get_user_model
 from collectivo.utils.filters import get_filterset, get_ordering_fields
@@ -36,7 +36,9 @@ class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
     )
 
 
-class MembershipUserViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
+class MembershipUserViewSet(
+    SchemaMixin, ListModelMixin, UpdateModelMixin, GenericViewSet
+):
     """ViewSet for users to see their own memberships."""
 
     queryset = Membership.objects.all()

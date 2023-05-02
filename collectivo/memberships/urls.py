@@ -13,7 +13,9 @@ router.register("statuses", views.MembershipStatusViewSet, basename="status")
 router.register("profiles", views.MembershipProfileViewSet, basename="profile")
 
 self_router = DefaultRouter()
-self_router.register("", views.MembershipUserViewSet)
+self_router.register(
+    "", views.MembershipUserViewSet, basename="membership-self"
+)
 
 urlpatterns = [
     path("api/memberships/memberships/self/", include(self_router.urls)),

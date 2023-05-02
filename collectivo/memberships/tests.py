@@ -1,9 +1,14 @@
 """Tests of the memberships extension."""
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
 
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
+from collectivo.utils.test import create_testuser
+
+from .models import Membership, MembershipType
 
 User = get_user_model()
 
@@ -19,3 +24,53 @@ class MembersSetupTests(TestCase):
         """Test that the menu items are registered."""
         res = MenuItem.objects.filter(extension=self.extension)
         self.assertEqual(len(res), 2)
+
+
+class MembershipsTests(TestCase):
+    """Test the memberships API."""
+
+    def setUp(self):
+        """Prepare client and create test user."""
+        self.user = create_testuser()
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+        self.membership_type = MembershipType.objects.create(
+            name="Test Type",
+            has_shares=True,
+            shares_amount_per_share=15,
+        )
+        self.membership = Membership.objects.create(
+            user=self.user, type=self.membership_type, shares_signed=10
+        )
+
+    def test_update_shares(self):
+        """Test that the shares can be updated."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"shares_signed": 20}
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, 200)
+        self.membership.refresh_from_db()
+        self.assertEqual(self.membership.shares_signed, 20)
+
+    def test_update_shares_lower_fails(self):
+        """Test that the shares cannot be updated to a lower number."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"shares_signed": 1}
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, 400)
+
+    def test_update_fails(self):
+        """Test that other fields than shares cannot be updated."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"number": 20}
+        self.client.patch(url, payload)
+        self.assertNotEqual(self.membership.number, 20)
