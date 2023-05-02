@@ -2,8 +2,8 @@
 from django.db import transaction
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from django.contrib.auth import get_user_model
 from collectivo.utils.filters import get_filterset, get_ordering_fields
@@ -54,7 +54,22 @@ class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
     )
 
 
-class MembershipUserViewSet(SchemaMixin, ListModelMixin, GenericViewSet):
+class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
+    """Manage memberships assigned to users."""
+
+    queryset = User.objects.all()
+    serializer_class = serializers.MembershipProfileSerializer
+    permission_classes = [HasGroup]
+    required_groups = ["collectivo.memberships.admin"]
+    filterset_class = get_filterset(serializers.MembershipProfileSerializer)
+    ordering_fields = get_ordering_fields(
+        serializers.MembershipProfileSerializer
+    )
+
+
+class MembershipUserViewSet(
+    SchemaMixin, ListModelMixin, UpdateModelMixin, GenericViewSet
+):
     """ViewSet for users to see their own memberships."""
 
     queryset = Membership.objects.all()

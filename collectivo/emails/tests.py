@@ -55,7 +55,7 @@ class EmailsTests(TestCase):
         self.recipient_objects = [
             User.objects.create_user(
                 username=f"recipient_0{i}@example.com",
-                first_name=f"recipient_0{i}",
+                first_name=f"Recipient_0{i}",
                 email=f"recipient_0{i}@example.com",
             )
             for i in [1, 2]
@@ -75,11 +75,11 @@ class EmailsTests(TestCase):
         self.assertEqual(mail.outbox[0].subject, "Test")
         self.assertEqual(
             mail.outbox[0].alternatives[0][0],
-            "TEST First name: recipient_01 <br/> New line",
+            "TEST First name: Recipient_01 <br/> New line",
         )
         self.assertEqual(
             mail.outbox[0].body,
-            "TEST First name: recipient_01  \nNew line\n\n",
+            "TEST First name: Recipient_01  \nNew line\n\n",
         )
 
         # TODO: Move to emails_tags tests

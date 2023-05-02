@@ -95,3 +95,35 @@ class MembershipsPaymentsTests(TestCase):
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["shares_paid"], 3)
+
+    def test_update_shares(self):
+        """Test that the shares can be updated."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"shares_signed": 20}
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, 200)
+        self.membership.refresh_from_db()
+        self.assertEqual(self.membership.shares_signed, 20)
+
+    def test_update_shares_lower_fails(self):
+        """Test that the shares cannot be updated to a lower number."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"shares_signed": 1}
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, 400)
+
+    def test_update_fails(self):
+        """Test that other fields than shares cannot be updated."""
+        url = reverse(
+            "collectivo:collectivo.memberships:membership-self-detail",
+            args=[self.membership.id],
+        )
+        payload = {"number": 20}
+        self.client.patch(url, payload)
+        self.assertNotEqual(self.membership.number, 20)
