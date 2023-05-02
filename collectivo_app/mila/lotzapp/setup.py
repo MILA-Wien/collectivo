@@ -15,7 +15,7 @@ def setup(sender, **kwargs):
     )
 
     settings = LotzappSettings.object()
-    settings.lotzapp_url = os.environ.get("LOTZAPP_URL", None)
-    settings.lotzapp_user = os.environ.get("LOTZAPP_USER", None)
-    settings.lotzapp_pass = os.environ.get("LOTZAPP_PASS", None)
+    settings.lotzapp_url = os.environ.get("LOTZAPP_URL", "")
+    settings.lotzapp_user = os.environ.get("LOTZAPP_USER", "")
+    settings.lotzapp_pass = os.environ.get("LOTZAPP_PASS", "")
     settings.save()
