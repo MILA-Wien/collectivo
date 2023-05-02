@@ -73,7 +73,7 @@ def setup(sender, **kwargs):
             except User.DoesNotExist:
                 user = User.objects.create(email=email)
             user.username = email
-            user.first_name = first_name
+            user.first_name = first_name[0].upper() + first_name[1:]
             user.last_name = "Example"
             user.save()
 

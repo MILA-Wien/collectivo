@@ -35,8 +35,24 @@ class MembershipSelfSerializer(serializers.ModelSerializer):
 
         model = models.Membership
         fields = "__all__"
-        read_only_fields = ["id", "number"]
         depth = 1
+
+    def get_fields(self):
+        """Set all fields to read only except shares_signed."""
+        fields = super().get_fields()
+        for field_name, field in fields.items():
+            if field_name != "shares_signed":
+                field.read_only = True
+        return fields
+
+    def validate(self, data):
+        """Validate the data."""
+        if data.get("shares_signed", None) is not None:
+            if data["shares_signed"] < self.instance.shares_signed:
+                raise serializers.ValidationError(
+                    "You cannot lower the number of shares you signed."
+                )
+        return data
 
 
 class MembershipProfileSerializer(serializers.ModelSerializer):
