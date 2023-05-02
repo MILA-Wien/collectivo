@@ -202,8 +202,6 @@ class Invoice(models.Model):
 class Subscription(models.Model):
     """A subscription that creates automatic invoices."""
 
-    name = models.CharField(max_length=50)
-
     payment_from = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -235,6 +233,7 @@ class Subscription(models.Model):
         ],
     )
 
+    date_started = models.DateField(default=datetime.date.today)
     repeat_each = models.IntegerField(default=1)
     repeat_unit = models.CharField(
         max_length=10,

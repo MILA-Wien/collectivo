@@ -49,6 +49,18 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Serializer for subscriptions."""
 
+    items = serializers.PrimaryKeyRelatedField(
+        queryset=models.ItemEntry.objects.all(), many=True
+    )
+    invoices = serializers.PrimaryKeyRelatedField(
+        queryset=models.Invoice.objects.all(), many=True
+    )
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, obj):
+        """Get the total amount of the invoice."""
+        return sum([item.amount * item.price for item in obj.items.all()])
+
     class Meta:
         """Serializer settings."""
 

@@ -188,6 +188,7 @@ class Membership(models.Model):
         try:
             from collectivo.payments.models import (
                 Invoice,
+                Subscription,
                 ItemEntry,
                 ItemType,
                 ItemTypeCategory,
@@ -195,6 +196,7 @@ class Membership(models.Model):
         except ImportError:
             raise ExtensionNotInstalled("collectivo.payments")
 
+        # Create invoices for shares
         if self.type.has_shares:
             extension = Extension.objects.get(name="memberships")
             item_category = ItemTypeCategory.objects.get_or_create(
@@ -218,7 +220,6 @@ class Membership(models.Model):
             if invoiced < to_pay:
                 invoice = Invoice.objects.create(
                     payment_from=self.user.account,
-                    date_due=date.today(),
                     status="open",
                 )
                 price = self.type.shares_amount_per_share
@@ -229,6 +230,40 @@ class Membership(models.Model):
                     price=price,
                 )
 
+        # Create subscriptions for fees
         if self.type.has_fees:
-            # TODO: Logic for fees
-            pass
+            extension = Extension.objects.get(name="memberships")
+            item_category = ItemTypeCategory.objects.get_or_create(
+                name="Fees", extension=extension
+            )[0]
+            item_type = ItemType.objects.get_or_create(
+                name=self.type.name,
+                category=item_category,
+                extension=extension,
+            )[0]
+            subscriptions = ItemEntry.objects.filter(
+                type=item_type,
+                subscription__status="active",
+                subscription__payment_from=self.user.account,
+            )
+
+            # Create subscription if needed
+            # TODO: Option to include current year/month in subscription
+            # TODO: Update if exists
+            # TODO: Price is not correct
+            if not subscriptions.exists():
+                subscription = Subscription.objects.create(
+                    payment_from=self.user.account,
+                    status="active",
+                    extension=extension,
+                    date_started=self.date_started,
+                    repeat_each=self.type.fees_repeat_each,
+                    repeat_unit=self.type.fees_repeat_unit,
+                )
+                price = self.type.shares_amount_per_share
+                ItemEntry.objects.create(
+                    subscription=subscription,
+                    type=item_type,
+                    amount=1,
+                    price=self.fees_amount,
+                )
