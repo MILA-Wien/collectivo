@@ -1,8 +1,6 @@
 """Utilities for collectivo models."""
 
-from django import forms
-
-from collectivo.utils.exceptions import ImproperlyConfigured
+from rest_framework import serializers
 
 
 class RegisterMixin:
@@ -38,14 +36,15 @@ class SingleInstance:
             obj = cls.objects.create()
         else:
             obj = cls.objects.first()
-        if check_valid and not obj.is_valid():
-            raise ImproperlyConfigured(f"{cls.__name__} is not valid.")
+        if check_valid:
+            obj.is_valid()
+        return obj
 
     def is_valid(self):
         """Check if object is valid."""
 
-        class Form(forms.ModelForm):
-            """Form to check if object is valid."""
+        class TempSerializer(serializers.ModelSerializer):
+            """Serializer to check if object is valid."""
 
             class Meta:
                 """Meta class."""
@@ -53,7 +52,8 @@ class SingleInstance:
                 model = self.__class__
                 fields = "__all__"
 
-        return Form(instance=self).is_valid()
+        temp_serializer = TempSerializer(data=TempSerializer(self).data)
+        temp_serializer.is_valid(raise_exception=True)
 
     def save(self, *args, **kwargs):
         """Save object or raise exception if an instance already exists."""

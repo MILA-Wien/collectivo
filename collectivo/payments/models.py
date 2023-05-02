@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
+import datetime
 
 User = get_user_model()
 
@@ -99,7 +100,9 @@ class ItemType(models.Model):
 
     def __str__(self):
         """Return a string representation of the object."""
-        return self.name
+        if not self.category:
+            return self.name
+        return f"{self.category} - {self.name}"
 
 
 class ItemEntry(models.Model):
@@ -175,6 +178,7 @@ class Invoice(models.Model):
         ],
     )
 
+    date = models.DateField(default=datetime.date.today)
     date_due = models.DateField(null=True, blank=True)
     date_paid = models.DateField(null=True, blank=True)
 

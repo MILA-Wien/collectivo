@@ -61,7 +61,7 @@ class MembershipsPaymentsTests(TestCase):
         )
         self.assertEqual(entry.amount, 10)
         self.assertEqual(entry.price, 15)
-        self.assertEqual(entry.invoice.payment_from, self.user)
+        self.assertEqual(entry.invoice.payment_from, self.user.account)
         self.assertEqual(entry.invoice.status, "open")
 
         # No second invoice if nothing changes
