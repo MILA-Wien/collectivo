@@ -25,6 +25,14 @@ def raise_sync_error(response):
     )
 
 
+def create_item_name(item):
+    """Create a name for a lotzapp invoice item."""
+    name = str(item.type)
+    name.replace("Shares", "Genossenschaftsanteile")
+    name.replace("Fees", "Mitgliedsbeitrag")
+    return name
+
+
 class LotzappMixin:
     """Mixin for lotzapp models to create and update objects."""
 
@@ -162,13 +170,14 @@ class LotzappInvoice(LotzappMixin, models.Model):
             == "sepa"
             else settings.zahlungsmethode_transfer
         )
+
         data = {
             "datum": self.invoice.date.strftime("%Y-%m-%d"),
             "adresse": lotzapp_address.lotzapp_id,
             "zahlungsmethode": str(zahlungsmethode),
             "positionen": [
                 {
-                    "name": str(item.type),
+                    "name": create_item_name(item),
                     "wert": str(item.amount),
                     "einheit": "mal",
                     "netto": str(item.price),
