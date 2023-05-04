@@ -4,7 +4,7 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
-class DirektkreditConfig(AppConfig):
+class LotzappConfig(AppConfig):
     """Configuration class for the lotzapp extension."""
 
     default_auto_field = "django.db.models.BigAutoField"

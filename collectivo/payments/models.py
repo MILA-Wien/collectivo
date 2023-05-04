@@ -1,8 +1,9 @@
 """Models of the payments extension."""
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
-import datetime
 
 User = get_user_model()
 
@@ -175,6 +176,7 @@ class Invoice(models.Model):
             ("open", "open"),
             ("paid", "paid"),
             ("canceled", "canceled"),
+            ("failure", "failure"),
         ],
     )
 
