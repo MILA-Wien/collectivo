@@ -1,11 +1,14 @@
 """Models of the lotzapp extension."""
+import logging
+
 import requests
+from celery import chord
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from collectivo.payments.models import Invoice
 from collectivo.utils.exceptions import APIException
 from collectivo.utils.models import SingleInstance
-import logging
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -19,10 +22,13 @@ def check_response(response):
 
 def raise_sync_error(response):
     """Raise an exception with the error message from lotzapp."""
-    raise APIException(
-        f"Lotzapp address sync failed with {response.status_code}:"
-        f" {response.text}"
-    )
+    try:
+        raise APIException(
+            f"Lotzapp address sync failed with {response.status_code}:"
+            f" {response.text}"
+        )
+    except Exception as e:
+        raise APIException("Lotzapp sync failed:", e)
 
 
 def create_item_name(item):
@@ -88,6 +94,50 @@ class LotzappSettings(SingleInstance, models.Model):
     adressgruppe_verein = models.IntegerField(null=True)
 
 
+class LotzappSync(models.Model):
+    """A documentation of a sync action."""
+
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=255,
+        default="pending",
+        choices=(
+            ("pending", "pending"),
+            ("success", "success"),
+            ("failure", "failure"),
+        ),
+    )
+    type = models.CharField(
+        max_length=255,
+        choices=(
+            ("invoice", "invoice"),
+            ("address", "address"),
+        ),
+    )
+    status_message = models.TextField()
+
+    def save(self, *args, **kwargs):
+        """Save the object and call sync for new entry."""
+        new = self.pk is None
+        super().save(*args, **kwargs)
+        if new:
+            self.sync()
+
+    def sync(self):
+        """Synchronize lotzapp with collectivo."""
+        from .tasks import (
+            sync_lotzapp_end,
+            sync_lotzapp_invoice,
+            sync_lotzapp_user,
+        )
+
+        if self.type == "invoice":
+            tasks = [sync_lotzapp_invoice.s(i) for i in Invoice.objects.all()]
+        else:
+            tasks = [sync_lotzapp_user.s(u) for u in User.objects.all()]
+        chord(tasks)(sync_lotzapp_end.s(self))
+
+
 class LotzappAddress(LotzappMixin, models.Model):
     """A connector between collectivo users and lotzapp addresses."""
 
@@ -142,7 +192,7 @@ class LotzappInvoice(LotzappMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="lotzapp",
     )
-    lotzapp_id = models.CharField(max_length=255, unique=True, blank=True)
+    lotzapp_id = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         """Return the lotzapp id."""
@@ -150,6 +200,7 @@ class LotzappInvoice(LotzappMixin, models.Model):
 
     def sync(self):
         """Sync the invoice with lotzapp."""
+
         settings = LotzappSettings.object(check_valid=True)
         auth = (settings.lotzapp_user, settings.lotzapp_pass)
         ar_endpoint = settings.lotzapp_url + "ar/"

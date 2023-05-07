@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = get_env_bool("DEBUG", False)
+DEBUG = False
 DEVELOPMENT = get_env_bool("DEVELOPMENT", False)
 
 if os.environ.get("ALLOWED_HOSTS") is not None:
@@ -180,13 +180,19 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.MinimumLengthValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.NumericPasswordValidator"
+        ),
     },
 ]
 
@@ -220,8 +226,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.AcceptHeaderVersioning",
+    "DEFAULT_PAGINATION_CLASS": (
+        "rest_framework.pagination.LimitOffsetPagination"
+    ),
+    "DEFAULT_VERSIONING_CLASS": (
+        "rest_framework.versioning.AcceptHeaderVersioning"
+    ),
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
@@ -248,7 +258,9 @@ for version in _schema_versions:
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "collectivo",
-    "DESCRIPTION": "A modular framework to build participative community platforms.",
+    "DESCRIPTION": (
+        "A modular framework to build participative community platforms."
+    ),
     "LICENSE": {
         "name": "GNU Affero General Public License v3.0",
         "url": "https://github.com/MILA-Wien/collectivo/blob/main/LICENSE",
@@ -293,7 +305,10 @@ LOGGING = {
     "disable_existing_loggers": True,
     "formatters": {
         "verbose": {
-            "format": "\n\x1b[33;20m[%(levelname)s %(asctime)s %(pathname)s@%(lineno)s]:\x1b[0m %(message)s"
+            "format": (
+                "\n\x1b[33;20m[%(levelname)s %(asctime)s"
+                " %(pathname)s@%(lineno)s]:\x1b[0m %(message)s"
+            )
         },
         "simple": {"format": "[%(levelname)s %(asctime)s]: %(message)s"},
     },
@@ -304,15 +319,12 @@ LOGGING = {
         },
     },
     "loggers": {
-        "collectivo": {
+        name: {
             "handlers": ["console"],
             "level": LOGGING_LEVEL,
-            "propagate": True,
-        },
-        "celery": {
-            "handlers": ["console"],
-            "level": "INFO",
-        },
+            "propagate": False,
+        }
+        for name in INSTALLED_APPS
     },
 }
 
