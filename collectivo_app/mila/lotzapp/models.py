@@ -110,8 +110,8 @@ class LotzappSync(models.Model):
     type = models.CharField(
         max_length=255,
         choices=(
-            ("invoice", "invoice"),
-            ("address", "address"),
+            ("invoice", "Rechnungen & zugehörige Adressen"),
+            ("address", "Adressen"),
         ),
     )
     status_message = models.TextField()
