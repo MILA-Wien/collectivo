@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = False
+DEBUG = get_env_bool("DEBUG", False)
 DEVELOPMENT = get_env_bool("DEVELOPMENT", False)
 
 if os.environ.get("ALLOWED_HOSTS") is not None:
