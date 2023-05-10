@@ -45,7 +45,7 @@ class MenuItem(models.Model, RegisterMixin):
     target = models.CharField(
         max_length=50,
         default="main",
-        choices=[("main", "main"), ("blank", "blank"), ("iframe", "iframe")],
+        choices=[("main", "main"), ("blank", "blank"), ("iframe", "iframe"), ("component", "component")],
     )
     component = models.CharField(max_length=255, null=True)
     link = models.URLField(null=True)
