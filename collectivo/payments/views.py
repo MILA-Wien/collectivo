@@ -36,18 +36,18 @@ class ProfileSelfViewSet(
     ordering_fields = get_ordering_fields(serializer_class)
 
 
-class PaymentViewSet(SchemaMixin, viewsets.ModelViewSet):
-    """ViewSet for admins to manage payments."""
+class InvoiceViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
+    """ViewSet for admins to manage subscriptions."""
 
     permission_classes = [HasGroup]
     required_groups = ["collectivo.payments.admin"]
-    serializer_class = serializers.PaymentSerializer
-    queryset = models.Payment.objects.all()
+    serializer_class = serializers.InvoiceSerializer
+    queryset = models.Invoice.objects.all()
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
 
 
-class SubscriptionViewSet(SchemaMixin, viewsets.ModelViewSet):
+class SubscriptionViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     """ViewSet for admins to manage subscriptions."""
 
     permission_classes = [HasGroup]

@@ -1,23 +1,24 @@
 """Models of the payments extension."""
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+User = get_user_model()
+
 
 class PaymentProfile(models.Model):
-    """An extension of the user model with payment data."""
+    """An profile of a user, defining payment methods."""
 
     user = models.OneToOneField(
-        get_user_model(),
+        User,
         primary_key=True,
         on_delete=models.CASCADE,
         related_name="payment_profile",
+        help_text="The user that owns this profile.",
     )
 
-    bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
-    bank_account_owner = models.CharField(
-        max_length=255, null=True, blank=True
-    )
     payment_method = models.CharField(
         choices=[
             ("transfer", "transfer"),
@@ -26,43 +27,141 @@ class PaymentProfile(models.Model):
         max_length=30,
     )
 
+    bank_account_iban = models.CharField(max_length=255, null=True, blank=True)
+    bank_account_owner = models.CharField(
+        max_length=255, null=True, blank=True
+    )
+
     history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
-        return str(self.user)
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
-class PaymentType(models.Model):
-    """A type of payment."""
+class Account(models.Model):
+    """An account that can make and receive payments."""
 
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="account",
+        help_text="The user that owns this account.",
+    )
     extension = models.ForeignKey(
         "extensions.Extension",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
     )
 
     def __str__(self):
         """Return a string representation of the object."""
+        if not self.name and self.user:
+            return f"{self.user.first_name} {self.user.last_name}"
         return self.name
 
 
-class Payment(models.Model):
-    """A payment from a user to the collective."""
+class ItemTypeCategory(models.Model):
+    """A category of items for accounting."""
 
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default="EUR")
+    name = models.CharField(max_length=255)
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    history = HistoricalRecords()
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return self.name
+
+
+class ItemType(models.Model):
+    """A type of item for accounting."""
+
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(
+        "ItemTypeCategory",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+
+    history = HistoricalRecords()
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        if not self.category:
+            return self.name
+        return f"{self.category} - {self.name}"
+
+
+class ItemEntry(models.Model):
+    """An entry of an item in an invoice."""
+
     type = models.ForeignKey(
-        "PaymentType", on_delete=models.PROTECT, null=True, blank=True
+        "ItemType",
+        on_delete=models.PROTECT,
     )
-    payer = models.ForeignKey(
-        "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="The price of the item per unit.",
     )
+    amount = models.DecimalField(
+        max_digits=10,
+        default=1,
+        decimal_places=2,
+        help_text="The amount of units of the item.",
+    )
+    invoice = models.ForeignKey(
+        "Invoice",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="items",
+        help_text="The invoice this entry belongs to.",
+    )
+    subscription = models.ForeignKey(
+        "Subscription",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="items",
+        help_text="The subscription this entry belongs to.",
+    )
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return f"{self.type} x {self.amount} @ {self.price}"
+
+
+class Invoice(models.Model):
+    """An invoice."""
+
+    payment_from = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="invoices_out",
+        null=True,
+    )
+    payment_to = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="invoices_in",
+        null=True,
+    )
+
     extension = models.ForeignKey(
         "extensions.Extension",
         on_delete=models.SET_NULL,
@@ -72,47 +171,52 @@ class Payment(models.Model):
 
     status = models.CharField(
         max_length=10,
-        default="draft",
         choices=[
             ("draft", "draft"),
-            ("pending", "pending"),
-            ("success", "success"),
+            ("open", "open"),
+            ("paid", "paid"),
             ("canceled", "canceled"),
             ("failure", "failure"),
         ],
     )
 
-    date_due = models.DateField(null=True)
-    date_paid = models.DateField(null=True)
+    date = models.DateField(default=datetime.date.today)
+    date_due = models.DateField(null=True, blank=True)
+    date_paid = models.DateField(null=True, blank=True)
 
     subscription = models.ForeignKey(
         "Subscription",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        related_name="payments",
+        related_name="invoices",
     )
+
+    notes = models.TextField(blank=True)
 
     history = HistoricalRecords()
 
     def __str__(self):
         """Return a string representation of the object."""
-        return self.name
+        return str(self.id)
 
 
 class Subscription(models.Model):
-    """A repetitive payment."""
+    """A subscription that creates automatic invoices."""
 
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=255)
-    type = models.ForeignKey(
-        "PaymentType", on_delete=models.PROTECT, null=True, blank=True
+    payment_from = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="subscriptions_out",
+        null=True,
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default="EUR")
-    payer = models.ForeignKey(
-        "PaymentProfile", on_delete=models.SET_NULL, null=True, blank=True
+    payment_to = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="subscriptions_in",
+        null=True,
     )
+
     extension = models.ForeignKey(
         "extensions.Extension",
         on_delete=models.SET_NULL,
@@ -131,9 +235,7 @@ class Subscription(models.Model):
         ],
     )
 
-    date_started = models.DateField(null=True, blank=True)
-    date_ended = models.DateField(null=True, blank=True)
-
+    date_started = models.DateField(default=datetime.date.today)
     repeat_each = models.IntegerField(default=1)
     repeat_unit = models.CharField(
         max_length=10,
@@ -144,6 +246,8 @@ class Subscription(models.Model):
             ("day", "day"),
         ],
     )
+
+    notes = models.TextField(blank=True)
 
     history = HistoricalRecords()
 

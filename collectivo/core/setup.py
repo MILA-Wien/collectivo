@@ -22,6 +22,10 @@ def setup(sender, **kwargs):
         name="collectivo.core.admin",
     )[0]
 
+    # Refresh users based on potential signals of other extensions
+    for user in User.objects.all():
+        user.save()
+
     # User menu
     Menu.register(name="main", extension=extension)
     MenuItem.register(
@@ -73,7 +77,7 @@ def setup(sender, **kwargs):
             except User.DoesNotExist:
                 user = User.objects.create(email=email)
             user.username = email
-            user.first_name = first_name
+            user.first_name = first_name[0].upper() + first_name[1:]
             user.last_name = "Example"
             user.save()
 

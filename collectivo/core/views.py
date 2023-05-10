@@ -41,6 +41,16 @@ class UserViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
     ordering_fields = get_ordering_fields(serializers.UserSerializer)
 
 
+class UserProfilesViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
+    """Viewset for django users including all their profiles."""
+
+    queryset = User.objects.all()
+    serializer_class = serializers.UserProfilesSerializer
+    permission_classes = [IsSuperuser]
+    filterset_class = get_filterset(serializers.UserProfilesSerializer)
+    ordering_fields = get_ordering_fields(serializers.UserProfilesSerializer)
+
+
 class GroupViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
     """Viewset for django groups."""
 

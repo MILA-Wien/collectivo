@@ -32,7 +32,8 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS:
+        profiles, memberships, emails, emails.tags, tags, payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
@@ -44,6 +45,9 @@ services:
       CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
       CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
       DIREKTKREDIT_SERVER_URL: "http://direktkredit.local:8020"
+      LOTZAPP_URL: "${LOTZAPP_URL}"
+      LOTZAPP_USER: "${LOTZAPP_USER}"
+      LOTZAPP_PASS: "${LOTZAPP_PASS}"
     depends_on:
       collectivo-db:
         condition: service_healthy
@@ -72,7 +76,8 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS:
+        profiles, memberships, emails, emails.tags, tags, payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
@@ -87,7 +92,6 @@ services:
       - collectivo
       - redis
       - keycloak
-
 
   # Another celery worker for chron jobs.
   celery-beat:
@@ -109,7 +113,8 @@ services:
       KEYCLOAK_REALM_NAME: collectivo
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_CLIENT_SECRET_KEY: ${KEYCLOAK_CLIENT_SECRET_KEY}
-      COLLECTIVO_EXTENSIONS: profiles, memberships, emails, emails.tags, tags, payments, memberships.payments, shifts
+      COLLECTIVO_EXTENSIONS:
+        profiles, memberships, emails, emails.tags, tags, payments, shifts
       DEBUG: 1
       DEVELOPMENT: 1
       EMAIL_HOST: ${EMAIL_HOST}
@@ -132,9 +137,10 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-     test: ["CMD", "redis-cli","ping"]
+      test: ["CMD", "redis-cli", "ping"]
     command: >
-      --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb --maxmemory-policy volatile-lru
+      --requirepass "${REDIS_PASSWORD}" --appendonly yes --maxmemory 1000mb
+      --maxmemory-policy volatile-lru
 
   # A static files server for django.
   collectivo-static:

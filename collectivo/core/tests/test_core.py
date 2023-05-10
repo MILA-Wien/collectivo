@@ -11,6 +11,8 @@ from collectivo.utils.permissions import HasGroup, IsSuperuser
 from collectivo.utils.test import create_testuser
 from collectivo.version import __version__
 
+PROFILES_URL = reverse("collectivo:collectivo.core:users-extended-list")
+
 
 class CoreSetupTests(TestCase):
     """Test extension is registered correctly."""
@@ -36,6 +38,11 @@ class UserApiTests(TestCase):
     def test_user_endpoint(self):
         """Test the user endpoint."""
         res = self.client.get(reverse("collectivo:collectivo.core:user-list"))
+        self.assertEqual(res.status_code, 200)
+
+    def test_users_extended_endpoint(self):
+        """Test that an admin can get the extended profiles data."""
+        res = self.client.get(PROFILES_URL)
         self.assertEqual(res.status_code, 200)
 
     def test_group_endpoint(self):
@@ -71,6 +78,14 @@ class CoreApiTests(TestCase):
         user.email = "456"
         user.save()
         self.assertEqual(user.username, "456")
+
+    def test_capitalize_names(self):
+        """Test the first letter of names is capitalized."""
+        user = get_user_model().objects.create(
+            first_name="test test", last_name="user user"
+        )
+        self.assertEqual(user.first_name, "Test test")
+        self.assertEqual(user.last_name, "User user")
 
     def test_is_superuser_permission(self):
         """Test that the superuser permission works correctly."""

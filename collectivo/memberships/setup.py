@@ -9,6 +9,10 @@ from collectivo.menus.models import MenuItem
 from collectivo.utils.dev import DEV_MEMBERS
 
 from . import apps, models
+from logging import getLogger
+
+
+logger = getLogger(__name__)
 
 
 def setup(sender, **kwargs):
@@ -47,8 +51,10 @@ def setup(sender, **kwargs):
 
         mst1 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Shares)",
-            description="This is a type of membership that where members can"
-            " hold shares.",
+            description=(
+                "This is a type of membership that where members can"
+                " hold shares."
+            ),
             has_shares=True,
             shares_amount_per_share=100,
             shares_number_custom=True,
@@ -78,9 +84,12 @@ def setup(sender, **kwargs):
             email = f"test_{first_name}@example.com"
             user = get_user_model().objects.get(email=email)
             for type in types:
-                models.Membership.objects.get_or_create(
-                    user=user,
-                    type=type,
-                    status=next(status_cycle),
-                    shares_signed=10,
-                )
+                try:
+                    models.Membership.objects.get_or_create(
+                        user=user,
+                        type=type,
+                        status=next(status_cycle),
+                        shares_signed=10,
+                    )
+                except models.Membership.MultipleObjectsReturned:
+                    logger.warning("Error creating example memberships.")

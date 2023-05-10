@@ -10,7 +10,7 @@ app_name = "collectivo.payments"
 
 router = DefaultRouter()
 router.register("profiles", views.ProfileViewSet)
-router.register("payments", views.PaymentViewSet)
+router.register("invoices", views.InvoiceViewSet)
 router.register("subscriptions", views.SubscriptionViewSet)
 
 me_router = DirectDetailRouter()

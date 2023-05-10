@@ -1,12 +1,12 @@
 """Serializers of the payments extension."""
 from rest_framework import serializers
 
-from collectivo.utils.serializers import UserFields, UserIsPk
+from collectivo.utils.serializers import UserIsPk
 
 from . import models
 
 
-class PaymentProfileSerializer(UserIsPk, UserFields):
+class PaymentProfileSerializer(UserIsPk):
     """Serializer for payment profiles."""
 
     class Meta:
@@ -14,20 +14,52 @@ class PaymentProfileSerializer(UserIsPk, UserFields):
 
         model = models.PaymentProfile
         fields = "__all__"
+        read_only_fields = ["user"]
 
 
-class PaymentSerializer(serializers.ModelSerializer):
-    """Serializer for payments."""
+class ItemEntrySerializer(serializers.ModelSerializer):
+    """Serializer for items."""
 
     class Meta:
         """Serializer settings."""
 
-        model = models.Payment
+        model = models.ItemEntry
+        fields = "__all__"
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    """Serializer for invoices."""
+
+    items = serializers.PrimaryKeyRelatedField(
+        queryset=models.ItemEntry.objects.all(), many=True
+    )
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, obj):
+        """Get the total amount of the invoice."""
+        return sum([item.amount * item.price for item in obj.items.all()])
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Invoice
         fields = "__all__"
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Serializer for subscriptions."""
+
+    items = serializers.PrimaryKeyRelatedField(
+        queryset=models.ItemEntry.objects.all(), many=True
+    )
+    invoices = serializers.PrimaryKeyRelatedField(
+        queryset=models.Invoice.objects.all(), many=True
+    )
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, obj):
+        """Get the total amount of the invoice."""
+        return sum([item.amount * item.price for item in obj.items.all()])
 
     class Meta:
         """Serializer settings."""

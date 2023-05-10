@@ -1,15 +1,14 @@
-"""Configuration file for the memberships_payments extension."""
+"""Configuration file for the lotzapp extension."""
+
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
-class ExtensionConfig(AppConfig):
-    """Configuration class for the members extension."""
+class LotzappConfig(AppConfig):
+    """Configuration class for the lotzapp extension."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "collectivo.memberships.payments"
-    label = "memberships_payments"
-    description = "Connect the memberships and payments extensions."
+    name = "mila.lotzapp"
 
     def ready(self):
         """

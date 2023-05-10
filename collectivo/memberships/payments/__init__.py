@@ -1,1 +1,0 @@
-"""Memberships extension of collectivo."""
