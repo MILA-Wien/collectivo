@@ -1,5 +1,6 @@
 """Models of the lotzapp extension."""
 import logging
+from datetime import datetime
 
 import requests
 from celery import chord
@@ -22,13 +23,10 @@ def check_response(response):
 
 def raise_sync_error(response):
     """Raise an exception with the error message from lotzapp."""
-    try:
-        raise APIException(
-            f"Lotzapp address sync failed with {response.status_code}:"
-            f" {response.text}"
-        )
-    except Exception as e:
-        raise APIException("Lotzapp sync failed:", e)
+    raise APIException(
+        f"Lotzapp sync failed with {response.status_code}:"
+        f" {response.text if hasattr(response, 'text') else ''}"
+    )
 
 
 def create_item_name(item):
@@ -59,18 +57,27 @@ class LotzappMixin:
         except requests.exceptions.JSONDecodeError:
             raise_sync_error(response)
 
-    def update_existing(self, address_endpoint, auth, data):
+    def get(self, endpoint, auth):
+        """Create a new object if ID is false."""
+        # Check if ID exists
+        return requests.get(
+            endpoint + self.lotzapp_id + "/",
+            auth=auth,
+            timeout=10,
+        )
+
+    def update_existing(self, endpoint, auth, data):
         """Update an existing object."""
         # Check if ID exists
         get_response = requests.get(
-            address_endpoint + self.lotzapp_id + "/",
+            endpoint + self.lotzapp_id + "/",
             auth=auth,
             timeout=10,
         )
         check_response(get_response)
         if get_response.status_code != 204:
             put_response = requests.put(
-                address_endpoint + self.lotzapp_id + "/",
+                endpoint + self.lotzapp_id + "/",
                 auth=auth,
                 json=data,
                 timeout=10,
@@ -78,7 +85,7 @@ class LotzappMixin:
             check_response(put_response)
         else:
             # If ID does not exist, create new object
-            self.create_new(address_endpoint, auth, data)
+            self.create_new(endpoint, auth, data)
         return get_response
 
 
@@ -237,17 +244,26 @@ class LotzappInvoice(LotzappMixin, models.Model):
             ],
         }
 
-        # Create or update invoice in lotzapp
+        # Create invoice in lotzapp there is no id
         if self.lotzapp_id == "":
             self.create_new(ar_endpoint, auth, data)
         else:
-            response = self.update_existing(ar_endpoint, auth, data)
+            response = self.get(ar_endpoint, auth)
 
-            # Check if invoice is paid in lotzapp
-            try:
-                res = response.json()[0]
-                if res.get("bezahlt", "0000-00-00") != "0000-00-00":
-                    self.invoice.status = "paid"
-                    self.invoice.save()
-            except requests.exceptions.JSONDecodeError:
-                logger.warning("Could not decode lotzapp response.")
+            # Create invoice in lotzapp if it does not exist
+            if response.status_code == 204:
+                self.create_new(ar_endpoint, auth, data)
+
+            # If it exists, check if invoice is paid in lotzapp
+            else:
+                try:
+                    res = response.json()[0]
+                    date_paid = res.get("bezahlt", "0000-00-00")
+                    if date_paid != "0000-00-00":
+                        self.invoice.status = "paid"
+                        self.invoice.date_paid = datetime.strptime(
+                            date_paid, "%Y-%m-%d"
+                        ).date()
+                        self.invoice.save()
+                except requests.exceptions.JSONDecodeError:
+                    logger.warning("Could not decode lotzapp response.")
