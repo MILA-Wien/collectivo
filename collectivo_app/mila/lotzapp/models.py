@@ -204,7 +204,7 @@ class LotzappInvoice(LotzappMixin, models.Model):
         return self.lotzapp_id
 
     def prepare_invoice_data(self):
-        """Sync the invoice with lotzapp."""
+        """Create payload for invoice."""
 
         settings = LotzappSettings.object(check_valid=True)
 
