@@ -1,13 +1,13 @@
 """Views of the core extension."""
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin, SelfMixin
 from collectivo.utils.permissions import IsSuperuser
 from collectivo.utils.viewsets import ExtensionModelViewSet, SingleModelViewSet
 from collectivo.version import __version__
@@ -79,6 +79,24 @@ class UserViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
     permission_classes = [IsSuperuser]
     filterset_class = get_filterset(serializers.UserSerializer)
     ordering_fields = get_ordering_fields(serializers.UserSerializer)
+
+
+class UserProfileViewSet(
+    SchemaMixin,
+    HistoryMixin,
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
+    """Viewset for django users including all their profiles."""
+
+    queryset = User.objects.all()
+    serializer_class = serializers.UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """Return queryset entry with the request's user."""
+        return self.request.user
 
 
 class UserProfilesViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):

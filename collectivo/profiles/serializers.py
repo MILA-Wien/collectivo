@@ -9,13 +9,14 @@ from . import models
 conditions = {
     "natural": {
         "field": "person_type",
-        "condition": "exact",
+        "condition": "equals",
         "value": "natural",
     },
-    "legal": {"field": "person_type", "condition": "exact", "value": "legal"},
+    "legal": {"field": "person_type", "condition": "equals", "value": "legal"},
 }
 
 schema_attrs = {
+    "person_type": {"required": True},
     "birthday": {"visible": conditions["natural"], "required": True},
     "occupation": {"visible": conditions["natural"], "required": True},
     "legal_name": {"visible": conditions["legal"], "required": True},
@@ -31,9 +32,6 @@ class ProfileBaseSerializer(UserIsPk):
 class ProfileAdminSerializer(ProfileBaseSerializer):
     """Serializer for admins to manage members."""
 
-    # Display user as id so that the frontend always gets an id field
-    id = serializers.SerializerMethodField()
-
     class Meta:
         """Serializer settings."""
 
@@ -44,7 +42,7 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
         schema_attrs = schema_attrs
 
 
-class ProfileUserSerializer(ProfileBaseSerializer):
+class ProfileUserSerializer(serializers.ModelSerializer):
     """Serializer for members to manage their own data."""
 
     class Meta:

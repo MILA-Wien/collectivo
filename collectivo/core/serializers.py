@@ -87,6 +87,23 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Serializer for members to manage their own data."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = User
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "password",
+        ]
+        read_only_fields = ["first_name", "last_name"]
+        extra_kwargs = {"password": {"write_only": True, "required": False}}
+
+
 profile_serializers = [
     import_string(ext["user_admin_serializer"])
     for ext in settings.COLLECTIVO["extensions"].values()

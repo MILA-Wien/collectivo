@@ -10,6 +10,7 @@ app_name = "collectivo.core"
 
 router = DefaultRouter()
 router.register("users", views.UserViewSet)
+
 router.register(
     "users-extended", views.UserProfilesViewSet, basename="users-extended"
 )
@@ -19,6 +20,7 @@ router.register("groups", views.PermissionGroupViewSet, basename="groups")
 
 router_dd = DirectDetailRouter()
 router_dd.register("settings", views.CoreSettingsViewSet, basename="settings")
+router_dd.register("profile", views.UserProfileViewSet, basename="profile")
 
 urlpatterns = [
     path("api/core/about/", views.AboutView.as_view(), name="version"),

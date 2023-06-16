@@ -73,6 +73,10 @@ class KeycloakUser(models.Model):
             if keycloak_user["email"] != self.user.email
             else None,
         )
+        if self.user.password:
+            keycloak.set_user_password(self.uuid, self.user.password, False)
+            self.user.password = ""
+            self.user.save()
 
 
 def update_keycloak_user(sender, instance, created, **kwargs):
