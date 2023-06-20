@@ -38,16 +38,16 @@ class PermissionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-if_extension = SchemaCondition(
-    condition="not_empty",
-    field="extension",
-)
+if_extension: SchemaCondition = {
+    "condition": "not_empty",
+    "field": "extension",
+}
 
-if_not_users_custom = SchemaCondition(
-    condition="equals",
-    field="users_custom",
-    value=False,
-)
+if_not_users_custom: SchemaCondition = {
+    "condition": "equals",
+    "field": "users_custom",
+    "value": False,
+}
 
 
 class PermissionGroupSerializer(serializers.ModelSerializer):

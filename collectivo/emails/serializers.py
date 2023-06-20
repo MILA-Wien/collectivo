@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError
 
 from collectivo.extensions.models import Extension
 from collectivo.tags.models import Tag
+from collectivo.utils.schema import Schema
 
 from . import models
 from .tasks import send_mails_async, send_mails_async_end
@@ -67,7 +68,7 @@ class EmailAutomationSerializer(serializers.ModelSerializer):
             "body": {"input_type": "html", "visible": if_not_admin_only},
             "design": {"visible": if_not_admin_only},
         }
-        schema_settings = {
+        schema_settings: Schema = {
             "actions": ["list", "retrieve", "update"],
             "structure": [
                 {
@@ -75,17 +76,17 @@ class EmailAutomationSerializer(serializers.ModelSerializer):
                     "style": "read_only",
                 },
                 {
-                    "title": "General settings",
+                    "label": "General settings",
                     "fields": ["is_active"],
                 },
                 {
-                    "title": "Email to users",
+                    "label": "Email to users",
                     "description": "This template will be sent to users.",
                 },
-                {"fields": ["subject", "design"], "style": "col"},
+                {"fields": ["subject", "design"], "style": "row"},
                 {"fields": ["body"]},
                 {
-                    "title": "Email to admins",
+                    "label": "Email to admins",
                     "description": "This template will be sent to admins.",
                 },
                 {
@@ -94,7 +95,7 @@ class EmailAutomationSerializer(serializers.ModelSerializer):
                         "admin_design",
                         "admin_recipients",
                     ],
-                    "style": "col",
+                    "style": "row",
                 },
                 {
                     "fields": [

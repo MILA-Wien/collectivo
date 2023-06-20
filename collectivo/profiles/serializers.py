@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 
+from collectivo.utils.schema import Schema
 from collectivo.utils.serializers import UserIsPk
 
 from . import models
@@ -17,11 +18,60 @@ conditions = {
 
 schema_attrs = {
     "person_type": {"required": True},
+    "user__first_name": {"input_type": "text"},
+    "user__last_name": {"input_type": "text"},
     "birthday": {"visible": conditions["natural"], "required": True},
     "occupation": {"visible": conditions["natural"], "required": True},
     "legal_name": {"visible": conditions["legal"], "required": True},
     "legal_type": {"visible": conditions["legal"], "required": True},
     "legal_id": {"visible": conditions["legal"], "required": True},
+}
+
+schema_settings: Schema = {
+    "actions": ["retrieve", "update"],
+    "structure": [
+        {
+            "fields": ["person_type"],
+        },
+        {
+            "label": "Personal details",
+            "visible": conditions["natural"],
+            "fields": [
+                "user__first_name",
+                "user__last_name",
+                "gender",
+                "birthday",
+                "occupation",
+            ],
+            "style": "row",
+        },
+        {
+            "label": "Contact person",
+            "visible": conditions["legal"],
+            "fields": ["user__first_name", "user__last_name", "gender"],
+            "style": "row",
+        },
+        {
+            "label": "Organization details",
+            "visible": conditions["legal"],
+            "fields": ["legal_name", "legal_type", "legal_id"],
+            "style": "row",
+        },
+        {
+            "label": "Address",
+            "fields": [
+                "address_street",
+                "address_number",
+                "address_stair",
+                "address_door",
+                "address_postcode",
+                "address_city",
+                "address_country",
+                "phone",
+            ],
+            "style": "row",
+        },
+    ],
 }
 
 
@@ -40,6 +90,26 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
         fields = "__all__"
         read_only_fields = ["user"]
         schema_attrs = schema_attrs
+
+
+class ProfileRegisterSerializer(serializers.ModelSerializer):
+    """Serializer for members to manage their own data."""
+
+    user__first_name = serializers.CharField(
+        source="user.first_name", required=True
+    )
+    user__last_name = serializers.CharField(
+        source="user.last_name", required=True
+    )
+
+    class Meta:
+        """Serializer settings."""
+
+        label = "Profile"
+        model = models.UserProfile
+        exclude = ["user", "notes"]
+        schema_attrs = schema_attrs
+        schema_settings = schema_settings
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):

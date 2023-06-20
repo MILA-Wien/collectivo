@@ -1,7 +1,6 @@
 """Schema mixin for collectivo viewsets."""
 from collections import OrderedDict
-from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, TypedDict
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -17,6 +16,54 @@ from rest_framework.viewsets import GenericViewSet
 # TODO Group fields together?
 # TODO Remove choices from schema if choices_endpoint is set,
 # once implemented in frontend
+
+
+class SchemaCondition(TypedDict):
+    """A condition of a schema field."""
+
+    condition: Literal["equals", "empty", "not_empty"]
+    field: str
+    value: any
+
+
+class SchemaField(TypedDict):
+    """A field of a schema."""
+
+    field_type: str
+    input_type: str
+    label: str
+    help_text: str
+    visible: bool | SchemaCondition
+    required: bool | SchemaCondition
+    default: any
+    max_length: int
+    min_length: int
+    max_value: int
+    min_value: int
+    read_only: bool
+    write_only: bool
+    choices: OrderedDict
+    choices_url: str
+
+
+class SchemaSection(TypedDict):
+    """Structure of schema fields."""
+
+    label: str
+    description: str
+    style: Literal["read_only", "row"]
+    fields: list[str]
+
+
+class Schema(TypedDict):
+    """Schema for a serializer."""
+
+    label: str
+    description: str
+    fields: OrderedDict[str, SchemaField]
+    structure: list[SchemaSection]
+    actions: list[Literal["list", "create", "retrieve", "update", "delete"]]
+
 
 field_attrs = [
     "label",
@@ -88,43 +135,6 @@ def get_endpoint(model: models.Model, source: str = None) -> str:
         return None
 
 
-@dataclass
-class SchemaField:
-    """A field of a schema."""
-
-    field_type: str = None
-    input_type: str = None
-    label: str = None
-    help_text: str = None
-    required: bool = None
-    default: any = None
-    max_length: int = None
-    min_length: int = None
-    max_value: int = None
-    min_value: int = None
-    read_only: bool = None
-    write_only: bool = None
-    choices: OrderedDict = None
-    choices_url: str = None
-
-
-@dataclass
-class SchemaCondition:
-    """A condition of a schema field."""
-
-    condition: Literal["equals", "empty", "not_empty"]
-    field: str = None
-    value: any = None
-
-    def to_dict(self):
-        """Return condition as dict."""
-        return {
-            "field": self.field,
-            "condition": self.condition,
-            "value": self.value,
-        }
-
-
 def get_serializer_schema(serializer: Serializer):
     data = {}
     for field_name, field_obj in serializer.fields.items():
@@ -177,11 +187,8 @@ def get_serializer_schema(serializer: Serializer):
             and field_name in serializer.Meta.schema_attrs
         ):
             for key, value in serializer.Meta.schema_attrs[field_name].items():
-                data[field_name][key] = (
-                    value.to_dict()
-                    if isinstance(value, SchemaCondition)
-                    else value
-                )
+                data[field_name][key] = value
+
         # Ensure that read only fields cannot be required
         if field_data.get("read_only") is True:
             field_data["required"] = False

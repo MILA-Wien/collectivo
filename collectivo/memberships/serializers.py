@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
-from collectivo.utils.schema import SchemaCondition
+from collectivo.utils.schema import Schema, SchemaCondition
 from collectivo.utils.serializers import UserFields
 
 from . import models
@@ -118,8 +118,16 @@ email_fields = [
     "emails__template_ended",
 ]
 
-if_shares = SchemaCondition(condition="equals", field="has_shares", value=True)
-if_fees = SchemaCondition(condition="equals", field="has_fees", value=True)
+if_shares: SchemaCondition = {
+    "condition": "equals",
+    "field": "has_shares",
+    "value": True,
+}
+if_fees: SchemaCondition = {
+    "condition": "equals",
+    "field": "has_fees",
+    "value": True,
+}
 
 
 class MembershipTypeSerializer(serializers.ModelSerializer):
@@ -168,6 +176,17 @@ class MembershipStatusSerializer(serializers.ModelSerializer):
         label = "Membership status"
 
 
+class MembershipRegisterSerializer(serializers.ModelSerializer):
+    """Serializer of serializers for membership registration."""
+
+    class Meta:
+        """Serializer settings."""
+
+        label = "Membership"
+        model = models.Membership
+        fields = ["status", "shares_signed"]
+
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -182,7 +201,65 @@ except Exception as e:
     registration_serializers = []
 
 
-class MembershipRegisterSerializer(serializers.Serializer):
+conditions = {
+    "natural": {
+        "field": "person_type",
+        "condition": "equals",
+        "value": "natural",
+    },
+    "legal": {"field": "person_type", "condition": "equals", "value": "legal"},
+}
+
+
+schema_settings: Schema = {
+    "actions": ["retrieve", "update"],
+    "structure": [
+        {
+            "fields": ["person_type"],
+        },
+        {
+            "label": "Personal details",
+            "visible": conditions["natural"],
+            "fields": [
+                "user__first_name",
+                "user__last_name",
+                "gender",
+                "birthday",
+                "occupation",
+            ],
+            "style": "row",
+        },
+        {
+            "label": "Contact person",
+            "visible": conditions["legal"],
+            "fields": ["user__first_name", "user__last_name", "gender"],
+            "style": "row",
+        },
+        {
+            "label": "Organization details",
+            "visible": conditions["legal"],
+            "fields": ["legal_name", "legal_type", "legal_id"],
+            "style": "row",
+        },
+        {
+            "label": "Address",
+            "fields": [
+                "address_street",
+                "address_number",
+                "address_stair",
+                "address_door",
+                "address_postcode",
+                "address_city",
+                "address_country",
+                "phone",
+            ],
+            "style": "row",
+        },
+    ],
+}
+
+
+class MembershipRegisterCombinedSerializer(serializers.Serializer):
     """Serializer of serializers for membership registration."""
 
     class Meta:

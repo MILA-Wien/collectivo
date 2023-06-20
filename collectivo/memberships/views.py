@@ -85,14 +85,16 @@ class MembershipRegisterViewset(
     """ViewSet to register new memberships with additional serializers."""
 
     queryset = MembershipType.objects.all()
-    serializer_class = serializers.MembershipRegisterSerializer
+    serializer_class = serializers.MembershipRegisterCombinedSerializer
     permission_classes = [IsAuthenticated]
 
     def retrieve(self, request, *args, **kwargs):
         """Retrieve the membership type with additional serializers."""
         instance = self.get_object()
-        serializer = serializers.MembershipRegisterSerializer.initialize(
-            instance, request.user
+        serializer = (
+            serializers.MembershipRegisterCombinedSerializer.initialize(
+                instance, request.user
+            )
         )
         return Response(serializer.data)
 
