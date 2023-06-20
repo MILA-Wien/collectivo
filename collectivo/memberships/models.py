@@ -2,9 +2,11 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from simple_history.models import HistoricalRecords
 
+from collectivo.core.models import Permission, PermissionGroup
+from collectivo.dashboard.models import DashboardTile, DashboardTileButton
 from collectivo.extensions.models import Extension
 from collectivo.utils.exceptions import ExtensionNotInstalled
 from collectivo.utils.managers import NameManager
@@ -114,11 +116,113 @@ class MembershipType(models.Model):
     )
     comembership_max = models.IntegerField(null=True, blank=True)
 
+    enable_registration = models.BooleanField(
+        default=False,
+        verbose_name="Enable registration",
+        help_text="Whether users can register for this membership type.",
+    )
+
     history = HistoricalRecords()
 
     def __str__(self):
         """Return string representation."""
         return self.name
+
+    def save(self, *args, **kwargs):
+        """Save the model and set up registration."""
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.create_group()
+            if self.enable_registration:
+                self.create_registration_form()
+            else:
+                self.delete_registration_form()
+
+    def delete(self, *args, **kwargs):
+        """Delete the model and remove registration."""
+        self.delete_group()
+        self.delete_registration_form()
+        super().delete(*args, **kwargs)
+
+    def create_group(self, remove=False):
+        """Handle the group for this membership type."""
+        extension = Extension.objects.get(name="memberships")
+        permission = Permission.objects.register(
+            name=self.name,
+            extension=extension,
+        )
+        group = PermissionGroup.objects.register(
+            name=self.name,
+            extension=extension,
+            users_custom=False,
+        )
+        group.permissions.add(permission)
+        group.save()
+
+    def delete_group(self):
+        """Delete the group for this membership type."""
+        extension = Extension.objects.get(name="memberships")
+        try:
+            Permission.objects.get(
+                name=self.name, extension=extension
+            ).delete()
+        except Permission.DoesNotExist:
+            pass
+
+        try:
+            PermissionGroup.objects.get(
+                name=self.name, extension=extension
+            ).delete()
+        except PermissionGroup.DoesNotExist:
+            pass
+
+    def create_registration_form(self):
+        """Create a registration form for this membership type."""
+
+        extension = Extension.objects.get(name="memberships")
+
+        permission = Permission.objects.get(
+            name=self.name, extension=extension
+        )
+
+        tile = DashboardTile.register(
+            name=self.name,
+            label="Membership application",
+            extension=extension,
+            source="db",
+            content="Click here to register as a member of {}.".format(
+                self.name
+            ),
+            requires_not_perm=permission,
+        )
+
+        button = DashboardTileButton.objects.register(
+            name=self.name,
+            label="Register",
+            extension=Extension.objects.get(name="memberships"),
+            link_type="internal",
+            link="memberships/register/{}/1".format(self.id),
+        )
+
+        tile.buttons.add(button)
+
+    def delete_registration_form(self):
+        """Delete the registration form for this membership type."""
+        extension = Extension.objects.get(name="memberships")
+
+        try:
+            DashboardTile.objects.get(
+                name=self.name, extension=extension
+            ).delete()
+        except DashboardTile.DoesNotExist:
+            pass
+
+        try:
+            DashboardTileButton.objects.get(
+                name=self.name, extension=extension
+            ).delete()
+        except DashboardTileButton.DoesNotExist:
+            pass
 
 
 class MembershipStatus(models.Model):
@@ -147,7 +251,7 @@ class Membership(models.Model):
     class Meta:
         """Meta settings."""
 
-        unique_together = ("number", "type")
+        unique_together = [("number", "type"), ("user", "type")]
 
     user = models.ForeignKey(
         get_user_model(),
@@ -196,21 +300,54 @@ class Membership(models.Model):
     def save(self, *args, **kwargs):
         """Save membership and create payments."""
         self.create_invoices()
-        old = Membership.objects.filter(pk=self.pk)
-        data = {field: None for field in date_fields}
+        self.assign_group()
 
-        if old.exists():
-            for field in date_fields:
-                data[field] = getattr(old.first(), field)
+        # Store data before saving
+        old = Membership.objects.filter(pk=self.pk)
+        data = {field.name: None for field in self._meta.fields}
+        new = False if old.exists() else True
+        if not new:
+            for field in self._meta.fields:
+                data[field] = getattr(old.first(), field.name)
+
+        # Create or update object
         self.save_basic()
 
-        if not old.exists():
-            self.send_email("date_started")
+        self.send_emails(new, data)
+
+    def send_emails(self, new, data):
+        """Send automatic emails."""
+
+        # Trigger membership_started if a new object is created
+        if new:
+            self.send_email("membership_started")
             return
 
-        for field in date_fields:
+        # Trigger automation if date has changed from None to a value
+        field_to_trigger = {
+            "date_started": "membership_started",
+            "date_accepted": "membership_accepted",
+            "date_cancelled": "membership_cancelled",
+            "date_ended": "membership_ended",
+        }
+        for field, trigger in field_to_trigger.items():
             if not data[field] and getattr(self, field):
-                self.send_email(field)
+                self.send_email(trigger)
+
+        # Trigger automation for changes in shares
+        if (self.shares_paid or 0) > (data["shares_paid"] or 0):
+            self.send_email("membership_shares_paid_increase")
+        elif (self.shares_paid or 0) < (data["shares_paid"] or 0):
+            self.send_email("membership_shares_paid_decrease")
+        if (self.shares_paid or 0) > (data["shares_signed"] or 0):
+            self.send_email("membership_shares_signed_increase")
+        elif (self.shares_signed or 0) < (data["shares_signed"] or 0):
+            self.send_email("membership_shares_signed_decrease")
+
+    def delete(self, *args, **kwargs):
+        """Delete the model and remove registration."""
+        self.assign_group(remove=True)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         """Return string representation."""
@@ -218,28 +355,31 @@ class Membership(models.Model):
             f"{self.user.first_name} {self.user.last_name} ({self.type.name})"
         )
 
-    def send_email(self, field):
+    def assign_group(self, remove=False):
+        """Assign the user to the group of the membership type."""
+        extension = Extension.objects.get(name="memberships")
+        group = PermissionGroup.objects.get(
+            name=self.type.name,
+            extension=extension,
+        )
+        if remove:
+            group.users.remove(self.user)
+        else:
+            group.users.add(self.user)
+        group.save()
+
+    def send_email(self, trigger, context=None):
         """Send automatic email."""
         self.type.refresh_from_db()
+        from collectivo.emails.models import EmailAutomation
+        from collectivo.extensions.models import Extension
 
-        if field == "date_started":
-            template = self.type.emails.template_started
-        elif field == "date_accepted":
-            template = self.type.emails.template_accepted
-        elif field == "date_ended":
-            template = self.type.emails.template_ended
-        else:
-            raise ValueError("Invalid field.")
-        from collectivo.emails.models import EmailCampaign
+        extension = Extension.objects.get(name="memberships")
 
-        if template is not None:
-            extension = Extension.objects.get(name="memberships")
-            campaign = EmailCampaign.objects.create(
-                template=template, extension=extension
-            )
-            campaign.recipients.set([self.user])
-            campaign.save()
-            campaign.send()
+        automation = EmailAutomation.objects.get(
+            name=trigger, extension=extension
+        )
+        automation.send([self.user], context)
 
     def update_shares_paid(self):
         """Update the number of shares paid for this membership.

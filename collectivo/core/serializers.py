@@ -43,6 +43,12 @@ if_extension = SchemaCondition(
     field="extension",
 )
 
+if_not_users_custom = SchemaCondition(
+    condition="equals",
+    field="users_custom",
+    value=False,
+)
+
 
 class PermissionGroupSerializer(serializers.ModelSerializer):
     """Serializer for permission groups."""
@@ -59,16 +65,14 @@ class PermissionGroupSerializer(serializers.ModelSerializer):
             "extension": {"visible": if_extension},
             "description": {"read_only": if_extension},
             "permissions": {"read_only": if_extension},
+            "users_custom": {"visible": False},
+            "users": {"read_only": if_not_users_custom},
         }
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for members to manage their own data."""
 
-    # TODO: Display all permissions of the user based on their groups
-    # permissions = serializers.PrimaryKeyRelatedField(
-    #     many=True, queryset=Permission.objects.all()
-    # )
     permission_groups = serializers.PrimaryKeyRelatedField(
         many=True, queryset=PermissionGroup.objects.all()
     )
@@ -90,6 +94,24 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for members to manage their own data."""
 
+    # TODO: Display all permissions of the user based on their groups
+    # permissions = serializers.PrimaryKeyRelatedField(
+    #     many=True, queryset=Permission.objects.all()
+    # )
+    permissions = serializers.SerializerMethodField()
+
+    def get_permissions(self, obj):
+        """Return permissions of the user."""
+        perms = {}
+        for name, ext in Permission.objects.filter(
+            groups__in=obj.permission_groups.all()
+        ).values_list("name", "extension__name"):
+            if ext in perms:
+                perms[ext].append(name)
+            else:
+                perms[ext] = [name]
+        return perms
+
     class Meta:
         """Serializer settings."""
 
@@ -99,6 +121,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "password",
+            "permissions",
         ]
         read_only_fields = ["first_name", "last_name"]
         extra_kwargs = {"password": {"write_only": True, "required": False}}

@@ -1,9 +1,17 @@
 """Views of the memberships extension."""
+import logging
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
@@ -23,7 +31,10 @@ class MembershipAdminViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = serializers.MembershipSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.memberships.admin"]
+    required_perms = {
+        "GET": [("view_memberships", "memberships")],
+        "ALL": [("edit_memberships", "memberships")],
+    }
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
 
@@ -48,11 +59,52 @@ class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = serializers.MembershipProfileSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.memberships.admin"]
+    required_perms = {
+        "GET": [("view_memberships", "memberships")],
+        "ALL": [("edit_memberships", "memberships")],
+    }
     filterset_class = get_filterset(serializers.MembershipProfileSerializer)
     ordering_fields = get_ordering_fields(
         serializers.MembershipProfileSerializer
     )
+
+
+# logger = logging.getLogger(__name__)
+# registration_serializers = settings.COLLECTIVO["extensions"][
+#     "collectivo.memberships"
+# ].get("registration_serializers", {})
+# print("REGISTRATION SERIALIZERS", registration_serializers)
+# if not isinstance(registration_serializers, list):
+#     logger.warn("The 'registration_serializers' setting must be a list.")
+#     registration_serializers = []
+
+
+class MembershipRegisterViewset(
+    SchemaMixin, CreateModelMixin, RetrieveModelMixin, GenericViewSet
+):
+    """ViewSet to register new memberships with additional serializers."""
+
+    queryset = MembershipType.objects.all()
+    serializer_class = serializers.MembershipRegisterSerializer
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve the membership type with additional serializers."""
+        instance = self.get_object()
+        serializer = serializers.MembershipRegisterSerializer.initialize(
+            instance, request.user
+        )
+        return Response(serializer.data)
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     type = self.get_object()
+    #     payload = object()
+    #     for item in registration_serializers:
+    #         for method, serializer in item.items():
+    #             serializer = import_string(serializer)
+    #             setattr(payload, obj)
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data)
 
 
 class MembershipUserViewSet(
@@ -77,7 +129,10 @@ class MembershipTypeViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
     queryset = MembershipType.objects.all()
     serializer_class = serializers.MembershipTypeSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.memberships.admin"]
+    required_perms = {
+        "GET": [("view_memberships", "memberships")],
+        "ALL": [("edit_settings", "memberships")],
+    }
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
 
@@ -88,6 +143,9 @@ class MembershipStatusViewSet(SchemaMixin, HistoryMixin, ModelViewSet):
     queryset = MembershipStatus.objects.all()
     serializer_class = serializers.MembershipStatusSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.memberships.admin"]
+    required_perms = {
+        "GET": [("view_memberships", "memberships")],
+        "ALL": [("edit_settings", "memberships")],
+    }
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)

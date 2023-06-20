@@ -1,9 +1,13 @@
 """Core permissions of collectivo."""
 # Thanks to https://stackoverflow.com/a/19429199/14396787
+import logging
+
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 
 from collectivo.core.models import Permission
+
+logger = logging.getLogger(__name__)
 
 
 def is_superuser(user):
@@ -57,25 +61,57 @@ class ReadOrIsSuperuser(BasePermission):
 
 
 class HasPerm(BasePermission):
-    """Ensure user has required permissions."""
+    """
+    Ensure user has required permissions.
+
+    Required permissions are taken from the view's `required_perms` attribute,
+    which should be a dictionary mapping methods to required permissions.
+    The method "ALL" can be used to specify a permission for all methods.
+    Permissions must be a list of tuples of the permission and extension name.
+    If multple permissions are given, the user must have only one of them.
+
+    Example:
+    ```
+    class MyView(APIView):
+        required_perms = {
+            "GET": [("my_permission", "my_extension")],
+            "POST": [("my_permission", "my_extension")],
+            "PUT": [("my_permission", "my_extension")],
+            "PATCH": [("my_permission", "my_extension")],
+            "DELETE": [("my_permission", "my_extension")],
+            "ALL": [("my_permission", "my_extension")],
+        }
+    """
 
     def has_permission(self, request, view):
         """Check if user has required permissions."""
         # Get a mapping of methods -> required group.
         required_perms = getattr(view, "required_perms", [])
 
-        if isinstance(required_perms, dict):
-            # Determine the required groups for this particular request method.
-            required_perms = required_perms.get(request.method, [])
+        if not isinstance(required_perms, dict):
+            logger.warn("Invalid permission in serializer.")
+            return False
+
+        methods = required_perms.keys()
+        required_perms_for_method = []
+
+        if request.method in methods:
+            required_perms_for_method += required_perms[request.method]
+
+        if "ALL" in methods:
+            required_perms_for_method += required_perms["ALL"]
+
+        print(required_perms_for_method)
+        print(methods)
 
         # Return True if the user has all the required groups or is superuser.
-        return all(
-            [
-                has_permission(request.user, perm_name)
+        return any(
+            {
+                has_permission(request.user, perm_name, ext_name)
                 if perm_name != "__all__"
                 else True
-                for perm_name in required_perms
-            ]
+                for perm_name, ext_name in required_perms_for_method
+            }
         ) or is_superuser(request.user)
 
 

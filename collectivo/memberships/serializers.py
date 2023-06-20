@@ -1,5 +1,11 @@
 """Serializers of the memberships extension."""
+import logging
+from types import SimpleNamespace
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import models
+from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from collectivo.utils.schema import SchemaCondition
@@ -7,13 +13,6 @@ from collectivo.utils.serializers import UserFields
 
 from . import models
 from .statistics import calculate_statistics
-
-try:
-    from collectivo.emails.models import EmailTemplate
-
-    emails_installed = True
-except ImportError:
-    emails_installed = False
 
 User = get_user_model()
 
@@ -128,41 +127,6 @@ class MembershipTypeSerializer(serializers.ModelSerializer):
 
     statistics = serializers.SerializerMethodField()
 
-    if emails_installed:
-        emails__template_started = serializers.PrimaryKeyRelatedField(
-            source="emails.template_started",
-            queryset=EmailTemplate.objects.all(),
-            required=False,
-            allow_null=True,
-            label="Automatic email: Membership started",
-            help_text=(
-                "The email template to send when a membership of this type"
-                " is assigned a starting date."
-            ),
-        )
-        emails__template_accepted = serializers.PrimaryKeyRelatedField(
-            source="emails.template_accepted",
-            queryset=EmailTemplate.objects.all(),
-            required=False,
-            allow_null=True,
-            label="Automatic email: Membership accepted",
-            help_text=(
-                "The email template to send when a membership of this type"
-                " is assigned an acceptance date."
-            ),
-        )
-        emails__template_ended = serializers.PrimaryKeyRelatedField(
-            source="emails.template_ended",
-            queryset=EmailTemplate.objects.all(),
-            required=False,
-            allow_null=True,
-            label="Automatic email: Membership ended",
-            help_text=(
-                "The email template to send when a membership of this type"
-                " is assigned a ending date."
-            ),
-        )
-
     class Meta:
         """Serializer settings."""
 
@@ -191,32 +155,6 @@ class MembershipTypeSerializer(serializers.ModelSerializer):
         """Get statistics for this membership type."""
         return calculate_statistics(obj)
 
-    def create(self, validated_data):
-        """Create a new membership."""
-        if not emails_installed:
-            return super().create(validated_data)
-        email_data = {}
-        if "emails" in validated_data:
-            email_data = validated_data.pop("emails")
-        obj = super().create(validated_data)
-        for field, data in email_data.items():
-            setattr(obj.emails, field, data)
-        obj.emails.save()
-        return obj
-
-    def update(self, instance, validated_data):
-        """Update an existing membership."""
-        if not emails_installed:
-            return super().update(instance, validated_data)
-        email_data = {}
-        if "emails" in validated_data:
-            email_data = validated_data.pop("emails")
-        obj = super().update(instance, validated_data)
-        for field, data in email_data.items():
-            setattr(obj.emails, field, data)
-        obj.emails.save()
-        return obj
-
 
 class MembershipStatusSerializer(serializers.ModelSerializer):
     """Serializer for membership statuses."""
@@ -228,3 +166,76 @@ class MembershipStatusSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id"]
         label = "Membership status"
+
+
+logger = logging.getLogger(__name__)
+
+try:
+    registration_serializers = settings.COLLECTIVO["extensions"][
+        "collectivo.memberships"
+    ].get("registration_serializers", [])
+    for item in registration_serializers:
+        for method, serializer in item.items():
+            item[method] = import_string(serializer)
+except Exception as e:
+    logger.error(e, exc_info=True)
+    registration_serializers = []
+
+
+class MembershipRegisterSerializer(serializers.Serializer):
+    """Serializer of serializers for membership registration."""
+
+    class Meta:
+        """Serializer settings."""
+
+        label = "Membership registration"
+        model = models.Membership
+        fields = "__all__"
+
+    for item in registration_serializers:
+        for method, serializer in item.items():
+            locals()[serializer.__name__] = serializer()
+
+    @classmethod
+    def initialize(cls, membership_type, user):
+        """Overwrite init"""
+        payload = SimpleNamespace()
+
+        for item in registration_serializers:
+            for method, serializer in item.items():
+                name = serializer.__name__
+                model = serializer.Meta.model
+                if method == "update":
+                    obj = model.objects.get(user=user)
+                    setattr(payload, name, obj)
+                else:
+                    setattr(payload, name, None)
+
+        return cls(payload)
+
+    def to_representation(self, instance):
+        """Call all serializers for registration."""
+        if instance:
+            return super().to_representation(instance)
+        else:
+            return {}
+
+    def create(self, validated_data):
+        """Call all serializers for registration."""
+
+        request = self.context.get("request")
+
+        for item in registration_serializers:
+            for method, serializer in item.items():
+                name = serializer.__name__
+                data = validated_data.pop(name)
+                model = serializer.Meta.model
+                if method == "create":
+                    model.objects.create(**data)
+                elif method == "update":
+                    obj = model.objects.get(user=request.user)
+                    for field, value in data.items():
+                        setattr(obj, field, value)
+                    obj.save()
+
+        return {}

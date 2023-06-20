@@ -5,6 +5,7 @@ from logging import getLogger
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
+from collectivo.emails.models import EmailAutomation
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
 from collectivo.utils.dev import DEV_MEMBERS
@@ -45,15 +46,47 @@ def setup(sender, **kwargs):
         order=10,
     )
 
-    # Create email connectors  for membership types
-    try:
-        from collectivo.memberships.emails.models import MembershipEmails
-
-        no_con = models.MembershipType.objects.filter(emails__isnull=True)
-        for mtype in no_con:
-            MembershipEmails.objects.create(membership_type=mtype)
-    except ImportError:
-        pass
+    # Email automations
+    automations = {
+        "membership_started": (
+            "Send a message to a new member when a membership is created."
+        ),
+        "membership_accepted": (
+            "Send a message to a member when date_accepted of a membership is"
+            " set."
+        ),
+        "membership_cancelled": (
+            "Send a message to a member when date_cancelled of a membership is"
+            " set."
+        ),
+        "membership_ended": (
+            "Send a message to a member when date_ended of a membership is"
+            " set."
+        ),
+        "membership_shares_paid_increase": (
+            "Send a message to a member when shares_paid of a membership is"
+            " increased."
+        ),
+        "membership_shares_paid_decrease": (
+            "Send a message to a member when shares_paid of a membership is"
+            " decreased."
+        ),
+        "membership_shares_signed_increase": (
+            "Send a message to a member when shares_signed of a membership is"
+            " increased."
+        ),
+        "membership_shares_signed_decrease": (
+            "Send a message to a member when shares_signed of a membership is"
+            " decreased."
+        ),
+    }
+    for key, description in automations.items():
+        EmailAutomation.objects.register(
+            name=key,
+            description=description,
+            extension=extension,
+            admin_only=False,
+        )
 
     if settings.COLLECTIVO["example_data"] is True:
         # Create membership types
@@ -61,13 +94,13 @@ def setup(sender, **kwargs):
         mst1 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Shares)",
             description=(
-                "This is a type of membership that where members can"
-                " hold shares."
+                "This is a type of membership where members can hold shares."
             ),
             has_shares=True,
             shares_amount_per_share=100,
             shares_number_custom=True,
             shares_number_custom_min=1,
+            enable_registration=True,
         )
         mst2 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Fees)",
@@ -94,11 +127,12 @@ def setup(sender, **kwargs):
             user = get_user_model().objects.get(email=email)
             for type in types:
                 try:
-                    models.Membership.objects.get_or_create(
+                    m = models.Membership.objects.get_or_create(
                         user=user,
                         type=type,
-                        status=next(status_cycle),
-                        shares_signed=10,
-                    )
+                    )[0]
+                    m.status = next(status_cycle)
+                    m.shares_signed = 10
+                    m.save()
                 except models.Membership.MultipleObjectsReturned:
                     logger.warning("Error creating example memberships.")

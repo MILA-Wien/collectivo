@@ -34,6 +34,23 @@ def setup():
     )
     superuser.permissions.add(coreadmin)
 
+    # Extension permissions
+    perm_names = [
+        "view_users",
+        "edit_users",
+        "view_groups",
+        "edit_groups",
+        "view_settings",
+        "edit_settings",
+    ]
+    for perm_name in perm_names:
+        perm = Permission.objects.register(
+            name=perm_name,
+            description=f"Can {perm_name.replace('_', ' ')}",
+            extension=extension,
+        )
+        superuser.permissions.add(perm)
+
     # User menu
     Menu.register(name="main", extension=extension)
     MenuItem.register(
@@ -63,7 +80,7 @@ def setup():
         parent="admin",
         route=extension.name + "/users",
         icon_name="pi-users",
-        requires_perm=("admin", "core"),
+        requires_perm=("view_users", "core"),
         order=00,
     )
     MenuItem.register(
@@ -73,7 +90,7 @@ def setup():
         parent="admin",
         route=extension.name + "/settings",
         icon_name="pi-cog",
-        requires_perm=("admin", "core"),
+        requires_perm=("view_settings", "core"),
         order=100,
     )
 

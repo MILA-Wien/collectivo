@@ -12,11 +12,22 @@ from collectivo.utils.models import RegisterMixin
 class DashboardTileButton(models.Model):
     """A button that can be included in a dashboard tile."""
 
+    class Meta:
+        """Meta settings."""
+
+        unique_together = ("name", "extension")
+
     objects = NameManager()
     history = HistoricalRecords()
 
     name = models.CharField(
         max_length=255, unique=True, null=True, default=None
+    )
+    extension = models.ForeignKey(
+        "extensions.Extension",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     label = models.CharField(max_length=255, null=True, blank=True)
     link = models.CharField(max_length=255, null=True, blank=True)
@@ -60,9 +71,21 @@ class DashboardTile(models.Model, RegisterMixin):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="requires_perm",
         help_text=(
             "If set, the object will only be displayed to users with "
-            "this group."
+            "this permission."
+        ),
+    )
+    requires_not_perm = models.ForeignKey(
+        "core.Permission",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="requires_not_perm",
+        help_text=(
+            "If set, the object will only be displayed to users without "
+            "this permission."
         ),
     )
 

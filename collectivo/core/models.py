@@ -75,7 +75,7 @@ class Permission(models.Model):
 
     def __str__(self):
         """Return the string representation."""
-        return f"{self.extension} - {self.name}"
+        return f"{self.extension} {self.name}"
 
 
 class PermissionGroup(models.Model):
@@ -97,7 +97,11 @@ class PermissionGroup(models.Model):
         blank=True,
         help_text=EXTENSION_HELP_TEXT,
     )
-
+    users_custom = models.BooleanField(
+        default=True,
+        verbose_name="Custom users",
+        help_text="If checked, users can be added to this group manually.",
+    )
     history = HistoricalRecords()
     objects = NameManager()
 
@@ -105,3 +109,9 @@ class PermissionGroup(models.Model):
         """Model settings."""
 
         unique_together = ("name", "extension")
+
+    def __str__(self):
+        """Return the string representation."""
+        if self.extension:
+            return f"{self.extension} {self.name}"
+        return self.name

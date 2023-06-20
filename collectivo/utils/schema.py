@@ -125,16 +125,22 @@ class SchemaCondition:
         }
 
 
-def get_model_schema(self: GenericViewSet):
-    """Return model schema."""
-    serializer: Serializer = self.get_serializer_class()()
+def get_serializer_schema(serializer: Serializer):
     data = {}
     for field_name, field_obj in serializer.fields.items():
-        field_type = field_obj.__class__.__name__
-        data[field_name] = field_data = {
-            "field_type": field_type,
-            "input_type": input_types.get(field_type, "text"),
-        }
+        if isinstance(field_obj, Serializer):
+            field_type = "serializer"
+            data[field_name] = field_data = {
+                "field_type": field_type,
+                "input_type": field_type,
+                "schema": get_serializer_schema(field_obj),
+            }
+        else:
+            field_type = field_obj.__class__.__name__
+            data[field_name] = field_data = {
+                "field_type": field_type,
+                "input_type": input_types.get(field_type, "text"),
+            }
 
         # Convert CharField to textarea if no max_length is set (TextField)
         if field_type == "CharField" and field_obj.max_length is None:
@@ -148,14 +154,14 @@ def get_model_schema(self: GenericViewSet):
                     or hasattr(field_obj, "get_queryset")
                 ):
                     choices_url = get_endpoint(
-                        self.get_serializer_class().Meta.model,
+                        serializer.Meta.model,
                         field_obj.source,
                     )
                     data[field_name]["choices_url"] = choices_url
 
                     # TODO: This should be removed once frontend uses url
                     queryset = get_queryset(
-                        self.get_serializer_class().Meta.model,
+                        serializer.Meta.model,
                         field_obj.source,
                     )
                     value = get_choices(queryset)
@@ -190,4 +196,14 @@ def get_model_schema(self: GenericViewSet):
         "fields": data,
     }
 
+    if hasattr(serializer.Meta, "schema_settings"):
+        schema.update(serializer.Meta.schema_settings)
+
+    return schema
+
+
+def get_model_schema(self: GenericViewSet):
+    """Return model schema."""
+    serializer: Serializer = self.get_serializer_class()()
+    schema = get_serializer_schema(serializer)
     return Response(schema)

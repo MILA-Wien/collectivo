@@ -37,8 +37,6 @@ class EmailProfileSerializer(serializers.ModelSerializer):
 class EmailDesignSerializer(serializers.ModelSerializer):
     """Serializer for email designs."""
 
-    schema_attrs = {"body": {"input_type": "html"}}
-
     class Meta:
         """Serializer settings."""
 
@@ -46,10 +44,70 @@ class EmailDesignSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+if_not_admin_only = {
+    "condition": "equals",
+    "value": False,
+    "field": "admin_only",
+}
+
+
+class EmailAutomationSerializer(serializers.ModelSerializer):
+    """Serializer for email Automations."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.EmailAutomation
+        fields = "__all__"
+        read_only_fields = ["extension", "description", "name"]
+        schema_attrs = {
+            "admin_body": {"input_type": "html"},
+            "admin_only": {"visible": False},
+            "subject": {"visible": if_not_admin_only},
+            "body": {"input_type": "html", "visible": if_not_admin_only},
+            "design": {"visible": if_not_admin_only},
+        }
+        schema_settings = {
+            "actions": ["list", "retrieve", "update"],
+            "structure": [
+                {
+                    "fields": ["name", "extension", "description"],
+                    "style": "read_only",
+                },
+                {
+                    "title": "General settings",
+                    "fields": ["is_active"],
+                },
+                {
+                    "title": "Email to users",
+                    "description": "This template will be sent to users.",
+                },
+                {"fields": ["subject", "design"], "style": "col"},
+                {"fields": ["body"]},
+                {
+                    "title": "Email to admins",
+                    "description": "This template will be sent to admins.",
+                },
+                {
+                    "fields": [
+                        "admin_subject",
+                        "admin_design",
+                        "admin_recipients",
+                    ],
+                    "style": "col",
+                },
+                {
+                    "fields": [
+                        "admin_body",
+                    ],
+                },
+            ],
+        }
+
+
 class EmailTemplateSerializer(serializers.ModelSerializer):
     """Serializer for email templates."""
 
-    schema_attrs = {"body": {"input_type": "html"}}
     tag__tag = serializers.PrimaryKeyRelatedField(
         source="tag.tag",
         queryset=Tag.objects.all(),
@@ -62,6 +120,7 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
 
         model = models.EmailTemplate
         fields = "__all__"
+        schema_attrs = {"body": {"input_type": "html"}}
 
     def create(self, validated_data):
         """Create a new template."""

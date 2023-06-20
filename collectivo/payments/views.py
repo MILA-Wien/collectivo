@@ -14,7 +14,10 @@ class ProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
     queryset = models.PaymentProfile.objects.all()
     serializer_class = serializers.PaymentProfileSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.payments.admin"]
+    required_perms = {
+        "GET": [("view_profiles", "payments")],
+        "ALL": [("edit_profiles", "payments")],
+    }
     filterset_class = get_filterset(serializer_class)
     ordering_fields = get_ordering_fields(serializer_class)
 
@@ -40,7 +43,10 @@ class InvoiceViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     """ViewSet for admins to manage subscriptions."""
 
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.payments.admin"]
+    required_perms = {
+        "GET": [("view_payments", "payments")],
+        "ALL": [("edit_payments", "payments")],
+    }
     serializer_class = serializers.InvoiceSerializer
     queryset = models.Invoice.objects.all()
     filterset_class = get_filterset(serializer_class)
@@ -51,7 +57,10 @@ class SubscriptionViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
     """ViewSet for admins to manage subscriptions."""
 
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.payments.admin"]
+    required_perms = {
+        "GET": [("view_payments", "payments")],
+        "ALL": [("edit_payments", "payments")],
+    }
     serializer_class = serializers.SubscriptionSerializer
     queryset = models.Subscription.objects.all()
     filterset_class = get_filterset(serializer_class)

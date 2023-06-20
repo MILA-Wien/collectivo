@@ -37,6 +37,9 @@ class ProfileAdminViewSet(
     queryset = UserProfile.objects.all()
     serializer_class = serializers.ProfileAdminSerializer
     permission_classes = [HasPerm]
-    required_perms = ["collectivo.profiles.admin"]
+    required_perms = {
+        "GET": [("view_profiles", "profiles")],
+        "ALL": [("edit_profiles", "profiles")],
+    }
     filterset_class = get_filterset(serializers.ProfileAdminSerializer)
     ordering_fields = get_ordering_fields(serializers.ProfileAdminSerializer)
