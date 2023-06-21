@@ -5,6 +5,7 @@ node_modules/
 .env
 collectivo_app/collectivo
 collectivo_app/graph_models
+collectivo_app/media_root
 collectivo/devtools/static/devtools
 collectivo_app/media_root/
 
