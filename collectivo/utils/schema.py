@@ -136,6 +136,7 @@ def get_endpoint(model: models.Model, source: str = None) -> str:
 
 
 def get_serializer_schema(serializer: Serializer):
+    """Get the schema for a serializer."""
     data = {}
     for field_name, field_obj in serializer.fields.items():
         if isinstance(field_obj, Serializer):

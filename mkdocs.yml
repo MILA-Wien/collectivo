@@ -52,13 +52,11 @@ nav:
   - "development.md"
   - "reference.md"
   - Extensions:
-      - Overview: "extensions/overview.md"
-      - Core framework:
-          - "extensions/core.md"
-          - "extensions/menus.md"
-          - "extensions/dashboard.md"
-      - Authentication:
-          - "extensions/keycloak.md"
+      - "extensions/core.md"
+      - "extensions/extensions.md"
+      - "extensions/menus.md"
+      - "extensions/dashboard.md"
+      - "extensions/keycloak.md"
       - "extensions/profiles.md"
       - "extensions/tags.md"
       - "extensions/memberships.md"

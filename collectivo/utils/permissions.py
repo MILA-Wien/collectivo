@@ -101,9 +101,6 @@ class HasPerm(BasePermission):
         if "ALL" in methods:
             required_perms_for_method += required_perms["ALL"]
 
-        print(required_perms_for_method)
-        print(methods)
-
         # Return True if the user has all the required groups or is superuser.
         return any(
             {

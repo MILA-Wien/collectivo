@@ -242,7 +242,7 @@ class MembershipStatus(models.Model):
 # Memberships --------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 
-date_fields = ["date_started", "date_accepted", "date_ended"]
+MEMBERSHIP_STAGES = ["applied", "accepted", "resigned", "excluded", "ended"]
 
 
 class Membership(models.Model):
@@ -260,9 +260,10 @@ class Membership(models.Model):
     )
     number = models.IntegerField(verbose_name="Membership number")
 
-    date_started = models.DateField(null=True, blank=True, default=date.today)
+    date_applied = models.DateField(null=True, blank=True, default=date.today)
     date_accepted = models.DateField(null=True, blank=True)
-    date_cancelled = models.DateField(null=True, blank=True)
+    date_resigned = models.DateField(null=True, blank=True)
+    date_excluded = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
 
     type = models.ForeignKey(
@@ -270,6 +271,11 @@ class Membership(models.Model):
     )
     status = models.ForeignKey(
         "MembershipStatus", null=True, blank=True, on_delete=models.PROTECT
+    )
+    stage = models.CharField(
+        max_length=20,
+        choices=[(x, x) for x in MEMBERSHIP_STAGES],
+        default="applied",
     )
 
     # Optional depending on membership type
@@ -295,6 +301,7 @@ class Membership(models.Model):
         """Save membership and generate membership number."""
         if self.number is None:
             self.number = self.generate_membership_number()
+
         super().save()
 
     def save(self, *args, **kwargs):
@@ -304,45 +311,33 @@ class Membership(models.Model):
 
         # Store data before saving
         old = Membership.objects.filter(pk=self.pk)
-        data = {field.name: None for field in self._meta.fields}
-        new = False if old.exists() else True
-        if not new:
+        old_data = {field.name: None for field in self._meta.fields}
+        is_new = False if old.exists() else True
+        if not is_new:
             for field in self._meta.fields:
-                data[field] = getattr(old.first(), field.name)
+                old_data[field] = getattr(old.first(), field.name)
 
         # Create or update object
         self.save_basic()
 
-        self.send_emails(new, data)
+        self.send_emails(is_new, old_data)
 
     def send_emails(self, new, data):
         """Send automatic emails."""
 
-        # Trigger membership_started if a new object is created
-        if new:
-            self.send_email("membership_started")
-            return
-
-        # Trigger automation if date has changed from None to a value
-        field_to_trigger = {
-            "date_started": "membership_started",
-            "date_accepted": "membership_accepted",
-            "date_cancelled": "membership_cancelled",
-            "date_ended": "membership_ended",
-        }
-        for field, trigger in field_to_trigger.items():
-            if not data[field] and getattr(self, field):
-                self.send_email(trigger)
+        # Trigger automation if membership stage has changed
+        if data["stage"] != self.stage:
+            self.send_email(f"Membership {self.stage}")
 
         # Trigger automation for changes in shares
         if (self.shares_paid or 0) > (data["shares_paid"] or 0):
-            self.send_email("membership_shares_paid_increase")
+            self.send_email("Paid shares increased")
         elif (self.shares_paid or 0) < (data["shares_paid"] or 0):
-            self.send_email("membership_shares_paid_decrease")
+            self.send_email("Paid shares decreased")
         if (self.shares_paid or 0) > (data["shares_signed"] or 0):
-            self.send_email("membership_shares_signed_increase")
+            self.send_email("Signed shares increased")
         elif (self.shares_signed or 0) < (data["shares_signed"] or 0):
-            self.send_email("membership_shares_signed_decrease")
+            self.send_email("Signed shares decreased")
 
     def delete(self, *args, **kwargs):
         """Delete the model and remove registration."""
@@ -368,7 +363,7 @@ class Membership(models.Model):
             group.users.add(self.user)
         group.save()
 
-    def send_email(self, trigger, context=None):
+    def send_email(self, trigger):
         """Send automatic email."""
         self.type.refresh_from_db()
         from collectivo.emails.models import EmailAutomation
@@ -379,7 +374,7 @@ class Membership(models.Model):
         automation = EmailAutomation.objects.get(
             name=trigger, extension=extension
         )
-        automation.send([self.user], context)
+        automation.send([self.user], context={"membership": self})
 
     def update_shares_paid(self):
         """Update the number of shares paid for this membership.
@@ -492,7 +487,7 @@ class Membership(models.Model):
                     payment_from=self.user.account,
                     status="active",
                     extension=extension,
-                    date_started=self.date_started,
+                    date_started=self.date_applied,
                     repeat_each=self.type.fees_repeat_each,
                     repeat_unit=self.type.fees_repeat_unit,
                 )

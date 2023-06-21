@@ -77,7 +77,7 @@ class EmailAutomation(models.Model):
             )
             campaign.recipients.set(recipients)
             campaign.save()
-            campaign.send()
+            campaign.send(context=context)
 
 
 class EmailDesign(models.Model):
@@ -150,7 +150,7 @@ class EmailCampaign(models.Model):
         """Return a string representation of the object."""
         return f"{self.template.name} ({self.sent})"
 
-    def send(self):
+    def send(self, context=None):
         """Send emails to recipients."""
         campaign = self
         campaign.sent = timezone.now()
@@ -164,6 +164,7 @@ class EmailCampaign(models.Model):
                 self.automation.admin_subject,
                 self.automation.admin_body,
                 self.automation.admin_recipients.all(),
+                context=context,
             )
             if not self.automation.admin_only:
                 email_batches += self.create_email_batches(
@@ -171,6 +172,7 @@ class EmailCampaign(models.Model):
                     self.automation.subject,
                     self.automation.body,
                     self.recipients.all(),
+                    context=context,
                 )
 
         # Generate emails from template
@@ -180,6 +182,7 @@ class EmailCampaign(models.Model):
                 self.campaign.template.subject,
                 self.campaign.template.body,
                 self.recipients.all(),
+                context=context,
             )
 
         # Create a chain of async tasks to send emails
@@ -197,13 +200,19 @@ class EmailCampaign(models.Model):
             self.save()
             raise e
 
-    def create_email_batches(self, design, subject, body, recipients):
+    def create_email_batches(
+        self, design, subject, body, recipients, context=None
+    ):
+        """Create a list of emails, split into batches."""
+
         if design is not None:
             body = design.body.replace("{{content}}", body)
         from_email = settings.DEFAULT_FROM_EMAIL
         emails = []
         for recipient in recipients:
-            body_html = Template(body).render(Context({"user": recipient}))
+            body_html = Template(body).render(
+                Context({"user": recipient, **(context or {})})
+            )
             body_text = html2text(body_html)
             if recipient.email in (None, ""):
                 self.status = "failure"

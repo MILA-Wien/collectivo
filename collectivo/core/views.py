@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.mixins import HistoryMixin, SchemaMixin, SelfMixin
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin
 from collectivo.utils.permissions import (
     HasPerm,
     IsSuperuser,

@@ -1,6 +1,6 @@
 # Getting started
 
-This tutorial will show you how to quickly set up your own instance of Collectivo.
+This tutorial will show you how to quickly set up your own local instance of Collectivo.
 
 Install the following requirements:
 
@@ -20,13 +20,4 @@ cp .env.example .env
 docker compose up -d
 ```
 
-You can now go to [`127.0.0.1:8001`](http://127.0.0.1:8001) to log in to Collectivo.
-
-The following example users can be used to log in on your platform:
-
-- `test_superuser@example.com`
-- `test_member_01@example.com`, `test_member_02@example.com`, `test_member_03@example.com`
-- `test_user_not_verified@example.com`
-- `test_user_not_member@example.com`
-
-The password for all users is `Test123!`.
+You can now go to [`127.0.0.1:8001`](http://127.0.0.1:8001) and log in to Collectivo as `test_superuser@example.com` with the pasword `Test123!`.

@@ -36,6 +36,11 @@ class RequestLogMiddleware:
                         if len(response.content) < 1000
                         else response.content[:1000] + "..."
                     )
+                elif isinstance(response.content, bytes):
+                    co = response.content.decode("utf-8")
+                    log_data["response_body"] = (
+                        co if len(co) < 1000 else co[:1000] + "..."
+                    )
         if hasattr(request, "userinfo") and hasattr(
             request.userinfo, "user_id"
         ):

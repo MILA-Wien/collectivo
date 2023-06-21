@@ -4,7 +4,7 @@ Enable authentication with [keycloak](https://www.keycloak.org/) and [python-key
 
 ## Installation
 
-Add the following entries to [`collectivo.yml`](reference.md#settings):
+Add the following entry to [`collectivo.yml`](reference.md#settings):
 
 ```yaml
 - extensions:
@@ -13,8 +13,6 @@ Add the following entries to [`collectivo.yml`](reference.md#settings):
       - realm_name:     # Realm name the collectivo client
       - client_id:      # Name of the collectivo client
       - client_secret:  # Secret key of the collectivo client
-- authentication:
-    - collectivo.auth.keycloak.authentication.KeycloakAuthentication
 ```
 
 When keycloak is not correctly configured, a warning will appear in the logs.

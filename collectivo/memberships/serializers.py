@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
 from django.utils.module_loading import import_string
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from collectivo.utils.schema import Schema, SchemaCondition
 from collectivo.utils.serializers import UserFields
@@ -18,7 +18,7 @@ User = get_user_model()
 
 
 class MembershipSerializer(UserFields):
-    """Serializer for memberships."""
+    """Serializer for admins to manage memberships."""
 
     try:
         import collectivo.tags
@@ -48,10 +48,24 @@ class MembershipSerializer(UserFields):
         model = models.Membership
         fields = "__all__"
         read_only_fields = ["id", "number"]
+        schema_attrs = {
+            "user__first_name": {"input_type": "text"},
+            "user__last_name": {"input_type": "text"},
+            "user__profile__person_type": {"input_type": "text"},
+        }
+
+    def validate(self, data):
+        """Validate the data."""
+
+        # Check if the date of the current stage is set
+        stage = data.get("stage", None)
+        if stage is not None and data.get(f"date_{stage}", None) is None:
+            raise ValidationError(f"Stage '{stage} requires 'date_{stage}'")
+        return data
 
 
 class MembershipSelfSerializer(serializers.ModelSerializer):
-    """Serializer for memberships."""
+    """Serializer for users to manage their own memberships."""
 
     class Meta:
         """Serializer settings."""
@@ -275,7 +289,7 @@ class MembershipRegisterCombinedSerializer(serializers.Serializer):
 
     @classmethod
     def initialize(cls, membership_type, user):
-        """Overwrite init"""
+        """Initialize serializer with data from database."""
         payload = SimpleNamespace()
 
         for item in registration_serializers:

@@ -1,7 +1,4 @@
 """Views of the memberships extension."""
-import logging
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -69,16 +66,6 @@ class MembershipProfileViewSet(SchemaMixin, ModelViewSet):
     )
 
 
-# logger = logging.getLogger(__name__)
-# registration_serializers = settings.COLLECTIVO["extensions"][
-#     "collectivo.memberships"
-# ].get("registration_serializers", {})
-# print("REGISTRATION SERIALIZERS", registration_serializers)
-# if not isinstance(registration_serializers, list):
-#     logger.warn("The 'registration_serializers' setting must be a list.")
-#     registration_serializers = []
-
-
 class MembershipRegisterViewset(
     SchemaMixin, CreateModelMixin, RetrieveModelMixin, GenericViewSet
 ):
@@ -97,16 +84,6 @@ class MembershipRegisterViewset(
             )
         )
         return Response(serializer.data)
-
-    # def retrieve(self, request, *args, **kwargs):
-    #     type = self.get_object()
-    #     payload = object()
-    #     for item in registration_serializers:
-    #         for method, serializer in item.items():
-    #             serializer = import_string(serializer)
-    #             setattr(payload, obj)
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)
 
 
 class MembershipUserViewSet(

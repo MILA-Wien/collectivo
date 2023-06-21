@@ -75,7 +75,7 @@ class KeycloakUser(models.Model):
         )
         if self.user.password:
             keycloak.set_user_password(self.uuid, self.user.password, False)
-            self.user.password = ""
+            self.user.password = ""  # noqa: S105
             self.user.save()
 
 

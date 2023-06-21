@@ -47,43 +47,19 @@ def setup(sender, **kwargs):
     )
 
     # Email automations
-    automations = {
-        "membership_started": (
-            "Send a message to a new member when a membership is created."
-        ),
-        "membership_accepted": (
-            "Send a message to a member when date_accepted of a membership is"
-            " set."
-        ),
-        "membership_cancelled": (
-            "Send a message to a member when date_cancelled of a membership is"
-            " set."
-        ),
-        "membership_ended": (
-            "Send a message to a member when date_ended of a membership is"
-            " set."
-        ),
-        "membership_shares_paid_increase": (
-            "Send a message to a member when shares_paid of a membership is"
-            " increased."
-        ),
-        "membership_shares_paid_decrease": (
-            "Send a message to a member when shares_paid of a membership is"
-            " decreased."
-        ),
-        "membership_shares_signed_increase": (
-            "Send a message to a member when shares_signed of a membership is"
-            " increased."
-        ),
-        "membership_shares_signed_decrease": (
-            "Send a message to a member when shares_signed of a membership is"
-            " decreased."
-        ),
-    }
-    for key, description in automations.items():
+    automations = [f"Membership {stage}" for stage in models.MEMBERSHIP_STAGES]
+    automations += [
+        "Paid shares increased",
+        "Paid shares decreased",
+        "Signed shares increased",
+        "Signed shares decreased",
+    ]
+    for automation in automations:
         EmailAutomation.objects.register(
-            name=key,
-            description=description,
+            name=automation,
+            description=(
+                "Membership data can be accessed via {{ membership }}."
+            ),
             extension=extension,
             admin_only=False,
         )
@@ -105,8 +81,7 @@ def setup(sender, **kwargs):
         mst2 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Fees)",
             description="""This is a type of membership that where members have
-             to pay monthly fees.
-            <p style="font-weight: bold">This is a bold paragraph.</p>""",
+             to pay monthly fees.""",
             has_fees=True,
             fees_amount_standard=100,
         )
