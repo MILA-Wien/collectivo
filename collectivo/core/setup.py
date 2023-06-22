@@ -1,5 +1,7 @@
 """Setup function of the core extension."""
 
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -8,14 +10,18 @@ from collectivo.core.models import Permission, PermissionGroup
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import Menu, MenuItem
 from collectivo.utils.dev import DEV_USERS
+from collectivo.version import __version__
 
 from .models import CoreSettings
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def setup():
     """Initialize extension after database is ready."""
+
+    logger.info(f"Starting Collectivo v{__version__}")
 
     extension = Extension.register(
         name=CoreConfig.name, description=CoreConfig.description, built_in=True
