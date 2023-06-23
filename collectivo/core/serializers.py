@@ -49,6 +49,12 @@ if_not_users_custom: SchemaCondition = {
     "value": False,
 }
 
+if_not_perms_custom: SchemaCondition = {
+    "condition": "equals",
+    "field": "perms_custom",
+    "value": False,
+}
+
 
 class PermissionGroupSerializer(serializers.ModelSerializer):
     """Serializer for permission groups."""
@@ -64,7 +70,8 @@ class PermissionGroupSerializer(serializers.ModelSerializer):
             "name": {"read_only": if_extension},
             "extension": {"visible": if_extension},
             "description": {"read_only": if_extension},
-            "permissions": {"read_only": if_extension},
+            "perms_custom": {"visible": False},
+            "permissions": {"read_only": if_not_perms_custom},
             "users_custom": {"visible": False},
             "users": {"read_only": if_not_users_custom},
         }

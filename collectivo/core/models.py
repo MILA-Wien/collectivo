@@ -102,6 +102,13 @@ class PermissionGroup(models.Model):
         verbose_name="Custom users",
         help_text="If checked, users can be added to this group manually.",
     )
+    perms_custom = models.BooleanField(
+        default=True,
+        verbose_name="Custom permissions",
+        help_text=(
+            "If checked, permissions can be added to this group manually."
+        ),
+    )
     history = HistoricalRecords()
     objects = NameManager()
 

@@ -153,8 +153,13 @@ class MembershipType(models.Model):
         )
         group = PermissionGroup.objects.register(
             name=self.name,
+            description=(
+                "Members of this group have a membership of the type '{}'."
+                .format(self.name)
+            ),
             extension=extension,
             users_custom=False,
+            perms_custom=True,
         )
         group.permissions.add(permission)
         group.save()
