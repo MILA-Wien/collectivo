@@ -5,10 +5,53 @@ from django.db import models
 from collectivo.core.models import Permission
 from collectivo.extensions.models import Extension
 from collectivo.utils import get_instance
-from collectivo.utils.models import RegisterMixin
+from collectivo.utils.managers import NameManager
 
 
-class Menu(models.Model, RegisterMixin):
+class MenuManager(NameManager):
+    """Manager for the models Menu and MenuItem.
+
+    Models must have the fields name, extension,and requires_perm.
+    Requires perm should be a tuple of (perm_name, ext_name).
+    """
+
+    def register(
+        cls,
+        name: str,
+        extension: str | Extension,
+        parent: "str | tuple | Menu | MenuItem" = None,
+        requires_perm: tuple | Permission = None,
+        **payload,
+    ):
+        """Register a new menu or menu item."""
+        payload["extension"] = get_instance(Extension, extension)
+        payload["requires_perm"] = get_instance(
+            Permission, requires_perm, needs_ext=True
+        )
+        item = super().register(name=name, **payload)
+        if parent is None:
+            return item
+
+        if isinstance(parent, tuple):
+            menu_name = parent[0]
+            menu_extension_name = [1]
+            parent = item.get_menu(menu_name, menu_extension_name)
+        elif isinstance(parent, str):
+            menu_name = parent
+            menu_extension_name = "core"
+            parent = item.get_menu(menu_name, menu_extension_name)
+        elif isinstance(parent, Menu):
+            pass
+        elif isinstance(parent, MenuItem):
+            pass
+        else:
+            raise ValueError("Invalid menu type")
+        parent.items.add(item)
+        parent.save()
+        return item
+
+
+class Menu(models.Model):
     """A menu to be displayed in the user interface."""
 
     class Meta:
@@ -16,6 +59,7 @@ class Menu(models.Model, RegisterMixin):
 
         unique_together = ("name", "extension")
 
+    objects = MenuManager()
     name = models.CharField(max_length=255)
     extension = models.ForeignKey(
         "extensions.Extension", on_delete=models.CASCADE
@@ -24,7 +68,7 @@ class Menu(models.Model, RegisterMixin):
     items = models.ManyToManyField("menus.MenuItem")
 
 
-class MenuItem(models.Model, RegisterMixin):
+class MenuItem(models.Model):
     """An item to be displayed in a menu."""
 
     class Meta:
@@ -32,6 +76,7 @@ class MenuItem(models.Model, RegisterMixin):
 
         unique_together = ("name", "extension")
 
+    objects = MenuManager()
     name = models.CharField(max_length=255)
     extension = models.ForeignKey(
         "extensions.Extension", on_delete=models.CASCADE
@@ -70,38 +115,6 @@ class MenuItem(models.Model, RegisterMixin):
     def __str__(self):
         """Return string representation of the model."""
         return f"MenuItem ({self.name})"
-
-    @classmethod
-    def register(
-        cls,
-        name: str,
-        parent: "str | tuple | Menu | MenuItem",
-        extension: str | Extension,
-        requires_perm: str | tuple | Permission = None,
-        **payload,
-    ):
-        """Register a new menu item."""
-        payload["extension"] = get_instance(Extension, extension)
-        payload["requires_perm"] = get_instance(Permission, requires_perm)
-        item = super().register(name=name, **payload)
-
-        if isinstance(parent, tuple):
-            menu_name = parent[0]
-            menu_extension_name = [1]
-            parent = item.get_menu(menu_name, menu_extension_name)
-        elif isinstance(parent, str):
-            menu_name = parent
-            menu_extension_name = "core"
-            parent = item.get_menu(menu_name, menu_extension_name)
-        elif isinstance(parent, Menu):
-            pass
-        elif isinstance(parent, MenuItem):
-            pass
-        else:
-            raise ValueError("Invalid menu type")
-        parent.items.add(item)
-        parent.save()
-        return item
 
     def get_menu(self, menu_name, extension_name="core"):
         """Add this item to a menu."""

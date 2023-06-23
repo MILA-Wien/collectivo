@@ -12,7 +12,7 @@ from .apps import ProfilesConfig
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    Extension.register(
+    Extension.objects.register(
         name=ProfilesConfig.name,
         description=ProfilesConfig.description,
         built_in=True,

@@ -9,13 +9,13 @@ from .apps import ShiftsConfig
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=ShiftsConfig.name,
         description=ShiftsConfig.description,
         built_in=True,
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="shifts_user",
         label="Shifts",
         icon_name="pi-calendar",
@@ -25,7 +25,7 @@ def setup(sender, **kwargs):
         parent="main",
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="shifts_admin",
         label="Shift management",
         icon_name="pi-calendar",
@@ -36,7 +36,7 @@ def setup(sender, **kwargs):
         order=30,
     )
 
-    DashboardTile.register(
+    DashboardTile.objects.register(
         name="shifts_user_tile",
         label="Shifts",
         extension=extension,

@@ -8,13 +8,13 @@ from .apps import PaymentsConfig
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=PaymentsConfig.name,
         description=PaymentsConfig.description,
         built_in=True,
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="payments_admin",
         label="Payments",
         extension=extension,

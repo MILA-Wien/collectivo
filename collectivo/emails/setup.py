@@ -15,13 +15,13 @@ def setup(sender, **kwargs):
 
     from django.conf import settings
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=EmailsConfig.name,
         description=EmailsConfig.description,
         built_in=True,
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="emails",
         label="Emails",
         extension=extension,

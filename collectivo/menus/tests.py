@@ -35,13 +35,13 @@ class MenusAPITests(TestCase):
         self.user = create_testuser(superuser=True)
         self.extension = Extension.objects.get(name="menus")
 
-        test_menu = Menu.register(
+        test_menu = Menu.objects.register(
             name="test_menu",
             extension=self.extension,
         )
 
         for order in [3, 1, 2]:
-            MenuItem.register(
+            MenuItem.objects.register(
                 name=f"test_item_{order}",
                 label=f"Test Item {order}",
                 extension=self.extension,
@@ -56,7 +56,7 @@ class MenusAPITests(TestCase):
         self.group.permissions.add(self.perm)
         self.group.save()
 
-        MenuItem.register(
+        MenuItem.objects.register(
             name="test_item_4",
             label="Test Item 4",
             extension=self.extension,

@@ -23,7 +23,7 @@ def setup():
 
     logger.info(f"Starting Collectivo v{__version__}")
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=CoreConfig.name, description=CoreConfig.description, built_in=True
     )
 
@@ -58,8 +58,8 @@ def setup():
         superuser.permissions.add(perm)
 
     # User menu
-    Menu.register(name="main", extension=extension)
-    MenuItem.register(
+    Menu.objects.register(name="main", extension=extension)
+    MenuItem.objects.register(
         name="profile",
         label="Profile",
         extension=extension,
@@ -67,7 +67,7 @@ def setup():
         icon_name="pi-user",
         parent="main",
     )
-    MenuItem.register(
+    MenuItem.objects.register(
         name="logout",
         label="Log out",
         extension=extension,
@@ -78,8 +78,8 @@ def setup():
     )
 
     # Create admin menu
-    Menu.register(name="admin", extension=extension)
-    MenuItem.register(
+    Menu.objects.register(name="admin", extension=extension)
+    MenuItem.objects.register(
         name="users",
         label="Users",
         extension=extension,
@@ -89,7 +89,7 @@ def setup():
         requires_perm=("view_users", "core"),
         order=00,
     )
-    MenuItem.register(
+    MenuItem.objects.register(
         name="settings",
         label="Settings",
         extension=extension,

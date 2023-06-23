@@ -1,13 +1,14 @@
 """Models of the components module."""
 from django.db import models
 
-from collectivo.utils.models import RegisterMixin
+from collectivo.utils.managers import NameManager
 from collectivo.utils.texts import EXTENSION_HELP_TEXT
 
 
-class Component(models.Model, RegisterMixin):
+class Component(models.Model):
     """A frontend component."""
 
+    objects = NameManager()
     name = models.CharField(
         max_length=255, unique=True, help_text="Unique name of the component."
     )

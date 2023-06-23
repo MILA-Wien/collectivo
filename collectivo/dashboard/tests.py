@@ -98,27 +98,29 @@ class DashboardAPITests(TestCase):
 
     def test_create_tile(self):
         """Test creating tile succeeded."""
-        DashboardTile.register(**self.tile)
+        DashboardTile.objects.register(**self.tile)
         tile = DashboardTile.objects.filter(name=self.tile["name"])
         self.assertTrue(tile.exists())
 
     def test_tile_correct_role(self):
         """Test tile should appear for user with required permission."""
-        DashboardTile.register(**self.tile, requires_perm=self.perm)
+        DashboardTile.objects.register(**self.tile, requires_perm=self.perm)
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertTrue("my_tile" in items)
 
     def test_tile_wrong_role(self):
         """Test menuitem should not appear for user without required role."""
-        DashboardTile.register(**self.tile, requires_perm=self.wrong_perm)
+        DashboardTile.objects.register(
+            **self.tile, requires_perm=self.wrong_perm
+        )
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)
 
     def test_tile_not_active(self):
         """Test tile should not appear if not active."""
-        DashboardTile.register(**self.tile, active=False)
+        DashboardTile.objects.register(**self.tile, active=False)
         res = self.client.get(TILES_URL)
         items = [i["name"] for i in res.data]
         self.assertFalse("my_tile" in items)

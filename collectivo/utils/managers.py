@@ -3,7 +3,7 @@ from django.db import models
 
 
 class NameManager(models.Manager):
-    """Manager with a registration function for models with a name."""
+    """Manager with a register method for models with a name."""
 
     def register(self, name, *args, **kwargs):
         """Update or create instance based on the attribute "name"."""

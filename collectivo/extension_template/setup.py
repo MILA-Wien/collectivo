@@ -8,6 +8,6 @@ def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     name = ExtensionConfig.name.split(".")[-1]  # Remove collectivo. prefix
-    Extension.register(
+    Extension.objects.register(
         name=name, description=ExtensionConfig.description, built_in=True
     )

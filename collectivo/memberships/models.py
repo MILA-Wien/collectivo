@@ -190,7 +190,7 @@ class MembershipType(models.Model):
             name=self.name, extension=extension
         )
 
-        tile = DashboardTile.register(
+        tile = DashboardTile.objects.register(
             name=self.name,
             label="Membership application",
             extension=extension,

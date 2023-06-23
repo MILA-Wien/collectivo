@@ -18,14 +18,14 @@ logger = getLogger(__name__)
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=apps.ExtensionConfig.name,
         description=apps.ExtensionConfig.description,
         built_in=True,
     )
 
     # User objects
-    MenuItem.register(
+    MenuItem.objects.register(
         name="memberships_user",
         label="Membership",
         extension=extension,
@@ -35,7 +35,7 @@ def setup(sender, **kwargs):
     )
 
     # Admin objects
-    MenuItem.register(
+    MenuItem.objects.register(
         name="memberships_admin",
         label="Memberships",
         extension=extension,

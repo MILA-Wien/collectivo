@@ -14,11 +14,11 @@ User = get_user_model()
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=TagsConfig.name, description=TagsConfig.description, built_in=True
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="tags_admin",
         label="Tags",
         extension=extension,

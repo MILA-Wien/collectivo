@@ -11,13 +11,13 @@ from .models import DashboardTile, DashboardTileButton
 def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
-    extension = Extension.register(
+    extension = Extension.objects.register(
         name=DashboardConfig.name,
         description=DashboardConfig.description,
         built_in=True,
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="dashboard",
         label="Dashboard",
         extension=extension,
@@ -27,7 +27,7 @@ def setup(sender, **kwargs):
         order=0,
     )
 
-    MenuItem.register(
+    MenuItem.objects.register(
         name="admin",
         label="Dashboard",
         extension=extension,
@@ -39,7 +39,7 @@ def setup(sender, **kwargs):
     )
 
     if settings.COLLECTIVO["example_data"]:
-        DashboardTile.register(
+        DashboardTile.objects.register(
             name="welcome_tile",
             label="Welcome to your platform!",
             extension=extension,
@@ -58,7 +58,7 @@ def setup(sender, **kwargs):
                 label=f"Example Button {i}",
             )
 
-            tile = DashboardTile.register(
+            tile = DashboardTile.objects.register(
                 name=f"example_tile_{i}",
                 label=f"Example Tile_{i}",
                 extension=extension,
