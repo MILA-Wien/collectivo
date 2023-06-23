@@ -76,7 +76,6 @@ def setup(sender, **kwargs):
             shares_amount_per_share=100,
             shares_number_custom=True,
             shares_number_custom_min=1,
-            enable_registration=True,
         )
         mst2 = models.MembershipType.objects.register(
             name="Test Membership Type 1 (Fees)",
@@ -85,16 +84,28 @@ def setup(sender, **kwargs):
             has_fees=True,
             fees_amount_standard=100,
         )
-        types = [mst1, mst2]
+        mst3 = models.MembershipType.objects.register(
+            name="Test Membership Type 3 (Shares)",
+            description="""This is a type of membership where members can hold shares, open for registration.""",
+            has_shares=True,
+            shares_amount_per_share=100,
+            shares_number_custom=True,
+            shares_number_custom_min=1,
+            enable_registration=True,
+        )
+        types = [mst1, mst2, mst3]
 
         # Create membership statuses
         statuses = []
         for sname in ["Test Status 1", "Test Status 2"]:
             status = models.MembershipStatus.objects.register(name=sname)
             statuses.append(status)
+        for ty in types:
+            ty.statuses.set(statuses)
         status_cycle = cycle(statuses)
 
         # Create memberships
+        types = [mst1, mst2]
         for first_name in DEV_MEMBERS:
             if first_name == "user_not_member":
                 continue

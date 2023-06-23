@@ -16,6 +16,8 @@ from .statistics import calculate_statistics
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
 
 class MembershipSerializer(UserFields):
     """Serializer for admins to manage memberships."""
@@ -190,6 +192,10 @@ class MembershipStatusSerializer(serializers.ModelSerializer):
         label = "Membership status"
 
 
+# TODO Specify membership type automatically
+# TODO Status only of membership type
+# TODO Shares
+# TODO Fees
 class MembershipRegisterSerializer(serializers.ModelSerializer):
     """Serializer of serializers for membership registration."""
 
@@ -201,8 +207,6 @@ class MembershipRegisterSerializer(serializers.ModelSerializer):
         fields = ["status", "shares_signed"]
 
 
-logger = logging.getLogger(__name__)
-
 try:
     registration_serializers = settings.COLLECTIVO["extensions"][
         "collectivo.memberships"
@@ -213,64 +217,6 @@ try:
 except Exception as e:
     logger.error(e, exc_info=True)
     registration_serializers = []
-
-
-conditions = {
-    "natural": {
-        "field": "person_type",
-        "condition": "equals",
-        "value": "natural",
-    },
-    "legal": {"field": "person_type", "condition": "equals", "value": "legal"},
-}
-
-
-schema_settings: Schema = {
-    "actions": ["retrieve", "update"],
-    "structure": [
-        {
-            "fields": ["person_type"],
-        },
-        {
-            "label": "Personal details",
-            "visible": conditions["natural"],
-            "fields": [
-                "user__first_name",
-                "user__last_name",
-                "gender",
-                "birthday",
-                "occupation",
-            ],
-            "style": "row",
-        },
-        {
-            "label": "Contact person",
-            "visible": conditions["legal"],
-            "fields": ["user__first_name", "user__last_name", "gender"],
-            "style": "row",
-        },
-        {
-            "label": "Organization details",
-            "visible": conditions["legal"],
-            "fields": ["legal_name", "legal_type", "legal_id"],
-            "style": "row",
-        },
-        {
-            "label": "Address",
-            "fields": [
-                "address_street",
-                "address_number",
-                "address_stair",
-                "address_door",
-                "address_postcode",
-                "address_city",
-                "address_country",
-                "phone",
-            ],
-            "style": "row",
-        },
-    ],
-}
 
 
 class MembershipRegisterCombinedSerializer(serializers.Serializer):

@@ -68,7 +68,7 @@ class EmailAutomationSerializer(serializers.ModelSerializer):
             "body": {"input_type": "html", "visible": if_not_admin_only},
             "design": {"visible": if_not_admin_only},
         }
-        schema_settings: Schema = {
+        schema: Schema = {
             "actions": ["list", "retrieve", "update"],
             "structure": [
                 {

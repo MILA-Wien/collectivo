@@ -21,8 +21,8 @@ class PaymentProfile(models.Model):
 
     payment_method = models.CharField(
         choices=[
-            ("transfer", "transfer"),
-            ("sepa", "sepa"),
+            ("transfer", "Transfer"),
+            ("sepa", "Direct debit"),
         ],
         max_length=30,
     )

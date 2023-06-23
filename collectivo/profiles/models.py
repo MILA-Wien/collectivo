@@ -17,7 +17,6 @@ class UserProfile(models.Model):
 
     # Personal data
     person_type = models.CharField(
-        help_text="Type of person.",
         max_length=50,
         null=True,
         choices=[

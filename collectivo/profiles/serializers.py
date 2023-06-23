@@ -16,19 +16,19 @@ conditions = {
     "legal": {"field": "person_type", "condition": "equals", "value": "legal"},
 }
 
-schema_attrs = {
-    "person_type": {"required": True},
-    "user__first_name": {"input_type": "text"},
-    "user__last_name": {"input_type": "text"},
-    "birthday": {"visible": conditions["natural"], "required": True},
-    "occupation": {"visible": conditions["natural"], "required": True},
-    "legal_name": {"visible": conditions["legal"], "required": True},
-    "legal_type": {"visible": conditions["legal"], "required": True},
-    "legal_id": {"visible": conditions["legal"], "required": True},
-}
 
-schema_settings: Schema = {
+schema: Schema = {
     "actions": ["retrieve", "update"],
+    "fields": {
+        "person_type": {"required": True},
+        "user__first_name": {"label": "First name", "input_type": "text"},
+        "user__last_name": {"label": "Last name", "input_type": "text"},
+        "birthday": {"visible": conditions["natural"], "required": True},
+        "occupation": {"visible": conditions["natural"], "required": True},
+        "legal_name": {"visible": conditions["legal"], "required": True},
+        "legal_type": {"visible": conditions["legal"], "required": True},
+        "legal_id": {"visible": conditions["legal"], "required": True},
+    },
     "structure": [
         {
             "fields": ["person_type"],
@@ -89,7 +89,7 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
         model = models.UserProfile
         fields = "__all__"
         read_only_fields = ["user"]
-        schema_attrs = schema_attrs
+        schema = schema
 
 
 class ProfileRegisterSerializer(serializers.ModelSerializer):
@@ -108,8 +108,7 @@ class ProfileRegisterSerializer(serializers.ModelSerializer):
         label = "Profile"
         model = models.UserProfile
         exclude = ["user", "notes"]
-        schema_attrs = schema_attrs
-        schema_settings = schema_settings
+        schema = schema
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):
@@ -121,4 +120,4 @@ class ProfileUserSerializer(serializers.ModelSerializer):
         label = "Profile"
         model = models.UserProfile
         exclude = ["user", "notes"]
-        schema_attrs = schema_attrs
+        schema = schema

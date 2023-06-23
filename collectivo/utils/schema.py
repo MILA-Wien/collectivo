@@ -137,6 +137,11 @@ def get_endpoint(model: models.Model, source: str = None) -> str:
 
 def get_serializer_schema(serializer: Serializer):
     """Get the schema for a serializer."""
+    if hasattr(serializer.Meta, "schema"):
+        settings = serializer.Meta.schema
+    else:
+        settings = {}
+
     data = {}
     for field_name, field_obj in serializer.fields.items():
         if isinstance(field_obj, Serializer):
@@ -182,12 +187,17 @@ def get_serializer_schema(serializer: Serializer):
                 if value is not empty and value is not None:
                     data[field_name][attr] = value
 
-        # Add custom schema attributes from serializer
+        # Add custom schema attributes from serializer (legacy version)
         if (
             hasattr(serializer.Meta, "schema_attrs")
             and field_name in serializer.Meta.schema_attrs
         ):
             for key, value in serializer.Meta.schema_attrs[field_name].items():
+                data[field_name][key] = value
+
+        # Add custom schema attributes from serializer (new version)
+        if "fields" in settings and field_name in settings["fields"]:
+            for key, value in settings["fields"][field_name].items():
                 data[field_name][key] = value
 
         # Ensure that read only fields cannot be required
@@ -204,8 +214,10 @@ def get_serializer_schema(serializer: Serializer):
         "fields": data,
     }
 
-    if hasattr(serializer.Meta, "schema_settings"):
-        schema.update(serializer.Meta.schema_settings)
+    # Overwrite fields from settings except for "fields"
+    for key, value in settings.items():
+        if key != "fields":
+            schema[key] = value
 
     return schema
 

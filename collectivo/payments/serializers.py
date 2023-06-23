@@ -1,6 +1,7 @@
 """Serializers of the payments extension."""
 from rest_framework import serializers
 
+from collectivo.utils.schema import Schema
 from collectivo.utils.serializers import UserIsPk
 
 from . import models
@@ -16,6 +17,18 @@ class PaymentProfileSerializer(UserIsPk):
         model = models.PaymentProfile
         fields = "__all__"
         read_only_fields = ["user"]
+        schema: Schema = {
+            "actions": ["retrieve", "update"],
+            "fields": {
+                "user": {"visible": False},
+                "bank_account_iban": {
+                    "label": "IBAN",
+                    "validators": ["iban"],
+                    "required": True,
+                },
+                "bank_account_owner": {"required": True},
+            },
+        }
 
 
 class ItemEntrySerializer(serializers.ModelSerializer):
