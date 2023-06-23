@@ -155,7 +155,7 @@ services:
     image: milawien/collectivo-ux:latest
     restart: always
     environment:
-      VITE_APP_API: ${COLLECTIVO_URL}
+      VITE_API_URL: ${COLLECTIVO_URL}
       VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
     ports:
       - "8001:80"
