@@ -21,7 +21,7 @@ def setup(sender, **kwargs):
         icon_name="pi-calendar",
         extension=extension,
         route=extension.name + "/shifts_user",
-        requires_perm="collectivo.shifts.user",
+        requires_perm=("use shifts", "shifts"),
         parent="main",
     )
 
@@ -42,5 +42,5 @@ def setup(sender, **kwargs):
         extension=extension,
         source="component",
         route=extension.name + "/shifts_user_tile",
-        requires_perm="collectivo.shifts.user",
+        requires_perm=("use shifts", "shifts"),
     )

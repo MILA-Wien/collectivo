@@ -19,7 +19,7 @@ def setup(sender, **kwargs):
         extension=extension,
         parent="admin",
         route=extension.name + "/admin",
-        requires_perm="superuser",
+        requires_perm=("admin", "core"),
         icon_name="pi-box",
         order=90,
     )

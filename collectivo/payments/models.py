@@ -180,7 +180,7 @@ class Invoice(models.Model):
         ],
     )
 
-    date = models.DateField(default=datetime.date.today)
+    date_created = models.DateField(default=datetime.date.today)
     date_due = models.DateField(null=True, blank=True)
     date_paid = models.DateField(null=True, blank=True)
 
