@@ -96,10 +96,10 @@ class ProfileRegisterSerializer(serializers.ModelSerializer):
     """Serializer for members to manage their own data."""
 
     user__first_name = serializers.CharField(
-        source="user.first_name", required=True
+        source="user.first_name", required=False
     )
     user__last_name = serializers.CharField(
-        source="user.last_name", required=True
+        source="user.last_name", required=False
     )
 
     class Meta:
@@ -109,6 +109,15 @@ class ProfileRegisterSerializer(serializers.ModelSerializer):
         model = models.UserProfile
         exclude = ["user", "notes"]
         schema = schema
+
+    def update(self, instance, validated_data):
+        """Update user fields seperately."""
+        user_fields = validated_data.pop("user")
+        obj = super().update(instance, validated_data)
+        for key, value in user_fields.items():
+            setattr(obj.user, key, value)
+            obj.user.save()
+        return obj
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):

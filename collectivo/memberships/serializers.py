@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -204,7 +205,17 @@ class MembershipRegisterSerializer(serializers.ModelSerializer):
 
         label = "Membership"
         model = models.Membership
-        fields = ["status", "shares_signed"]
+        fields = ["type", "status", "shares_signed"]
+        schema: Schema = {
+            "fields": {"status": {"required": True}},
+            "type": {"visible": False},
+        }
+
+    # Add user id to data before saving
+    def create(self, validated_data):
+        """Add user to registration data."""
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)
 
 
 try:
@@ -259,20 +270,22 @@ class MembershipRegisterCombinedSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """Call all serializers for registration."""
-
-        request = self.context.get("request")
-
-        for item in registration_serializers:
-            for method, serializer in item.items():
-                name = serializer.__name__
-                data = validated_data.pop(name)
-                model = serializer.Meta.model
-                if method == "create":
-                    model.objects.create(**data)
-                elif method == "update":
-                    obj = model.objects.get(user=request.user)
-                    for field, value in data.items():
-                        setattr(obj, field, value)
-                    obj.save()
+        with transaction.atomic():
+            request = self.context.get("request")
+            for item in registration_serializers:
+                for method, serializer in item.items():
+                    name = serializer.__name__
+                    data = request.data[name]
+                    model = serializer.Meta.model
+                    if method == "create":
+                        seri = serializer(data=data)
+                        seri.context.update({"request": request})
+                        seri.is_valid(raise_exception=True)
+                        seri.create(seri.validated_data)
+                    elif method == "update":
+                        instance = model.objects.get(user=request.user)
+                        seri = serializer(instance, data=data)
+                        seri.is_valid(raise_exception=True)
+                        seri.update(instance, seri.validated_data)
 
         return {}

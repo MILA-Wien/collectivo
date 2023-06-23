@@ -86,7 +86,8 @@ def setup(sender, **kwargs):
         )
         mst3 = models.MembershipType.objects.register(
             name="Test Membership Type 3 (Shares)",
-            description="""This is a type of membership where members can hold shares, open for registration.""",
+            description="""This is a type of membership where members can hold
+             shares, open for registration.""",
             has_shares=True,
             shares_amount_per_share=100,
             shares_number_custom=True,
