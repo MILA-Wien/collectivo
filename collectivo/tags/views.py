@@ -24,6 +24,7 @@ class TagProfileViewSet(SchemaMixin, viewsets.ModelViewSet):
         "GET": [("view_users", "core")],
         "ALL": [("edit_users", "core")],
     }
+    queryset = User.objects.all()
     serializer_class = serializers.TagProfileSerializer
     permission_classes = [IsSuperuser]
     filterset_class = get_filterset(serializers.TagProfileSerializer)

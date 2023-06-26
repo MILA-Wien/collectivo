@@ -143,7 +143,7 @@ class MembershipTypeHistoryViewSet(
         "ALL": [("edit_settings", "memberships")],
     }
     serializer_class = serializers.MembershipTypeHistorySerializer
-    queryset = Membership.history.model.objects.all()
+    queryset = MembershipType.history.model.objects.all()
     filterset_class = get_filterset(
         serializers.MembershipTypeHistorySerializer
     )

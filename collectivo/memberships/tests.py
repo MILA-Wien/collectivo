@@ -18,9 +18,6 @@ from .models import Membership, MembershipType
 
 User = get_user_model()
 
-CREATE_INVOICES_URL = reverse(
-    "collectivo.memberships:membership-create_invoices"
-)
 MEMBERSHIP_URL_NAME = "collectivo.memberships:membership-detail"
 
 
@@ -133,8 +130,6 @@ class MembershipsPaymentsTests(TestCase):
         """Test that invoices are created correctly."""
 
         # First invoice
-        res = self.client.post(CREATE_INVOICES_URL)
-        self.assertEqual(res.status_code, 200)
         entry = ItemEntry.objects.get(
             type__name=self.membership_type.name,
         )
@@ -144,7 +139,6 @@ class MembershipsPaymentsTests(TestCase):
         self.assertEqual(entry.invoice.status, "open")
 
         # No second invoice if nothing changes
-        res = self.client.post(CREATE_INVOICES_URL)
         entries = ItemEntry.objects.filter(
             type__name=self.membership_type.name,
         )
@@ -153,7 +147,7 @@ class MembershipsPaymentsTests(TestCase):
         # Second invoice if shares change
         self.membership.shares_signed = 10 + 3
         self.membership.save()
-        res = self.client.post(CREATE_INVOICES_URL)
+
         entries = ItemEntry.objects.filter(
             type__name=self.membership_type.name,
         )

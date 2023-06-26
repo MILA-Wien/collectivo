@@ -46,6 +46,8 @@ class MembershipSerializer(UserFields):
             queryset=Tag.objects.all(),
             label="Tags",
             many=True,
+            required=False,
+            allow_null=True,
         )
 
     except ImportError:
