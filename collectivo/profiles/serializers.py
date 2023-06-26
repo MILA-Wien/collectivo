@@ -80,7 +80,7 @@ class ProfileBaseSerializer(UserIsPk):
 
 
 class ProfileAdminSerializer(ProfileBaseSerializer):
-    """Serializer for admins to manage members."""
+    """Serializer for admins to manage profiles."""
 
     class Meta:
         """Serializer settings."""
@@ -92,8 +92,19 @@ class ProfileAdminSerializer(ProfileBaseSerializer):
         schema = schema
 
 
+class ProfileHistorySerializer(ProfileBaseSerializer):
+    """Serializer for admins to manage profile history."""
+
+    class Meta:
+        """Serializer settings."""
+
+        label = "Profile"
+        model = models.UserProfile.history.model
+        fields = "__all__"
+
+
 class ProfileRegisterSerializer(serializers.ModelSerializer):
-    """Serializer for members to manage their own data."""
+    """Serializer for users to manage their own profile."""
 
     user__first_name = serializers.CharField(
         source="user.first_name", required=False

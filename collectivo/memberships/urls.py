@@ -9,9 +9,19 @@ app_name = "collectivo.memberships"
 router = DefaultRouter()
 router.register("memberships", views.MembershipAdminViewSet)
 router.register(
+    "memberships-history",
+    views.MembershipHistoryViewSet,
+    basename="membership-history",
+)
+router.register(
     "register", views.MembershipRegisterViewset, basename="register"
 )
 router.register("types", views.MembershipTypeViewSet)
+router.register(
+    "types-history",
+    views.MembershipTypeHistoryViewSet,
+    basename="type-history",
+)
 router.register("statuses", views.MembershipStatusViewSet, basename="status")
 router.register("profiles", views.MembershipProfileViewSet, basename="profile")
 

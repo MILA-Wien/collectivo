@@ -289,3 +289,23 @@ class MembershipRegisterCombinedSerializer(serializers.Serializer):
                         seri.update(instance, seri.validated_data)
 
         return {}
+
+
+class MembershipHistorySerializer(serializers.ModelSerializer):
+    """Serializer for membership history."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Membership.history.model
+        fields = "__all__"
+
+
+class MembershipTypeHistorySerializer(serializers.ModelSerializer):
+    """Serializer for membershipType history."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.MembershipType.history.model
+        fields = "__all__"
