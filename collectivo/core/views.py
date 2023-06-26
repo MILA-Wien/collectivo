@@ -85,7 +85,7 @@ class PermissionGroupViewSet(ExtensionModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class UserViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
+class UserViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Viewset for django users."""
 
     queryset = User.objects.all()
@@ -101,7 +101,6 @@ class UserViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
 
 class UserProfileViewSet(
     SchemaMixin,
-    HistoryMixin,
     viewsets.GenericViewSet,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -118,7 +117,7 @@ class UserProfileViewSet(
 
 
 class UserProfilesViewSet(
-    SchemaMixin, HistoryMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+    SchemaMixin, mixins.ListModelMixin, viewsets.GenericViewSet
 ):
     """Viewset for django users including all their profiles."""
 
@@ -132,7 +131,7 @@ class UserProfilesViewSet(
     ordering_fields = get_ordering_fields(serializers.UserProfilesSerializer)
 
 
-class GroupViewSet(SchemaMixin, HistoryMixin, viewsets.ModelViewSet):
+class GroupViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Viewset for django groups."""
 
     queryset = Group.objects.all()
