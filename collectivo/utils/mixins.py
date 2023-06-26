@@ -1,6 +1,5 @@
 """Mixin classes for collectivo viewsets."""
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
