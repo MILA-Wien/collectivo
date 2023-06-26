@@ -77,8 +77,18 @@ class PermissionGroupSerializer(serializers.ModelSerializer):
         }
 
 
+class PermissionGroupHistorySerializer(serializers.ModelSerializer):
+    """Serializer for history of permission groups."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = PermissionGroup.history.model
+        fields = "__all__"
+
+
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer for members to manage their own data."""
+    """Serializer for users."""
 
     permission_groups = serializers.PrimaryKeyRelatedField(
         many=True, queryset=PermissionGroup.objects.all()
@@ -96,6 +106,16 @@ class UserSerializer(serializers.ModelSerializer):
             "permission_groups",
         ]
         read_only_fields = ["id"]
+
+
+class UserHistorySerializer(serializers.ModelSerializer):
+    """Serializer for history of users."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = User.history.model
+        fields = "__all__"
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -208,13 +228,3 @@ class UserProfilesSerializer(serializers.ModelSerializer):
             "groups",
         ]
         read_only_fields = ["user"]
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    """Serializer for members to manage their own data."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = Group
-        fields = ["name"]

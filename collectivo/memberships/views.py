@@ -1,9 +1,6 @@
 """Views of the memberships extension."""
 from django.contrib.auth import get_user_model
-from django.db import transaction
-from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import mixins, viewsets
-from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -14,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.mixins import BulkEditMixin, HistoryMixin, SchemaMixin
 from collectivo.utils.permissions import HasPerm, IsAuthenticated
 
 from . import serializers
@@ -23,7 +20,7 @@ from .models import Membership, MembershipStatus, MembershipType
 User = get_user_model()
 
 
-class MembershipAdminViewSet(SchemaMixin, ModelViewSet):
+class MembershipAdminViewSet(SchemaMixin, BulkEditMixin, ModelViewSet):
     """ViewSet to manage memberships with a type and status."""
 
     queryset = Membership.objects.all()

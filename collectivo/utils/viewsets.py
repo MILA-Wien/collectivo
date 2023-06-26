@@ -15,14 +15,22 @@ from collectivo.utils.mixins import (
 )
 
 
-class CollectivoViewSet(HistoryMixin, SchemaMixin, GenericViewSet):
+class CollectivoViewSet(SchemaMixin, GenericViewSet):
     """GenericViewSet with History and Schema mixins."""
 
     pass
 
 
-class CollectivoModelViewSet(HistoryMixin, SchemaMixin, ModelViewSet):
+class CollectivoModelViewSet(SchemaMixin, ModelViewSet):
     """ModelViewSet with History and Schema mixins."""
+
+    pass
+
+
+class HistoryViewSet(
+    SchemaMixin, HistoryMixin, ListModelMixin, GenericViewSet
+):
+    """ModelViewSet for history models."""
 
     pass
 

@@ -7,11 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
-from collectivo.utils.permissions import (
-    HasPerm,
-    IsSuperuser,
-    ReadOrIsSuperuser,
-)
+from collectivo.utils.permissions import HasPerm, IsSuperuser
 
 from . import models, serializers
 

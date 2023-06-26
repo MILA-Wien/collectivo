@@ -241,5 +241,7 @@ def get_model_schema(self: GenericViewSet):
             actions.append("delete")
         if isinstance(self, mixins.ListModelMixin):
             actions.append("list")
+        if hasattr(self, "bulk_update"):
+            actions.append("update-bulk")
 
     return Response(schema)

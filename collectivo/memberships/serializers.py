@@ -9,6 +9,7 @@ from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from collectivo.tags.models import Tag
 from collectivo.utils.schema import Schema, SchemaCondition
 from collectivo.utils.serializers import UserFields
 
@@ -20,18 +21,33 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+class _TagsSerializer(serializers.Serializer):
+    """Serializer for tags.
+
+    TODO: This is a temporary solution as a m2m field with source (below) is
+    not writable.
+    """
+
+    user__tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all(),
+        read_only=False,
+    )
+
+
 class MembershipSerializer(UserFields):
     """Serializer for admins to manage memberships."""
 
     try:
-        import collectivo.tags
+        from collectivo.tags.models import Tag
 
         user__tags = serializers.PrimaryKeyRelatedField(
-            many=True,
             source="user.tags",
-            read_only=True,
+            queryset=Tag.objects.all(),
             label="Tags",
+            many=True,
         )
+
     except ImportError:
         pass
     try:
@@ -65,6 +81,15 @@ class MembershipSerializer(UserFields):
         if stage is not None and data.get(f"date_{stage}", None) is None:
             raise ValidationError(f"Stage '{stage} requires 'date_{stage}'")
         return data
+
+    def update(self, instance, validated_data):
+        """Save user tags seperately."""
+        tr = _TagsSerializer(data=self.initial_data)
+        tr.is_valid()
+        if "user_tags" in tr.validated_data:
+            instance.user.tags.set(tr.validated_data["user__tags"])
+
+        return super().update(instance, validated_data)
 
 
 class MembershipSelfSerializer(serializers.ModelSerializer):

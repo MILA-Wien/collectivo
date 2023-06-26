@@ -54,6 +54,6 @@ class ProfileHistoryViewSet(
         "ALL": [("edit_users", "core")],
     }
     serializer_class = serializers.ProfileHistorySerializer
-    queryset = models.Profile.history.model.objects.all()
+    queryset = models.UserProfile.history.model.objects.all()
     filterset_class = get_filterset(serializers.ProfileHistorySerializer)
     ordering_fields = get_ordering_fields(serializers.ProfileHistorySerializer)

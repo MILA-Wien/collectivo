@@ -1,4 +1,6 @@
 """Mixin classes for collectivo viewsets."""
+
+from django.db import transaction
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -68,3 +70,29 @@ class HistoryMixin:
         history_object = self.get_object()
         history_object.instance.save()
         return Response("Success")
+
+
+class BulkEditMixin:
+    """Adds an action 'bulk_update' to a viewset."""
+
+    @action(
+        detail=False,
+        methods=["put", "patch"],
+        url_name="bulk_update",
+        url_path="bulk_update",
+    )
+    def bulk_update(self, request, **kwargs):
+        """Update multiple objects with a single request."""
+        if not isinstance(request.data, list):
+            raise ParseError("Invalid data (expected a list)")
+
+        with transaction.atomic():
+            for data in request.data:
+                if not isinstance(data, dict) or "id" not in data:
+                    raise ParseError("Invalid data (expected object with id)")
+                instance = self.queryset.get(pk=data["id"])
+                serializer = self.get_serializer(instance, data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+        return Response()

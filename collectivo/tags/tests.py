@@ -25,6 +25,10 @@ class TagsTests(TestCase):
         self.client.force_authenticate(self.user)
         self.tag = Tag.objects.create(name="test_tag")
 
+    def test_bulk_edit_tags(self):
+        """Test bulk edit functionality."""
+        pass
+
     def test_get_tags(self):
         """Test getting tags."""
         res = self.client.get(TAGS_URL + "?offset=0&limit=10")
