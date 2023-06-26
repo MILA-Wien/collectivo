@@ -54,28 +54,18 @@ class SchemaMixin:
 
 
 class HistoryMixin:
-    """Adds an action 'history' to a viewset."""
+    """Adds an action 'revert' to a viewset of a history model."""
 
     @extend_schema(responses={200: OpenApiResponse()})
     @action(
-        url_path="history",
-        url_name="history",
+        url_path="revert",
+        url_name="revert",
         detail=True,
+        methods=["POST"],
         permission_classes=[IsSuperuser],
     )
-    def _history(self, request, pk):
-        """Return model history."""
-
-        class HistorySerializer(serializers.ModelSerializer):
-            """Serializer to manage the history of a model."""
-
-            class Meta:
-                """Serializer settings."""
-
-                model = self.get_serializer().Meta.model.history.model
-                fields = "__all__"
-
-        obj = self.get_object()
-        history = obj.history.all()
-        serializer = HistorySerializer(history, many=True)
-        return Response(serializer.data)
+    def _revert(self, request, pk):
+        """Revert model to the state of the given history model."""
+        history_object = self.get_object()
+        history_object.instance.save()
+        return Response("Success")

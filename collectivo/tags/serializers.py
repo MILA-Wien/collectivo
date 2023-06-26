@@ -18,6 +18,16 @@ class TagSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "extension")
 
 
+class TagHistorySerializer(serializers.ModelSerializer):
+    """Serializer for tag history."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.Tag.history.model
+        fields = "__all__"
+
+
 class TagProfileSerializer(serializers.ModelSerializer):
     """Serializer for tag profiles."""
 

@@ -2,12 +2,12 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ValidationError
 
 from collectivo.utils.filters import get_filterset, get_ordering_fields
-from collectivo.utils.mixins import SchemaMixin
-from collectivo.utils.permissions import ReadOrIsSuperuser, IsSuperuser
+from collectivo.utils.mixins import HistoryMixin, SchemaMixin
+from collectivo.utils.permissions import IsSuperuser, ReadOrIsSuperuser
 
 from . import models, serializers
 
@@ -37,8 +37,21 @@ class TagViewSet(SchemaMixin, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Prevent deletion if assigned to users."""
+
         if instance.users.all().exists():
             raise ValidationError(
                 "Cannot delete a tag that is assigned to users."
             )
         return super().perform_destroy(instance)
+
+
+class TagHistoryViewSet(
+    SchemaMixin, HistoryMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
+    """View history of a tag."""
+
+    permission_classes = [ReadOrIsSuperuser]
+    serializer_class = serializers.TagHistorySerializer
+    queryset = models.Tag.history.model.objects.all()
+    filterset_class = get_filterset(serializers.TagHistorySerializer)
+    ordering_fields = get_ordering_fields(serializers.TagHistorySerializer)

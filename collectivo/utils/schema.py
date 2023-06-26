@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
+from rest_framework import mixins
 from rest_framework.fields import empty
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
@@ -226,4 +227,19 @@ def get_model_schema(self: GenericViewSet):
     """Return model schema."""
     serializer: Serializer = self.get_serializer_class()()
     schema = get_serializer_schema(serializer)
+
+    # Add allowed actions based on viewset mixins
+    if "actions" not in schema:
+        schema["actions"] = actions = []
+        if isinstance(self, mixins.CreateModelMixin):
+            actions.append("create")
+        if isinstance(self, mixins.RetrieveModelMixin):
+            actions.append("retrieve")
+        if isinstance(self, mixins.UpdateModelMixin):
+            actions.append("update")
+        if isinstance(self, mixins.DestroyModelMixin):
+            actions.append("delete")
+        if isinstance(self, mixins.ListModelMixin):
+            actions.append("list")
+
     return Response(schema)
