@@ -24,7 +24,11 @@ extensions:
   - collectivo.components
   - collectivo.dashboard
   - collectivo.profiles
-  - collectivo.memberships
+  - collectivo.memberships:
+      - registration_serializers:
+          - update: collectivo.profiles.serializers.ProfileRegisterSerializer
+          - update: collectivo.payments.serializers.PaymentProfileSerializer
+          - create: collectivo.memberships.serializers.MembershipRegisterSerializer
   - collectivo.tags
   - collectivo.emails
   - collectivo.emails.tags

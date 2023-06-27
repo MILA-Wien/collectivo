@@ -160,6 +160,7 @@ services:
     ports:
       - "8001:80"
 
+
   # Keycloak for authentication.
   keycloak:
     build: ./docker/keycloak
