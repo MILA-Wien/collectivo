@@ -43,19 +43,16 @@ schema: Schema = {
                 "birthday",
                 "occupation",
             ],
-            "style": "row",
         },
         {
             "label": "Contact person",
             "visible": conditions["legal"],
             "fields": ["user__first_name", "user__last_name", "gender"],
-            "style": "row",
         },
         {
             "label": "Organization details",
             "visible": conditions["legal"],
             "fields": ["legal_name", "legal_type", "legal_id"],
-            "style": "row",
         },
         {
             "label": "Address",
@@ -64,12 +61,13 @@ schema: Schema = {
                 "address_number",
                 "address_stair",
                 "address_door",
-                "address_postcode",
-                "address_city",
-                "address_country",
+            ],
+        },
+        {"fields": ["address_postcode", "address_city", "address_country"]},
+        {
+            "fields": [
                 "phone",
             ],
-            "style": "row",
         },
     ],
 }
