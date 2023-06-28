@@ -1,4 +1,5 @@
 """Tests for the core extension."""
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -58,8 +59,9 @@ class CoreApiTests(TestCase):
 
     def test_get_api_docs(self):
         """Test getting the API docs."""
-        res = self.client.get("/api/schema/?version=0.1.0")
-        self.assertEqual(res.status_code, 200)
+        if settings.COLLECTIVO["api_docs"]:
+            res = self.client.get("/api/schema/?version=0.1.0")
+            self.assertEqual(res.status_code, 200)
 
     def test_get_version(self):
         """Test getting current version is correct."""
