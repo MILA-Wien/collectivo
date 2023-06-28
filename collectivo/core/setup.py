@@ -18,7 +18,7 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-def setup():
+def setup(sender, **kwargs):
     """Initialize extension after database is ready."""
 
     logger.info(f"Starting Collectivo v{__version__}")
