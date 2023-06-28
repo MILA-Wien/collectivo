@@ -82,13 +82,6 @@ class MembershipsEmailsTests(TestCase):
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[1].subject, "Test Subject accepted")
 
-        # self.membership.date_ended = "2020-01-01"
-        # self.membership.save()
-
-        # run_mocked_celery_chain(chain)
-        # self.assertEqual(len(mail.outbox), 3)
-        # self.assertEqual(mail.outbox[2].subject, "Test Subject Ended")
-
 
 class MembershipsPaymentsTests(TestCase):
     """Test the connection between the memberships and payments extension."""

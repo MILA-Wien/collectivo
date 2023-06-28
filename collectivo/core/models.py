@@ -122,5 +122,5 @@ class PermissionGroup(models.Model):
     def __str__(self):
         """Return the string representation."""
         if self.extension:
-            return f"{self.extension} {self.name}"
+            return f"{self.extension}: {self.name}"
         return self.name
