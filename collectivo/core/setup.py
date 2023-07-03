@@ -27,10 +27,19 @@ def setup(sender, **kwargs):
         name=CoreConfig.name, description=CoreConfig.description, built_in=True
     )
 
+    # Open for all group
+    all_users = PermissionGroup.objects.register(
+        name="all_users",
+        label="All users",
+        description="Permissions that apply to every user.",
+        extension=extension,
+        users_custom=False,
+    )
+
     # Superuser permissions
     superuser = PermissionGroup.objects.register(
         name="superuser",
-        label="Superuser",
+        label="Superusers",
         description="Admin access to all possible actions.",
         extension=extension,
     )

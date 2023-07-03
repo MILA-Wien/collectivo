@@ -1,4 +1,7 @@
 """Setup function for the shifts extension."""
+from django.conf import settings
+
+from collectivo.core.models import Permission, PermissionGroup
 from collectivo.dashboard.models import DashboardTile
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
@@ -15,13 +18,21 @@ def setup(sender, **kwargs):
         built_in=True,
     )
 
+    permissions = {}
+    for p in ["use_shifts", "view_shifts", "edit_shifts"]:
+        permissions[p] = Permission.objects.register(
+            name=p,
+            label=p.replace("_", " ").capitalize(),
+            extension=extension,
+        )
+
     MenuItem.objects.register(
         name="shifts_user",
         label="Shifts",
         icon_name="pi-calendar",
         extension=extension,
         route=extension.name + "/shifts_user",
-        requires_perm=("use shifts", "shifts"),
+        requires_perm=("use_shifts", "shifts"),
         parent="main",
     )
 
@@ -31,7 +42,7 @@ def setup(sender, **kwargs):
         icon_name="pi-calendar",
         extension=extension,
         route=extension.name + "/admin",
-        requires_perm=("admin", "core"),
+        requires_perm=("view_shifts", "shifts"),
         parent="admin",
         order=30,
     )
@@ -42,5 +53,22 @@ def setup(sender, **kwargs):
         extension=extension,
         source="component",
         route=extension.name + "/shifts_user_tile",
-        requires_perm=("use shifts", "shifts"),
+        requires_perm=("use_shifts", "shifts"),
     )
+
+    # Add shift admin permissions to superusers
+    core = Extension.objects.get(name="core")
+    superusers = PermissionGroup.objects.get(
+        name="superuser",
+        extension=core,
+    )
+    superusers.permissions.add(
+        permissions["view_shifts"], permissions["edit_shifts"]
+    )
+
+    if settings.COLLECTIVO["example_data"] is True:
+        all_users = PermissionGroup.objects.get(
+            name="all_users",
+            extension=core,
+        )
+        all_users.permissions.add(permissions["use_shifts"])
