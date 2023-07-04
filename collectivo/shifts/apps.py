@@ -18,6 +18,7 @@ class ShiftsConfig(AppConfig):
         Database calls are performed after migrations, using the post_migrate
         signal. This signal only works if the app has a models.py module.
         """
+        from . import signals  # noqa: F401
         from .setup import setup
 
         post_migrate.connect(setup, sender=self)

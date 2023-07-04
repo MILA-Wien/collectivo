@@ -1,41 +1,72 @@
 """Serializers of the collectivo user experience module."""
 from rest_framework import serializers
 
-from .models import Shift, ShiftAssignment, ShiftProfile
+from collectivo.utils.schema import Schema
+
+from .models import Shift, ShiftProfile, ShiftSlot
 
 
 class ShiftSerializer(serializers.ModelSerializer):
     """Serializer for shift."""
 
-    assignments = serializers.SerializerMethodField()
-    assigned_users = serializers.SerializerMethodField()
+    next_occurence = serializers.SerializerMethodField()
+
+    def get_next_occurence(self, obj):
+        """Get the next occurence of the shift."""
+        return obj.get_next_occurence()
 
     class Meta:
         """Serializer settings."""
 
         model = Shift
         fields = "__all__"
+        schema: Schema = {
+            "structure": [
+                {
+                    "fields": [
+                        "name",
+                        "description",
+                    ],
+                    "style": "col",
+                },
+                {
+                    "fields": ["required_users", "shift_points", "repeat"],
+                },
+                {
+                    "fields": [
+                        "repeat_start",
+                        "repeat_end",
+                        "abcd_week",
+                        "abcd_day",
+                        "starting_time",
+                        "ending_time",
+                    ],
+                    "visible": {
+                        "condition": "equals",
+                        "value": "abcd",
+                        "field": "repeat",
+                    },
+                },
+                {
+                    "fields": ["date", "starting_time", "ending_time"],
+                    "visible": {
+                        "condition": "equals",
+                        "value": "none",
+                        "field": "repeat",
+                    },
+                },
+                {
+                    "fields": ["notes"],
+                },
+            ]
+        }
 
-    def create(self, validated_data):
-        """Create a new shift."""
-        shift = Shift.objects.create(**validated_data)
-        required_users = validated_data.get("required_users")
-        for i in range(required_users):
-            ShiftAssignment.objects.create(shift=shift)
-        return shift
 
-    def get_assignments(self, obj):
-        """Get all assignments for a shift."""
-        assignments = ShiftAssignment.objects.filter(shift=obj)
-        return AssignmentSerializer(assignments, many=True).data
+class ShiftOccurenceSerializer(serializers.Serializer):
+    """Serializer for shift occurence."""
 
-    def get_assigned_users(self, obj):
-        """Get all assigned users for a shift."""
-        assignments = ShiftAssignment.objects.filter(shift=obj)
-        assigned_users = ShiftProfile.objects.filter(
-            shiftassignment__in=assignments
-        )
-        return ShiftUserSerializer(assigned_users, many=True).data
+    date = serializers.DateField()
+    shift = ShiftSerializer()
 
 
 class ShiftOpenShiftsSerializer(ShiftSerializer):
@@ -54,7 +85,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         """Serializer settings."""
 
-        model = ShiftAssignment
+        model = ShiftSlot
         fields = "__all__"
 
 

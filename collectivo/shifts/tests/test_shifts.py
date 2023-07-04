@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from collectivo.shifts.models import Shift, ShiftAssignment, ShiftProfile
+from collectivo.shifts.models import Shift, ShiftProfile, ShiftSlot
 from collectivo.utils.test import create_testuser
 
 User = get_user_model()
@@ -104,25 +104,25 @@ class ShiftAPITests(TestCase):
         """
         shift = self.create_shift(payload=TEST_SHIFT_POST)
         self.assertEqual(
-            ShiftAssignment.objects.filter(
+            ShiftSlot.objects.filter(
                 shift__shift_title="first_repeating_monthly_shift",
             ).count(),
             shift.required_users,
         )
         self.assertEqual(
-            ShiftAssignment.objects.filter(
+            ShiftSlot.objects.filter(
                 shift__shift_title="first_repeating_monthly_shift",
             ).count(),
             4,
         )
-        assignments = ShiftAssignment.objects.all()
+        assignments = ShiftSlot.objects.all()
         self.assertEqual(assignments[0].attended, False)
         self.assertEqual(assignments[3].additional_info_individual, None)
 
     def test_assignment_gets_attributes_from_shift(self):
         """Test that assignments get atttributes from shifts."""
         shift = self.create_shift(payload=TEST_SHIFT_POST)
-        assignments = ShiftAssignment.objects.all()
+        assignments = ShiftSlot.objects.all()
         self.assertEqual(
             shift.shift_title,
             assignments[0].shift.shift_title,
@@ -152,7 +152,7 @@ class ShiftAPITests(TestCase):
                 "API patch call failed, could not assign user to shift:",
                 res.content,
             )
-        assignment = ShiftAssignment.objects.get(id=res.data["id"])
+        assignment = ShiftSlot.objects.get(id=res.data["id"])
         return assignment
 
     def test_assignment_is_assigned_by_user(self):

@@ -1,41 +1,58 @@
 """Models of the shift module."""
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+from collectivo.utils.managers import NameManager
+
+from .abcd import get_abcd_occurences
+
 
 class Shift(models.Model):
-    """A shift to be done by the collective."""
+    """A timed event that can have multiple occurences."""
 
-    shift_title = models.CharField(max_length=30, blank=True)
-    shift_starting_date = models.DateField(blank=True, null=True)
-    shift_ending_date = models.DateField(blank=True, null=True)
-    shift_type = models.CharField(
-        help_text=(
-            "Type of shift. Regular shifts are one time shifts."
-            "Repeating shifts can be weekly or monthly."
-            "Extra shifts are shifts that are not part of the"
-            "regular schedule. Holiday shifts are shifts"
-            "that are not part of the regular schedule but are not"
-            "extra shifts. Other shifts are shifts that are not"
-            "part of the regular schedule and are not extra shifts"
-            "and are not holiday shifts."
-        ),
-        default="fixed",
+    objects = NameManager()
+    history = HistoricalRecords()
+
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    starting_time = models.TimeField(blank=True, null=True)
+    ending_time = models.TimeField(blank=True, null=True)
+
+    required_users = models.PositiveSmallIntegerField(default=1)
+
+    shift_points = models.FloatField(
+        default=1,
+        help_text="Number of points that can be gained by doing this shift.",
+    )
+    notes = models.TextField(blank=True, null=True, help_text="")
+
+    repeat = models.CharField(
         max_length=30,
+        default="none",
         choices=[
-            ("regular", "regular"),
-            ("repeating_weekly", "repeating_weekly"),
-            ("repeating_monthly", "repeating_monthly"),
-            ("extra", "extra"),
-            ("holiday", "holiday"),
-            ("other", "other"),
+            ("none", "No repetition"),
+            ("abcd", "Every fourth week (ABCD)"),
         ],
     )
-    shift_week = models.CharField(
-        help_text="A month is divided in four shift weeks: A, B, C, D",
+
+    # For shifts without repetition
+    date = models.DateField(blank=True, null=True)
+
+    # For shifts with repetition
+    repeat_start = models.DateField(blank=True, null=True)
+    repeat_end = models.DateField(blank=True, null=True)
+
+    # For shifts with ABCD repetition
+    abcd_week = models.CharField(
+        help_text=(
+            "The weeks of a year are divided into four groups: A, B, C, D"
+        ),
+        verbose_name="Shift week",
         max_length=1,
-        default="A",
         choices=[
             ("A", "A"),
             ("B", "B"),
@@ -45,42 +62,60 @@ class Shift(models.Model):
         blank=True,
         null=True,
     )
-    shift_starting_time = models.TimeField(
-        blank=True,
-        null=True,
-    )
-    shift_ending_time = models.TimeField(blank=True, null=True)
-    required_users = models.PositiveSmallIntegerField(default=2)
-    shift_day = models.CharField(
+    abcd_day = models.CharField(
         help_text=(
-            "Shift days are necessary for fixed shifts to register"
-            "i.e. every monday on Week A"
+            "The day of the week the shift takes place, "
+            "i.e. every Monday on Week A."
         ),
+        verbose_name="Shift day",
         max_length=10,
         default="MO",
         choices=[
-            ("Monday", "Monday"),
-            ("Tuesday", "Tuesday"),
-            ("Wednesday", "Wednesday"),
-            ("Thursday", "Thursday"),
-            ("Friday", "Friday"),
-            ("Saturday", "Saturday"),
-            ("Sunday", "Sunday"),
+            ("MO", "Monday"),
+            ("TU", "Tuesday"),
+            ("WE", "Wednesday"),
+            ("TH", "Thursday"),
+            ("FR", "Friday"),
+            ("SA", "Saturday"),
+            ("SU", "Sunday"),
         ],
         blank=True,
         null=True,
     )
-    additional_info_general = models.TextField(
-        max_length=300,
-        blank=True,
-        null=True,
-    )
 
-    history = HistoricalRecords()
+    def save(self, *args, **kwargs):
+        """Save a shift with the corresponding amount of slots."""
+        super().save(*args, **kwargs)
+        slot_dif = self.required_users - len(self.slots.all())
+        if slot_dif > 0:
+            for _ in range(slot_dif):
+                ShiftSlot.objects.create(shift=self)
+        if slot_dif < 0:
+            for _ in range(-slot_dif):
+                self.slots.last().delete()
+
+    def get_next_occurence(self):
+        """Get the next occurence of the shift."""
+        if self.repeat == "none":
+            return self.date
+        if self.repeat == "abcd":
+            return self.get_next_abcd_occurence()
+
+    def get_next_abcd_occurence(self):
+        """Get the next occurence of the shift with ABCD repetition."""
+        return list(
+            get_abcd_occurences(
+                self.abcd_week, self.abcd_day, date.today(), count=1
+            )
+        )[0].strftime("%Y-%m-%d")
+
+    def __str__(self):
+        """Return the name of the shift."""
+        return self.name
 
 
 class ShiftProfile(models.Model):
-    """A user that can be assigned to a shift."""
+    """User profile for the shifts extension."""
 
     user = models.OneToOneField(
         get_user_model(),
@@ -88,42 +123,33 @@ class ShiftProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="shift_profile",
     )
+    type = models.CharField(
+        max_length=30,
+        default="none",
+        choices=[
+            ("jumper", "Jumper: Do shifts without repetition."),
+            ("abcd", "Regular: Do a shift that repeats every four weeks."),
+        ],
+    )
     shift_points = models.IntegerField(default=0)
 
     history = HistoricalRecords()
 
 
-class ShiftAssignment(models.Model):
-    """A shift to be done by a single user."""
+class ShiftSlot(models.Model):
+    """Assignment of a user to a shift."""
 
-    assigned_user = models.ForeignKey(
-        ShiftProfile,
-        on_delete=models.SET_NULL,
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
         blank=True,
         null=True,
         default=None,
+        related_name="shift_slots",
     )
     shift = models.ForeignKey(
-        Shift, on_delete=models.CASCADE, related_name="assignments"
+        Shift, on_delete=models.CASCADE, related_name="slots"
     )
-
-    # TODO add roles to users and check if user is allowed to change this
-    attended = models.BooleanField(default=False)
-    additional_info_individual = models.TextField(
-        max_length=300,
-        blank=True,
-        null=True,
-        default=None,
-    )
-    replacement_user = models.ForeignKey(
-        ShiftProfile,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        default=None,
-        related_name="shift_replacement",
-    )
-    open_for_replacement = models.BooleanField(default=False)
 
     history = HistoricalRecords()
 

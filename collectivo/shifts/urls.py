@@ -13,9 +13,14 @@ router.register(
     basename="shift",
 )
 router.register(
-    "assignments",
-    views.AssignmentViewSet,
-    basename="assignment",
+    "occurences",
+    views.ShiftOccurenceViewSet,
+    basename="shift",
+)
+router.register(
+    "slots",
+    views.ShiftSlotViewSet,
+    basename="slot",
 )
 router.register("users", views.ShiftUserViewSet, basename="shift-user")
 
@@ -28,11 +33,13 @@ self_user_router.register(
 )
 
 open_router = DefaultRouter()
-open_router.register("", views.ShiftOpenShiftsViewSet, basename="shift-open")
+open_router.register(
+    "", views.ShiftOccurenceOpenViewSet, basename="occurence-open"
+)
 
 urlpatterns = [
     path("api/shifts/shifts/self/", include(self_router.urls)),
     path("api/shifts/user/self/", include(self_user_router.urls)),
-    path("api/shifts/shifts/open/", include(open_router.urls)),
+    path("api/shifts/occurences/open/", include(open_router.urls)),
     path("api/shifts/", include(router.urls)),
 ]
