@@ -27,6 +27,8 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${COLLECTIVO_KEYCLOAK_CLIENT_SECRET}
       CELERY_BROKER: "redis://:${REDIS_PASSWORD}@redis:6379/0"
       CELERY_BACKEND: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      ADMIN_USER: ${COLLECTIVO_ADMIN_USER}
+      ADMIN_PASS: ${COLLECTIVO_ADMIN_PASS}
     depends_on:
       collectivo-db:
         condition: service_healthy
