@@ -22,8 +22,6 @@ class Shift(models.Model):
     starting_time = models.TimeField(blank=True, null=True)
     ending_time = models.TimeField(blank=True, null=True)
 
-    required_users = models.PositiveSmallIntegerField(default=1)
-
     shift_points = models.FloatField(
         default=1,
         help_text="Number of points that can be gained by doing this shift.",
@@ -82,17 +80,6 @@ class Shift(models.Model):
         blank=True,
         null=True,
     )
-
-    def save(self, *args, **kwargs):
-        """Save a shift with the corresponding amount of slots."""
-        super().save(*args, **kwargs)
-        slot_dif = self.required_users - len(self.slots.all())
-        if slot_dif > 0:
-            for _ in range(slot_dif):
-                ShiftSlot.objects.create(shift=self)
-        if slot_dif < 0:
-            for _ in range(-slot_dif):
-                self.slots.last().delete()
 
     def get_next_occurence(self):
         """Get the next occurence of the shift."""

@@ -146,7 +146,7 @@ class ShiftOccurenceViewSet(SchemaMixin, viewsets.ModelViewSet):
                 queryset_abcd, response, min_date, max_date
             )
 
-        # 3. Return list of shift occurences, structured into weeks and days
+        # 3. Return list of shift occurences, sorted into weeks and days
         list_response = [
             {
                 "weeknumber": week,
@@ -165,6 +165,9 @@ class ShiftOccurenceViewSet(SchemaMixin, viewsets.ModelViewSet):
             }
             for week in range(min_date_iso.week, max_date_iso.week + 1)
         ]
+        for week in list_response:
+            for day in week["days"]:
+                day["shifts"].sort(key=lambda x: x["starting_time"])
 
         return Response(list_response)
 
@@ -182,7 +185,7 @@ class ShiftSlotViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage shift slots that can be assigned to a user."""
 
     queryset = models.ShiftSlot.objects.all()
-    serializer_class = serializers.AssignmentSerializer
+    serializer_class = serializers.ShiftSlotSerializer
     # Todo users should only be able to see their own assignments
     # TODO users should only be able to create assignments for themselves
     # TODO users should only be able to update assignments for themselves

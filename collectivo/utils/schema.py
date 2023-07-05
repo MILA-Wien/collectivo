@@ -89,6 +89,7 @@ input_types = {
     "IntegerField": "number",
     "FloatField": "number",
     "DateField": "date",
+    "TimeField": "time",
     "DateTimeField": "datetime",
     "BooleanField": "checkbox",
     "ManyRelatedField": "multiselect",
@@ -122,17 +123,18 @@ def get_choices(queryset) -> OrderedDict:
 
 
 def get_endpoint(model: models.Model, source: str = None) -> str:
-    """Get the endpoint for a model field with a specific source."""
+    """Get the endpoint for a model field with a specific source.
+
+    Requires a router for this model in urls.py with the default basename.
+    """
     model = get_source(model, source)
     if model is get_user_model():
         return None  # TODO: Implement special case for user model
-    app_path = reduced_path = model._meta.app_config.name
-    while "." in reduced_path:
-        reduced_path, _ = reduced_path.rsplit(".", 1)
-        app_path = reduced_path + ":" + app_path
+    app_path = model._meta.app_config.name
     try:
         return reverse(f"{app_path}:{model._meta.model_name}-list")
-    except NoReverseMatch:
+    except NoReverseMatch as e:
+        print("no reverse", e)
         return None
 
 
@@ -162,6 +164,12 @@ def get_serializer_schema(serializer: Serializer):
         # Convert CharField to textarea if no max_length is set (TextField)
         if field_type == "CharField" and field_obj.max_length is None:
             data[field_name]["input_type"] = "textarea"
+
+        if field_type == "ListSerializer":
+            data[field_name]["endpoint"] = get_endpoint(
+                serializer.Meta.model,
+                field_obj.source,
+            )
 
         for attr in field_attrs:
             if hasattr(field_obj, attr):

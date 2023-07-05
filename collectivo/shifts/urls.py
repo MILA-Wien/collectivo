@@ -10,17 +10,15 @@ router = DefaultRouter()
 router.register(
     "shifts",
     views.ShiftViewSet,
-    basename="shift",
 )
 router.register(
     "occurences",
     views.ShiftOccurenceViewSet,
-    basename="shift",
+    basename="occurence",
 )
 router.register(
     "slots",
     views.ShiftSlotViewSet,
-    basename="slot",
 )
 router.register("users", views.ShiftUserViewSet, basename="shift-user")
 

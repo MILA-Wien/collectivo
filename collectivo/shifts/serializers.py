@@ -6,10 +6,21 @@ from collectivo.utils.schema import Schema
 from .models import Shift, ShiftProfile, ShiftSlot
 
 
+class ShiftSlotSerializer(serializers.ModelSerializer):
+    """Serializer for a shift slot that can be assigned to a user."""
+
+    class Meta:
+        """Serializer settings."""
+
+        model = ShiftSlot
+        fields = "__all__"
+
+
 class ShiftSerializer(serializers.ModelSerializer):
     """Serializer for shift."""
 
     next_occurence = serializers.SerializerMethodField()
+    slots = ShiftSlotSerializer(many=True, read_only=True)
 
     def get_next_occurence(self, obj):
         """Get the next occurence of the shift."""
@@ -23,14 +34,11 @@ class ShiftSerializer(serializers.ModelSerializer):
         schema: Schema = {
             "structure": [
                 {
-                    "fields": [
-                        "name",
-                        "description",
-                    ],
+                    "fields": ["name", "description", "slots"],
                     "style": "col",
                 },
                 {
-                    "fields": ["required_users", "shift_points", "repeat"],
+                    "fields": ["shift_points", "repeat"],
                 },
                 {
                     "fields": [
@@ -76,16 +84,6 @@ class ShiftOpenShiftsSerializer(ShiftSerializer):
         """Serializer settings."""
 
         model = Shift
-        fields = "__all__"
-
-
-class AssignmentSerializer(serializers.ModelSerializer):
-    """Serializer for individual shift."""
-
-    class Meta:
-        """Serializer settings."""
-
-        model = ShiftSlot
         fields = "__all__"
 
 
