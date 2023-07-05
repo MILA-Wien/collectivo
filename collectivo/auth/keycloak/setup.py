@@ -1,4 +1,6 @@
 """Setup function of the keycloak auth extension."""
+import os
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -16,6 +18,20 @@ def setup():
     users = User.objects.filter(keycloak__isnull=True)
     for user in users:
         user.save()
+
+    # Set up admin user
+    admin_user = os.environ.get("ADMIN_USER", None)
+    admin_pass = os.environ.get("ADMIN_PASS", None)
+    if admin_user and admin_pass:
+        try:
+            admin = User.objects.get(username=admin_user)
+            admin.save()
+            keycloak = KeycloakAPI()
+            uuid = admin.keycloak.get_keycloak_user(create=True)
+            keycloak.set_user_password(uuid, admin_pass, temporary=False)
+            keycloak.update_user(uuid, email_verified=True)
+        except User.DoesNotExist:
+            pass
 
     # Activate test users in Keycloak
     if settings.COLLECTIVO["example_data"] is True:

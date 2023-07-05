@@ -1,6 +1,7 @@
 """Setup function of the core extension."""
 
 import logging
+import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -102,6 +103,21 @@ def setup(sender, **kwargs):
         requires_perm=("view_settings", "core"),
         order=100,
     )
+
+    # Get admin user from env vars
+    admin_user = os.environ.get("ADMIN_USER", None)
+    admin_pass = os.environ.get("ADMIN_PASS", None)
+    if admin_user and admin_pass:
+        try:
+            admin = User.objects.get(username=admin_user)
+        except User.DoesNotExist:
+            admin = User.objects.create(email=admin_user)
+            admin.username = admin_user
+            admin.first_name = admin_user
+            admin.last_name = admin_user
+            admin.save()
+            admin.permission_groups.add(superuser)
+            logger.info(f"Created admin user {admin_user}")
 
     if settings.COLLECTIVO["example_data"] is True:
         CoreSettings.object()  # This initializes the default settings
