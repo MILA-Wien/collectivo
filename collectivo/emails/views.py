@@ -39,6 +39,24 @@ class EmailDesignViewSet(SchemaMixin, viewsets.ModelViewSet):
     queryset = models.EmailDesign.objects.all()
 
 
+class EmailSenderConfigViewSet(SchemaMixin, viewsets.ModelViewSet):
+    """Manage email sender configs."""
+
+    permission_classes = [HasPerm]
+    required_perms = {
+        # As the EmailSenderConfig contains the password for the email server
+        # access should be extremely limited.
+        "GET": [("view_email_servers", "emails")],
+        "ALL": [("edit_email_servers", "emails")],
+    }
+    serializer_class = serializers.EmailSenderConfigSerializer
+    filterset_class = get_filterset(serializers.EmailSenderConfigSerializer)
+    ordering_fields = get_ordering_fields(
+        serializers.EmailSenderConfigSerializer
+    )
+    queryset = models.EmailSenderConfig.objects.all()
+
+
 class EmailTemplateViewSet(SchemaMixin, viewsets.ModelViewSet):
     """Manage email templates."""
 
@@ -125,6 +143,26 @@ class EmailDesignHistoryViewSet(
         serializers.EmailDesignHistorySerializer
     )
     queryset = models.EmailDesign.history.model.objects.all()
+
+
+class EmailSenderConfigHistoryViewSet(
+    SchemaMixin, HistoryMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
+    """View EmailDesign history."""
+
+    permission_classes = [HasPerm]
+    required_perms = {
+        "GET": [("view_email_servers", "emails")],
+        "ALL": [("edit_email_servers", "emails")],
+    }
+    serializer_class = serializers.EmailSenderConfigHistorySerializer
+    filterset_class = get_filterset(
+        serializers.EmailSenderConfigHistorySerializer
+    )
+    ordering_fields = get_ordering_fields(
+        serializers.EmailSenderConfigHistorySerializer
+    )
+    queryset = models.EmailSenderConfig.history.model.objects.all()
 
 
 class EmailCampaignHistoryViewSet(

@@ -13,8 +13,8 @@ User = get_user_model()
 @shared_task
 def send_mails_async(results, emails):
     """Send a mass email."""
-    connection = mail.get_connection()
     campaign = results["campaign"]
+    connection = mail.get_connection(**campaign.get_backend_config_kwargs())
 
     try:
         time.sleep(1)  # TODO Get this number from the settings

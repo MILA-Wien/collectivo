@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from collectivo.emails.models import EmailAutomation
+from collectivo.emails.models import EmailAutomation, EmailTemplate
 from collectivo.emails.tests import run_mocked_celery_chain
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
@@ -52,11 +52,14 @@ class MembershipsEmailsTests(TestCase):
         )
 
         for stage in ["applied", "accepted", "ended"]:
-            auto_appl = EmailAutomation.objects.get(name=f"membership_{stage}")
-            auto_appl.subject = f"Test Subject {stage}"
-            auto_appl.body = (
-                f"Test Body {stage}" + " {{ membership.type.name }}"
+            auto_template = EmailTemplate.objects.register(
+                name=f"template_{stage}",
+                subject=f"Test Subject {stage}",
+                body=f"Test Body {stage}" + " {{ membership.type.name }}",
             )
+
+            auto_appl = EmailAutomation.objects.get(name=f"membership_{stage}")
+            auto_appl.template = auto_template
             auto_appl.is_active = True
             auto_appl.save()
 

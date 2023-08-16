@@ -1,11 +1,5 @@
 """Serializers of the emails module."""
-from celery import chain
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import EmailMultiAlternatives
-from django.template import Context, Template
-from django.utils import timezone
-from html2text import html2text
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -15,7 +9,6 @@ from collectivo.utils.schema import Schema
 from collectivo.utils.serializers import create_history_serializer
 
 from . import models
-from .tasks import send_mails_async, send_mails_async_end
 
 User = get_user_model()
 
@@ -43,6 +36,20 @@ class EmailDesignSerializer(serializers.ModelSerializer):
         """Serializer settings."""
 
         model = models.EmailDesign
+        fields = "__all__"
+
+
+class EmailSenderConfigSerializer(serializers.ModelSerializer):
+    """Serializer for email sender configs."""
+
+    host_password = serializers.CharField(
+        write_only=True,
+    )
+
+    class Meta:
+        """Serializer settings."""
+
+        model = models.EmailSenderConfig
         fields = "__all__"
 
 
@@ -84,24 +91,17 @@ class EmailAutomationSerializer(serializers.ModelSerializer):
                     "label": "Email to users",
                     "description": "This template will be sent to users.",
                 },
-                {"fields": ["subject", "design"], "style": "row"},
-                {"fields": ["body"]},
+                {"fields": ["template"]},
                 {
                     "label": "Email to admins",
                     "description": "This template will be sent to admins.",
                 },
                 {
                     "fields": [
-                        "admin_subject",
-                        "admin_design",
+                        "admin_template",
                         "admin_recipients",
                     ],
                     "style": "row",
-                },
-                {
-                    "fields": [
-                        "admin_body",
-                    ],
                 },
             ],
         }
@@ -218,51 +218,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
     def send_emails(self):
         """Send emails to recipients."""
         campaign = self.instance
-        campaign.sent = timezone.now()
-        campaign.status = "pending"
-        campaign.save()
-
-        # Prepare the emails
-        template = campaign.template
-        recipients = self.validated_data["recipients"]
-        subject = template.subject
-        body = template.body
-        if template.design is not None:
-            body = template.design.body.replace("{{content}}", template.body)
-        from_email = settings.DEFAULT_FROM_EMAIL
-        emails = []
-        for recipient in recipients:
-            body_html = Template(body).render(Context({"user": recipient}))
-            body_text = html2text(body_html)
-            if recipient.email in (None, ""):
-                campaign.status = "failure"
-                campaign.status_message = f"{recipient} has no email."
-                campaign.save()
-                raise ValueError(campaign.status_message)
-            email = EmailMultiAlternatives(
-                subject, body_text, from_email, [recipient.email]
-            )
-            email.attach_alternative(body_html, "text/html")
-            emails.append(email)
-
-        # Split recipients into batches
-        n = 20  # TODO Get this number from the settings
-        batches = [emails[i : i + n] for i in range(0, len(emails), n)]
-
-        # Create a chain of async tasks to send the emails
-        results = {"n_sent": 0, "campaign": campaign}
-        tasks = []
-        tasks.append(send_mails_async.s(results, batches.pop(0)))
-        for batch in batches:
-            tasks.append(send_mails_async.s(batch))
-        tasks.append(send_mails_async_end.s())
-        try:
-            chain(*tasks)()
-        except Exception as e:
-            campaign.status = "failure"
-            campaign.status_message = str(e)
-            campaign.save()
-            raise e
+        campaign.send()
 
 
 EmailCampaignHistorySerializer = create_history_serializer(
@@ -275,3 +231,6 @@ EmailAutomationHistorySerializer = create_history_serializer(
     models.EmailAutomation
 )
 EmailDesignHistorySerializer = create_history_serializer(models.EmailDesign)
+EmailSenderConfigHistorySerializer = create_history_serializer(
+    models.EmailSenderConfig
+)

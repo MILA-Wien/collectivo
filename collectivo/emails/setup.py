@@ -25,6 +25,8 @@ def setup(sender, **kwargs):
     perm_names = [
         "view_emails",
         "edit_emails",
+        "view_email_servers",
+        "edit_email_servers",
     ]
     superuser = PermissionGroup.objects.get(name="superuser")
     for perm_name in perm_names:

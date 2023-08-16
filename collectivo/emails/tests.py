@@ -87,7 +87,7 @@ class EmailsTests(TestCase):
             self.recipient_objects[0].tags.filter(pk=self.tag.pk).exists()
         )
 
-    @patch("collectivo.emails.serializers.chain")
+    @patch("collectivo.emails.models.chain")
     def test_email_batch_template(self, chain):
         """Test sending a batch of emails using a template."""
         res = self.client.post(TEMPLATES_URL, self.template_data)

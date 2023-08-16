@@ -3,6 +3,7 @@ from celery import chain
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import validate_email
 from django.db import models
 from django.template import Context, Template
 from django.utils import timezone
@@ -41,32 +42,22 @@ class EmailAutomation(models.Model):
     )
     admin_only = models.BooleanField(default=False)
 
-    design = models.ForeignKey(
-        "emails.EmailDesign",
+    template = models.ForeignKey(
+        "emails.EmailTemplate",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="automations",
     )
-    subject = models.CharField(
-        max_length=255,
-        blank=True,
-    )
-    body = models.TextField(
-        blank=True,
-    )
 
-    admin_design = models.ForeignKey(
-        "emails.EmailDesign",
+    admin_template = models.ForeignKey(
+        "emails.EmailTemplate",
         on_delete=models.PROTECT,
         null=True,
+        blank=True,
         related_name="automations_admin",
-        verbose_name="Design",
     )
-    admin_subject = models.CharField(
-        max_length=255, verbose_name="Subject", blank=True
-    )
-    admin_body = models.TextField(verbose_name="Body", blank=True)
+
     admin_recipients = models.ManyToManyField(
         get_user_model(),
         verbose_name="Recipients",
@@ -77,13 +68,68 @@ class EmailAutomation(models.Model):
     def send(self, recipients, context=None):
         """Send emails to recipients."""
         if self.is_active:
-            campaign = EmailCampaign.objects.create(
-                automation=self,
-                extension=self.extension,
-            )
-            campaign.recipients.set(recipients)
-            campaign.save()
-            campaign.send(context=context)
+            # Generate email campaign for admins from automation
+            if (self.admin_recipients.exists()):
+                admin_campaign = EmailCampaign.objects.create(
+                    template=self.admin_template,
+                    extension=self.extension,
+                )
+                admin_campaign.recipients.set(self.admin_recipients.all())
+                admin_campaign.save()
+                admin_campaign.send(context=context)
+
+            if not self.admin_only:
+                # Generate email campaign for end users from automation
+                user_campaign = EmailCampaign.objects.create(
+                    template=self.template,
+                    extension=self.extension,
+                )
+                user_campaign.recipients.set(recipients)
+                user_campaign.save()
+                user_campaign.send(context=context)
+
+
+class EmailSenderConfig(models.Model):
+    """The configuration for sending emails (email server config, etc.)."""
+
+    objects = NameManager()
+    history = HistoricalRecords()
+
+    name = models.CharField(max_length=255, unique="True")
+    from_email = models.CharField(max_length=255, validators=[validate_email])
+
+    host = models.CharField(max_length=255)
+    port = models.SmallIntegerField()
+
+    security_protocol = models.CharField(
+        max_length=4,
+        default="none",
+        choices=[
+            ("none", "none"),
+            ("ssl", "SSL"),
+            ("tls", "TLS"),
+        ],
+    )
+
+    host_user = models.CharField(max_length=255)
+    host_password = models.CharField(max_length=255)
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return self.name
+
+    def get_backend_config_kwargs(self):
+        """Return the email backend config args for this sender config.
+
+        These need to be passed to `core.django.mail.get_connection(**kwargs)`
+        """
+        return {
+            'host': self.host,
+            'port': self.port,
+            'username': self.host_user,
+            'password': self.host_password,
+            'use_tls': self.security_protocol == "tls",
+            'use_ssl': self.security_protocol == "ssl"}
 
 
 class EmailDesign(models.Model):
@@ -99,6 +145,10 @@ class EmailDesign(models.Model):
         """Return a string representation of the object."""
         return self.name
 
+    def apply(self, content):
+        """Apply this design to the given content."""
+        return self.body.replace("{{content}}", content)
+
 
 class EmailTemplate(models.Model):
     """A template of an email, which can be applied to a campaign."""
@@ -112,10 +162,35 @@ class EmailTemplate(models.Model):
     )
     subject = models.CharField(max_length=255)
     body = models.TextField()
+    sender_config = models.ForeignKey(
+        "emails.EmailSenderConfig", on_delete=models.SET_NULL, null=True
+    )
 
     def __str__(self):
         """Return a string representation of the object."""
         return self.name
+
+    def render(self, recipient, context=None):
+        """Render the email template for the given recipient."""
+        if self.design is not None:
+            body_with_design_applied = self.design.apply(self.body)
+        else:
+            body_with_design_applied = self.body
+
+        if self.sender_config is not None:
+            from_email = self.sender_config.from_email
+        else:
+            from_email = settings.DEFAULT_FROM_EMAIL
+
+        body_html = Template(body_with_design_applied).render(
+            Context({"user": recipient, **(context or {})})
+        )
+        body_text = html2text(body_html)
+        email = EmailMultiAlternatives(
+            self.subject, body_text, from_email, [recipient.email]
+        )
+        email.attach_alternative(body_html, "text/html")
+        return email
 
 
 class EmailCampaign(models.Model):
@@ -125,9 +200,6 @@ class EmailCampaign(models.Model):
 
     template = models.ForeignKey(
         "emails.EmailTemplate", on_delete=models.SET_NULL, null=True
-    )
-    automation = models.ForeignKey(
-        "emails.EmailAutomation", on_delete=models.SET_NULL, null=True
     )
     status = models.CharField(
         max_length=10,
@@ -158,38 +230,12 @@ class EmailCampaign(models.Model):
 
     def send(self, context=None):
         """Send emails to recipients."""
-        campaign = self
-        campaign.sent = timezone.now()
-        campaign.status = "pending"
-        campaign.save()
-
-        # Generate emails from automation
-        if self.automation:
-            email_batches = self.create_email_batches(
-                self.automation.admin_design,
-                self.automation.admin_subject,
-                self.automation.admin_body,
-                self.automation.admin_recipients.all(),
-                context=context,
-            )
-            if not self.automation.admin_only:
-                email_batches += self.create_email_batches(
-                    self.automation.design,
-                    self.automation.subject,
-                    self.automation.body,
-                    self.recipients.all(),
-                    context=context,
-                )
+        self.sent = timezone.now()
+        self.status = "pending"
+        self.save()
 
         # Generate emails from template
-        else:
-            email_batches = self.create_email_batches(
-                self.campaign.template.design,
-                self.campaign.template.subject,
-                self.campaign.template.body,
-                self.recipients.all(),
-                context=context,
-            )
+        email_batches = self.create_email_batches(context=context)
 
         # Create a chain of async tasks to send emails
         results = {"n_sent": 0, "campaign": self}
@@ -206,31 +252,29 @@ class EmailCampaign(models.Model):
             self.save()
             raise e
 
-    def create_email_batches(
-        self, design, subject, body, recipients, context=None
-    ):
+    def create_email_batches(self, context=None):
         """Create a list of emails, split into batches."""
-
-        if design is not None:
-            body = design.body.replace("{{content}}", body)
-        from_email = settings.DEFAULT_FROM_EMAIL
         emails = []
-        for recipient in recipients:
-            body_html = Template(body).render(
-                Context({"user": recipient, **(context or {})})
-            )
-            body_text = html2text(body_html)
+        for recipient in self.recipients.all():
             if recipient.email in (None, ""):
                 self.status = "failure"
                 self.status_message = f"{recipient} has no email."
                 self.save()
                 raise ValueError(self.status_message)
-            email = EmailMultiAlternatives(
-                subject, body_text, from_email, [recipient.email]
-            )
-            email.attach_alternative(body_html, "text/html")
+            email = self.template.render(recipient, context=context)
             emails.append(email)
 
         # Split recipients into batches
         n = 20  # TODO Get this number from the settings
         return [emails[i : i + n] for i in range(0, len(emails), n)]
+
+    def get_backend_config_kwargs(self):
+        """Return the email backend config args for this sender config.
+
+        These need to be passed to `core.django.mail.get_connection(**kwargs)`
+        """
+        if self.template.sender_config is not None:
+            return self.template.sender_config.get_backend_config_kwargs()
+        else:
+            # Return the default backend using the values from settings.py
+            return {}
