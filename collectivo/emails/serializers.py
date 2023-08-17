@@ -42,15 +42,12 @@ class EmailDesignSerializer(serializers.ModelSerializer):
 class EmailSenderConfigSerializer(serializers.ModelSerializer):
     """Serializer for email sender configs."""
 
-    host_password = serializers.CharField(
-        write_only=True,
-    )
-
     class Meta:
         """Serializer settings."""
 
         model = models.EmailSenderConfig
         fields = "__all__"
+        extra_kwargs = {"host_password": {"write_only": True}}
 
 
 if_not_admin_only = {
