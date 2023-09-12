@@ -95,16 +95,27 @@ Adapt the name of the extension in the app configuration:
 
 ```python title="collectivo/extensions/my_extension/apps.py"
 class ExtensionConfig(AppConfig):
-    name = "my_extension"
+    name = "extensions.my_extension"
+```
+
+Adapt the URL patterns in the extension:
+
+```python title="collectivo/extensions/my_extension/urls.py"
+app_name = 'extensions.my_extension'
+
+router = DefaultRouter()
+
+urlpatterns = [
+    path('api/my_extension/', include(router.urls)),
+]
 ```
 
 Add the name of the extension to [`collectivo.yml`](reference.md#settings):
 
 ```yaml title="collectivo/collectivo.yml"
 extensions:
-  - my_extension
+  - extensions.my_extension
 ```
-
 
 ### Background tasks
 
