@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
-from collectivo.utils.permissions import IsAuthenticated, IsSuperuser, HasPerm
+from collectivo.utils.permissions import IsAuthenticated, HasPerm
 
 from .models import DashboardTile, DashboardTileButton
 from .serializers import (
