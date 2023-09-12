@@ -4,7 +4,7 @@ from django.conf import settings
 from collectivo.dashboard.apps import DashboardConfig
 from collectivo.extensions.models import Extension
 from collectivo.menus.models import MenuItem
-
+from collectivo.core.models import Permission, PermissionGroup
 from .models import DashboardTile, DashboardTileButton
 
 
@@ -26,6 +26,21 @@ def setup(sender, **kwargs):
         parent="main",
         order=0,
     )
+
+    # Set up permissions
+    perms = {
+        "view_dashboard_tiles": None,
+        "edit_dashboard_tiles": None,
+    }
+    superuser = PermissionGroup.objects.get(name="superuser")
+    for perm_name in perms:
+        perms[perm_name] = perm = Permission.objects.register(
+            name=perm_name,
+            label=perm_name.replace("_", " ").capitalize(),
+            description=f"Can {perm_name.replace('_', ' ')}",
+            extension=extension,
+        )
+        superuser.permissions.add(perm)
 
     if settings.COLLECTIVO["example_data"]:
         DashboardTile.objects.register(

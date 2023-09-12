@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from collectivo.utils.mixins import HistoryMixin, SchemaMixin
-from collectivo.utils.permissions import IsAuthenticated, IsSuperuser
+from collectivo.utils.permissions import IsAuthenticated, IsSuperuser, HasPerm
 
 from .models import DashboardTile, DashboardTileButton
 from .serializers import (
@@ -29,7 +29,11 @@ class DashboardTileViewSet(HistoryMixin, SchemaMixin, viewsets.ModelViewSet):
 
     queryset = DashboardTile.objects.all()
     serializer_class = TileSerializer
-    permission_classes = [IsSuperuser]
+    permission_classes = [HasPerm]
+    required_perms = {
+        "GET": [("view_dashboard_tiles", "dashboard")],
+        "ALL": [("edit_dashboard_tiles", "dashboard")],
+    }
 
     @extend_schema(responses={200: OpenApiResponse()})
     @action(
@@ -78,4 +82,8 @@ class DashboardTileButtonViewSet(
 
     queryset = DashboardTileButton.objects.all()
     serializer_class = TileButtonSerializer
-    permission_classes = [IsSuperuser]
+    permission_classes = [HasPerm]
+    required_perms = {
+        "GET": [("view_dashboard_tiles", "dashboard")],
+        "ALL": [("edit_dashboard_tiles", "dashboard")],
+    }
