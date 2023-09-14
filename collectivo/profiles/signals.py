@@ -15,8 +15,10 @@ def create_user_profile(sender, instance, created, **kwargs):
         automation = EmailAutomation.objects.get(
             name="new_user_created", extension=extension
         )
-        automation.send(instance, context={"user": instance, "profile": profile})
-    except:
+        automation.send(instance, context={"user": instance,
+                                           "profile": profile})
+    except Exception:
+        print("No email automation found.")
         pass
 
 

@@ -50,14 +50,15 @@ def setup(sender, **kwargs):
     users = User.objects.filter(profile__isnull=True)
     for user in users:
         UserProfile.objects.get_or_create(user=user)
-    
     # Create email automations for user creation
     try:
         EmailAutomation.objects.register(
                 name="new_user_created",
                 label="New user created",
                 description=(
-                    "A user was created. The user is accesible vie {{ user }} and the profile via {{ profile }}."
+                    "A user was created. The user is accesible \
+                    via \
+                    {{ user }} and the profile via {{ profile }}."
                 ),
                 extension=extension,
                 admin_only=False,
