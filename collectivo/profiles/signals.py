@@ -7,7 +7,17 @@ from .models import UserProfile
 
 def create_user_profile(sender, instance, created, **kwargs):
     """Create user profile when a user is created."""
-    UserProfile.objects.get_or_create(user=instance)
+    profile = UserProfile.objects.get_or_create(user=instance)
+    try:
+        from collectivo.emails.models import EmailAutomation
+        from collectivo.extensions.models import Extension
+        extension = Extension.objects.get(name="profiles")
+        automation = EmailAutomation.objects.get(
+            name="new_user_created", extension=extension
+        )
+        automation.send(instance, context={"user": instance, "profile": profile})
+    except:
+        pass
 
 
 signals.post_save.connect(
