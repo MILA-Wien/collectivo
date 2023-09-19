@@ -61,6 +61,9 @@ profile_schema: Schema = {
                 "phone",
             ],
         },
+        {
+            "fields": ["notes"]
+        }
     ],
 }
 
