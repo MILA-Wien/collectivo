@@ -88,7 +88,7 @@ class MembershipSerializer(UserFields):
         """Save user tags seperately."""
         tr = _TagsSerializer(data=self.initial_data)
         tr.is_valid()
-        if "user_tags" in tr.validated_data:
+        if "user__tags" in tr.validated_data:
             instance.user.tags.set(tr.validated_data["user__tags"])
 
         return super().update(instance, validated_data)
